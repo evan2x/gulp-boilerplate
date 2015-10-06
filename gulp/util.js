@@ -80,10 +80,9 @@ exports.getResourcePath = function(obj){
 
     // 针对配置中使用了数组的情况进行处理
     if(Array.isArray(obj.src)){
-        obj.src.reduce(function(arr, v){
-            arr.push(getPath(rootpath.src, v));
-            return arr;
-        }, src);
+        src = obj.src.map(function(v){
+            return getPath(rootpath.src, v);
+        });
     } else {
         src.push(getPath(rootpath.src, obj.src));
     }
@@ -111,9 +110,9 @@ exports.getTemplatePath = function(){
 
     // 针对配置中使用了数组的情况进行处理
     if(Array.isArray(tmpl.src)){
-        tmpl.src.reduce(function(arr, v){
-            arr.push(getPath(v));
-        }, src);
+        src = tmpl.src.map(function(arr, v){
+            return getPath(v);
+        });
     } else {
         src.push(getPath(tmpl.src));
     }
@@ -133,18 +132,16 @@ exports.getTemplatePath = function(){
  * @return {String} obj.target  其他输出目录
  */
 exports.getOtherResourcePath = function(){
-    var assets = config.assets;
+    var assets = config.assets,
+        rootdest = assets.rootpath.dest;
 
     return assets.other.map(function(obj){
-        var src = obj.src,
-            rootdest = assets.rootpath.dest;
-
-        if(!Array.isArray(src)){
-            src = [src];
+        if(!Array.isArray(obj.src)){
+            obj.src = [obj.src];
         }
-
+        
         var getPath = function(root){
-            return src.map(function(glob){
+            return obj.src.map(function(glob){
                 return path.join(root, glob);
             });
         };
