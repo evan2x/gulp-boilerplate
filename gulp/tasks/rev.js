@@ -56,7 +56,7 @@ var assets = config.assets,
             .pipe(channel());
     },
     /**
-     * 读取manifest文件，将globs匹配到的文件合并到manifest中并返回
+     * 读取manifest文件，将globs匹配到的文件路径合并到manifest已有的列表中
      * @todo 针对未使用hash版本号的资源
      * @param  {Array<Glob>|Glob} globs
      * @param {Function} 写入完执行的回调函数

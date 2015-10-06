@@ -22,7 +22,7 @@ require('./gulp/tasks/normal')(debug);
 require('./gulp/tasks/rev');
 
 /**
- *
+ * 常规任务
  */
 gulp.task('release', function(done){
     runSequence(
@@ -34,7 +34,7 @@ gulp.task('release', function(done){
 });
 
 /**
- * 静态资源增加hash版本号
+ * 增加hash版本号任务
  */
 gulp.task('rev', function(done){
     runSequence(
@@ -49,7 +49,7 @@ gulp.task('rev', function(done){
 });
 
 /**
- * 默认任务执行普通模式
+ * 默认任务执行常规任务
  */
 gulp.task('default', function(){
     gulp.start('release');
