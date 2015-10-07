@@ -21,7 +21,6 @@ var glob = require('glob');
 var plugins = require('gulp-load-plugins')();
 var mkdirp = require('mkdirp');
 var chalk = require('chalk');
-// var browserSync = require('browser-sync');
 
 module.exports = function(assets, debug){
     var srcdir = assets.js.src,
