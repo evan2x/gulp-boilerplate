@@ -162,9 +162,12 @@ module.exports = function(debug){
         bundler('watch');
     });
 
-    //
+    /**
+     * browser-sync service
+     */
     gulp.task('serve', function(){
-        var conf = config.browserSync;
+        var conf = config.browserSync,
+            toString = Object.prototype.toString;
 
         if(argv.port){
             conf.port = argv.port;
@@ -173,7 +176,7 @@ module.exports = function(debug){
         // proxy port
         if(argv.pport){
             var proxy = '127.0.0.1' + argv.pport;
-            switch (Object.prototype.toString.call(conf.proxy)) {
+            switch (toString.call(conf.proxy)) {
                 case '[object Object]':
                     conf.proxy.target = proxy;
                     break;
