@@ -1,3 +1,4 @@
+
 # gulp-boilerplate
 
 [![](https://img.shields.io/badge/node.js->=_0.12-brightgreen.svg?style=flat-square)]()
@@ -5,12 +6,18 @@
 ## 启动项目
 
 ```bash
+# browser-sync service
 gulp serve
 ```
 
+`gulp serve` 有以下两个参数：
+
+* `--port 3000` 指定browser-sync服务监听端口，默认：`3000`
+* `--pport 8080` 指定代理端口，如被代理的tomcat服务监听端口为`8080`
+
 访问 `http://127.0.0.1:3000`
 
-## 运行模式
+## Task运行模式
 
 > 默认情况下是`debug`模式
 
@@ -45,6 +52,7 @@ gulp rev
 
 # 执行watch
 # 实时打包JS模块以及编译Sass
-# 使用babel支持ES2015(ES6)语法
+# 使用babel将ES2015(ES6)语法转译为ES5
 gulp watch
+
 ```
