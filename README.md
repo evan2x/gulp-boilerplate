@@ -5,7 +5,7 @@
 ## 启动项目
 
 ```bash
-npm start
+gulp serve
 ```
 
 访问 `http://127.0.0.1:3000`
