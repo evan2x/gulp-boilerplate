@@ -15,6 +15,15 @@ module.exports = {
      */
     domain: '',
     manifest: './rev-manifest.json',
+    browserSync: {
+        server: {
+            baseDir: './',
+            index: 'views/index.html'
+        },
+        logPrefix: 'CreditEase',
+        open: false,
+        port: 3000
+    },
     /**
      * 静态资源
      * @todo 所有资源的src都相对于rootpath的src，dest同理

@@ -91,7 +91,7 @@ module.exports = function(assets, debug){
             mkdirp.sync(dir);
         });
 
-        packager
+        return packager
             .transform(babelify.configure(assets.js.babel))
             .bundle()
             .on('error', function(e){

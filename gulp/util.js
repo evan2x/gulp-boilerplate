@@ -39,7 +39,9 @@ function array2ext(arr){
  * @param {Array|String} task
  */
 exports.watch = function(glob, opts, task){
-    if(typeof opts === 'string' || Array.isArray(opts)){
+    if(opts == null){
+        opts = {};
+    } else if(typeof opts === 'string' || Array.isArray(opts)){
         task = opts;
         opts = {};
     }
@@ -139,7 +141,7 @@ exports.getOtherResourcePath = function(){
         if(!Array.isArray(obj.src)){
             obj.src = [obj.src];
         }
-        
+
         var getPath = function(root){
             return obj.src.map(function(glob){
                 return path.join(root, glob);

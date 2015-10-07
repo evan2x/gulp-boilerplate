@@ -13,9 +13,11 @@ var gulp = require('gulp');
 var del = require('del');
 var plugins = require('gulp-load-plugins')();
 var pngquant = require('imagemin-pngquant');
+var bs = require("browser-sync").create();
 var chalk = require('chalk');
 var util = require('../util');
 var config = require('../config');
+var argv = require('minimist')(process.argv.slice(2));
 
 module.exports = function(debug){
 
@@ -80,7 +82,8 @@ module.exports = function(debug){
             .pipe(plugins.autoprefixer(assets.css.autoprefixer))
             .pipe(plugins.if(debug, plugins.sourcemaps.write()))
             .pipe(plugins.if(!debug, plugins.csso()))
-            .pipe(gulp.dest(paths.target));
+            .pipe(gulp.dest(paths.target))
+            .pipe(bs.stream());
     });
 
     /**
@@ -157,6 +160,43 @@ module.exports = function(debug){
         util.watch(util.getResourcePath(assets.css).src, ['css']);
         // 启用打包器的watch模式
         bundler('watch');
+    });
+
+    //
+    gulp.task('serve', function(){
+        var conf = config.browserSync;
+
+        if(argv.port){
+            conf.port = argv.port;
+        }
+
+        // proxy port
+        if(argv.pport){
+            var proxy = '127.0.0.1' + argv.pport;
+            switch (Object.prototype.toString.call(conf.proxy)) {
+                case '[object Object]':
+                    conf.proxy.target = proxy;
+                    break;
+
+                // 字符串或者其他非对象类型重新修正proxy配置项
+                case '[object String]':
+                default:
+                    conf.proxy = proxy;
+            }
+
+            delete conf.server;
+        }
+
+        gulp.start('watch');
+
+        var list = [];
+        // 将模板加入到watch列表中
+        list.concat(util.getTemplatePath().src);
+        // 将JavaScript模块打包后的输出目录添加到watch列表中
+        list.push(util.getResourcePath(assets.js).target);
+        // watch列表变动时触发browser-sync的reload
+        util.watch(list).on('change', bs.reload);
+        bs.init(conf);
     });
 
 };
