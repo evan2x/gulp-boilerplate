@@ -175,7 +175,7 @@ module.exports = function(debug){
 
         // proxy port
         if(argv.pport){
-            var proxy = '127.0.0.1' + argv.pport;
+            var proxy = '127.0.0.1:' + argv.pport;
             switch (toString.call(conf.proxy)) {
                 case '[object Object]':
                     conf.proxy.target = proxy;
