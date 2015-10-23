@@ -17,10 +17,14 @@ var buffer = require('vinyl-buffer');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var babelify = require('babelify');
+var cacheify = require('cacheify');
+var level = require('level');
 var glob = require('glob');
 var plugins = require('gulp-load-plugins')();
 var mkdirp = require('mkdirp');
 var chalk = require('chalk');
+
+var db = level('./.__cache__');
 
 module.exports = function(assets, debug){
     var srcdir = assets.js.src,
@@ -91,7 +95,7 @@ module.exports = function(assets, debug){
         });
 
         return packager
-            .transform(babelify)
+            .transform(cacheify(babelify, db))
             .bundle()
             .on('error', function(e){
                 // 打印browserify或者babelify抛出的异常信息
