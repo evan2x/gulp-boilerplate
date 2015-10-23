@@ -91,7 +91,7 @@ module.exports = function(assets, debug){
         });
 
         return packager
-            .transform(babelify.configure(assets.js.babel))
+            .transform(babelify)
             .bundle()
             .on('error', function(e){
                 // 打印browserify或者babelify抛出的异常信息

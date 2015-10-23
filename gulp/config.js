@@ -37,9 +37,6 @@ module.exports = {
         js: {
             src: '/js',
             dest: '/js',
-            babel: {
-                externalHelpers: true
-            },
             /**
              * 抓取src下所有的`main.js`作为browserify入口模块
              * @todo 不会使用extensions
