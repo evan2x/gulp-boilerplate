@@ -102,7 +102,7 @@ module.exports = function(debug){
      * 使用browserify打包JavaScript模块
      */
     gulp.task('js', function(done){
-        return bundler(done);
+        bundler(done);
     });
 
     /**
