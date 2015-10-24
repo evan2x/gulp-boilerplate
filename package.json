@@ -53,7 +53,6 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "object-assign": "^4.0.1",
-    "rev-del": "^1.0.5",
     "run-sequence": "^1.1.4",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
