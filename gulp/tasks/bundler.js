@@ -11,7 +11,6 @@
 
 var path = require('path');
 var gulp = require('gulp');
-var gutil = require('gulp-util');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var browserify = require('browserify');
@@ -52,11 +51,9 @@ module.exports = function(assets, debug){
          * @type {Object}
          */
         packager = browserify({
-            cache: {},
-            packageCache: {},
             entries: entries,
             debug: debug
-        }),
+        }).transform(cacheify(babelify, db)),
         /**
          * 提取需要删除的部分路径
          * @type {String}
@@ -95,10 +92,9 @@ module.exports = function(assets, debug){
         });
 
         return packager
-            .transform(cacheify(babelify, db))
             .bundle()
             .on('error', function(e){
-                // 打印browserify或者babelify抛出的异常信息
+                // print browserify or babelify error
                 console.log(chalk.red('\nBrowserify or Babelify error:\n' + e.message));
                 this.emit('end');
             })
@@ -127,7 +123,7 @@ module.exports = function(assets, debug){
             packager = watchify(packager);
             packager.on('update', bundle);
             packager.on('log', function(msg){
-                gutil.log(chalk.green(msg));
+                console.log(chalk.green(msg));
             });
         }
 
