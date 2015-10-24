@@ -51,6 +51,8 @@ module.exports = function(assets, debug){
          * @type {Object}
          */
         packager = browserify({
+            cache: {},
+            packageCache: {},
             entries: entries,
             debug: debug
         }).transform(cacheify(babelify, db)),
