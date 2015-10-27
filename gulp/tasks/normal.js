@@ -79,8 +79,8 @@ module.exports = function(debug){
                 console.log(chalk.red('\nSass error:\n' + e.messageFormatted));
                 this.emit('end');
             }))
-            .pipe(plugins.autoprefixer(assets.css.autoprefixer))
             .pipe(plugins.if(debug, plugins.sourcemaps.write()))
+            .pipe(plugins.autoprefixer(assets.css.autoprefixer))
             .pipe(plugins.if(!debug, plugins.csso()))
             .pipe(gulp.dest(paths.target))
             .pipe(bs.stream());
