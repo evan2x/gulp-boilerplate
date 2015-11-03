@@ -1,3 +1,6 @@
+parser: babel-eslint
+ecmaFeatures:
+  modules: true
 rules:
   indent: [2, 4]
   quotes: [2, single]
@@ -25,4 +28,5 @@ rules:
   strict: [2, global]
 env:
   node: true
-  browser: true
+  browser: false
+  es6: true

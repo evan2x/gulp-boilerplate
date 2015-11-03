@@ -5,208 +5,215 @@
  * @date  2015/09/24
  */
 
-'use strict';
+import path from 'path';
+import fs from 'fs';
+import gulp from 'gulp';
+import lazypipe from 'lazypipe';
+import loadPlugins from 'gulp-load-plugins';
+import glob from 'glob';
+import del from 'del';
+import * as util from '../util';
+import config from '../config';
 
-var path = require('path');
-var fs = require('fs');
-var gulp = require('gulp');
-var plugins = require('gulp-load-plugins')();
-var lazypipe = require('lazypipe');
-var glob = require('glob');
-var del = require('del');
-var assign = require('object-assign');
-var util = require('../util');
-var config = require('../config');
+const plugins = loadPlugins();
 
-/**
- * 静态资源配置
- * @type {Object}
- */
-var assets = config.assets,
-    /**
-     * 所有资源的输出目录
-     * @type {String}
-     */
-    destdir = path.normalize(assets.rootpath.dest).split(path.sep)[0],
-    /**
-     * 使用path模块解析manifest文件
-     * @type {Object}
-     */
-    opts = path.parse(config.manifest),
+let
+  /**
+   * 资源配置项
+   * @type {Object}
+   */
+  assets = config.assets,
+  /**
+   * 所有资源的输出目录
+   * @type {String}
+   */
+  basedir = path.normalize(assets.rootpath.dest).split(path.sep)[0],
+  /**
+   * 解析manifest的文件路径
+   * @type {Object}
+   */
+  opts = path.parse(config.manifest),
+  channel = lazypipe()
+    .pipe(plugins.rev, opts.base)
+    .pipe(gulp.dest, basedir)
+    .pipe(plugins.rev.manifest, {
+      base: opts.dir,
+      merge: true
+    })
+    .pipe(gulp.dest, opts.dir),
+  /**
+   * JS,CSS 替换hash文件路径的通用task
+   */
+  revision = function(src){
+    let manifest = gulp.src(config.manifest);
 
-    channel = lazypipe()
-        .pipe(plugins.rev, opts.base)
-        .pipe(gulp.dest, destdir)
-        .pipe(plugins.rev.manifest, {
-            base: opts.dir,
-            merge: true
-        })
-        .pipe(gulp.dest, opts.dir),
-    /**
-     * js,css文件的共用task
-     */
-    revision = function(src){
-        var manifest = gulp.src(config.manifest);
+    return gulp.src(src, {base: basedir})
+      .pipe(plugins.revReplace({
+        prefix: config.domain || '',
+        manifest: manifest
+      }))
+      .pipe(channel());
+  },
 
-        return gulp.src(src, {base: destdir})
-            .pipe(plugins.revReplace({
-                prefix: config.domain || '',
-                manifest: manifest
-            }))
-            .pipe(channel());
-    },
-    /**
-     * 读取manifest文件，将globs匹配到的文件路径合并到manifest已有的列表中
-     * @todo 针对未使用hash版本号的资源
-     * @param  {Array<Glob>|Glob} globs
-     * @param {Function} 写入完执行的回调函数
-     */
-    buildManifest = function(globs){
-        var regex = new RegExp('^' + path.normalize(destdir)),
-            files = globs.reduce(function(arr, v){
-                return arr.concat(glob.sync(v));
-            }, []),
-            fileMaps = {};
+  regex = new RegExp(`^${path.normalize(basedir)}`),
 
-        files.forEach(function(v){
-            var filepath = path.normalize(v).replace(regex, '');
+  /**
+   * 读取manifest文件，将globs匹配到的文件路径合并到manifest已有的列表中
+   * @todo 针对未使用hash版本号的资源
+   * @param  {Array<Glob>|Glob} globs
+   * @param {Function} 写入完执行的回调函数
+   */
+  buildManifest = function(globs){
+    let
+      files = globs.reduce((arr, v) => {
+        return arr.concat(glob.sync(v));
+      }, []),
+      fileMaps = {},
+      filepath = '';
 
-            if(path.isAbsolute(filepath)){
-                filepath = filepath.slice(path.sep.length);
-            }
+    files.forEach((v) => {
+      filepath = path.normalize(v).replace(regex, '');
 
-            fileMaps[filepath] = filepath;
-        });
+      if(path.isAbsolute(filepath)){
+        filepath = filepath.slice(path.sep.length);
+      }
 
-        if(fs.existsSync(config.manifest)){
-            var maps = {};
-            try {
-                maps = JSON.parse(fs.readFileSync(config.manifest));
-            }catch(e){
-                throw new Error(e.message);
-            }
+      fileMaps[filepath] = filepath;
+    });
 
-            fileMaps = assign(maps, fileMaps);
-        }
+    if(fs.existsSync(config.manifest)){
+      let maps = {};
+      try {
+        maps = JSON.parse(fs.readFileSync(config.manifest));
+      }catch(e){
+        throw new Error(e.message);
+      }
 
-        return fileMaps;
-    };
+      fileMaps = Object.assign(maps, fileMaps);
+    }
+
+    return fileMaps;
+  };
+
 
 /**
  * 删除manifest文件
  */
-gulp.task('clean:rev', function(done){
-    del([config.manifest])
-    .then(function(){
-        done();
-    });
+gulp.task('clean:rev', (done) => {
+  del([config.manifest])
+  .then(() => {
+    done();
+  });
 });
 
 /**
  * image revision
  */
-gulp.task('image:rev', function(){
-    var paths = util.getResourcePath(assets.img);
-    return gulp.src(paths.revsrc, {base: destdir})
-        .pipe(channel());
+gulp.task('image:rev', () => {
+  let paths = util.getResourcePath(assets.img);
+  return gulp.src(paths.revsrc, {base: basedir})
+    .pipe(channel());
 });
 
 /**
  * svg revision
  */
-gulp.task('svg:rev', function(){
-    var paths = util.getResourcePath(assets.svg);
-    return gulp.src(paths.revsrc, {base: destdir})
-        .pipe(channel());
+gulp.task('svg:rev', () => {
+  let paths = util.getResourcePath(assets.svg);
+  return gulp.src(paths.revsrc, {base: basedir})
+    .pipe(channel());
 });
 
-gulp.task('other:rev', function(done){
-    var paths = util.getOtherResourcePath(),
-        otherTask = paths.map(function(obj){
-            if(obj.useHash){
-                return new Promise(function(resolve, reject){
-                    gulp.src(obj.revsrc, {base: destdir})
-                        .pipe(channel())
-                        .on('end', resolve)
-                        .on('error', reject);
-                });
-            } else {
-                return new Promise(function(resolve, reject){
-                    var str = JSON.stringify(buildManifest(obj.revsrc));
-                    try {
-                        fs.writeFileSync(config.manifest, str);
-                        resolve();
-                    } catch(e){
-                        reject(e.message);
-                    }
-                });
-            }
-        });
+gulp.task('other:rev', (done) => {
 
-    Promise.all(otherTask).then(function(){
-        done();
+  let
+    paths = util.getOtherResourcePath(),
+    otherTask = paths.map((resource) => {
+      if(resource.useHash){
+        return new Promise((resolve, reject) => {
+          gulp.src(resource.revsrc, {base: basedir})
+            .pipe(channel())
+            .on('end', resolve)
+            .on('error', reject);
+        });
+      } else {
+        return new Promise((resolve, reject) => {
+          let str = JSON.stringify(buildManifest(resource.revsrc));
+          try {
+            fs.writeFileSync(config.manifest, str);
+            resolve();
+          } catch(e){
+            reject(e.message);
+          }
+        });
+      }
     });
+
+  Promise.all(otherTask).then(() => {
+    done();
+  });
 });
 
 /**
  * css revision
  */
-gulp.task('css:rev', function(){
-    var paths = util.getResourcePath(assets.css);
-    return revision(paths.revsrc);
+gulp.task('css:rev', () => {
+  let paths = util.getResourcePath(assets.css);
+  return revision(paths.revsrc);
 });
 
 /**
  * js revision
  */
-gulp.task('js:rev', function(){
-    var paths = util.getResourcePath(assets.js);
-    return revision(paths.revsrc);
+gulp.task('js:rev', () => {
+  let paths = util.getResourcePath(assets.js);
+  return revision(paths.revsrc);
 });
 
 /**
  * 替换模板中的资源路径
  */
-gulp.task('tmpl:rev', function(){
-    var paths = util.getTemplatePath(),
-        manifest = gulp.src(config.manifest);
+gulp.task('tmpl:rev', () => {
+  let
+    paths = util.getTemplatePath(),
+    manifest = gulp.src(config.manifest),
+    exts = config.tmpl.extensions;
 
-    return gulp.src(paths.revsrc)
-        .pipe(plugins.revReplace({
-            prefix: config.domain || '',
-            manifest: manifest,
-            replaceInExtensions: config.tmpl.extensions.map(function(suffix){
-                return ('.' + suffix);
-            })
-        }))
-        .pipe(gulp.dest(paths.target));
+  return gulp.src(paths.revsrc)
+      .pipe(plugins.revReplace({
+        prefix: config.domain || '',
+        manifest: manifest,
+        replaceInExtensions: exts.map((suffix) => `.${suffix}`)
+      }))
+      .pipe(gulp.dest(paths.target));
 });
 
 /**
  * 根据rev-manifest.json文件中的key删除原本的资源文件
  * @todo 当资源表中K/V一致时保留原文件
  */
-gulp.task('original:del', function(done){
-    if(fs.existsSync(config.manifest)){
-        var manifest = {},
-            files = [];
+gulp.task('original:del', (done) => {
+  if(fs.existsSync(config.manifest)){
+    let
+      manifest = {},
+      files = [];
 
-        try {
-            manifest = JSON.parse(fs.readFileSync(config.manifest));
-        }catch(e){
-            throw new Error(e.message);
-        }
-
-        for(var key in manifest){
-            if(manifest.hasOwnProperty(key) && manifest[key] !== key){
-                files.push(path.join(destdir, key));
-            }
-        }
-
-        del(files).then(function(){
-            done();
-        });
-    } else {
-        done();
+    try {
+      manifest = JSON.parse(fs.readFileSync(config.manifest));
+    }catch(e){
+      throw new Error(e.message);
     }
+
+    for(var key in manifest){
+      if(manifest.hasOwnProperty(key) && manifest[key] !== key){
+        files.push(path.join(basedir, key));
+      }
+    }
+
+    del(files).then(() => {
+      done();
+    });
+  } else {
+    done();
+  }
 });

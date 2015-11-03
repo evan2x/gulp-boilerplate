@@ -1,9 +1,11 @@
 
 import { EventEmitter } from 'events';
+import {mixin} from './lib/decorators';
 
-class Person extends EventEmitter {
+@mixin(EventEmitter.prototype)
+class Person {
+
     constructor(prop = {}) {
-        super();
         this.name = prop.name;
         this.age = prop.age;
     }
@@ -19,7 +21,9 @@ let evan = new Person({
 });
 
 evan.on('say', function(msg){
+    /* eslint-disable */
     console.log(`${msg} \n${' '.repeat(msg.length - 4)}----by 'say' event`);
+    /* eslint-enable */
 });
 
 evan.say('Hello!');
