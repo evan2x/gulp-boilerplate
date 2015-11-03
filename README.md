@@ -17,27 +17,23 @@ gulp serve
 
 访问 `http://127.0.0.1:3000`
 
-## Task运行模式
-
-> 默认情况下是`debug`模式
+## Task执行环境
 
 ### Mac/Linux
 
 ```bash
-# 关闭debug模式
-DEBUG=false gulp [task]
-# 开启debug模式
-DEBUG=true gulp [task]
+# 生产环境
+NODE_ENV=production gulp [task]
+# 开发环境
+gulp [task]
 ```
 
 ### Windows
 
 ```bat
-rem 关闭debug模式
-set DEBUG=false
-gulp [task]
-rem 开启debug模式
-set DEBUG=true
+rem 生产环境
+set NODE_ENV=production && gulp [task] && set NODE_ENV=
+rem 开发环境
 gulp [task]
 ```
 
