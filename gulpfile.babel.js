@@ -11,9 +11,9 @@ import gulp from 'gulp';
 import runSequence from 'run-sequence';
 import normal from './gulp/tasks/normal';
 import './gulp/tasks/rev';
-// 提取normal tasks
-normal(!(process.env.DEBUG === 'false'));
 
+// 提取normal tasks
+normal(process.env.NODE_ENV !== 'production');
 
 /**
  * 常规任务
@@ -45,6 +45,4 @@ gulp.task('rev', (done) => {
 /**
  * 默认任务执行常规任务
  */
-gulp.task('default', () => {
-  gulp.start('release');
-});
+gulp.task('default', ['release']);
