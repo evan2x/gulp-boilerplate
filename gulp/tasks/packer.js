@@ -96,10 +96,10 @@ export default function(assets, debug) {
 
     return packager
       .bundle()
-      .on('error', (e) => {
+      .on('error', function(e) {
         // print browserify or babelify error
         console.log(chalk.red('\nBrowserify or Babelify error:\n' + e.message));
-        this && this.emit('end');
+        this.emit('end');
       })
       .pipe(source(assets.js.commonChunk))
       .pipe(buffer())

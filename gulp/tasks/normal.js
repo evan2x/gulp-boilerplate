@@ -77,7 +77,7 @@ export default function(debug){
 
     return gulp.src(paths.src)
       .pipe(plugins.if(debug, plugins.sourcemaps.init()))
-      .pipe(plugins.sass(assets.css.sass).on('error', (e) => {
+      .pipe(plugins.sass(assets.css.sass).on('error', function(e) {
         // 打印Sass抛出的异常
         console.log(chalk.red('\nSass error:\n' + e.messageFormatted));
         this.emit('end');
