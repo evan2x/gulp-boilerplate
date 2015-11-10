@@ -65,9 +65,7 @@ let
    */
   buildManifest = function(globs){
     let
-      files = globs.reduce((arr, v) => {
-        return arr.concat(glob.sync(v));
-      }, []),
+      files = globs.reduce((arr, v) => [...arr, glob.sync(v)], []),
       fileMaps = {},
       filepath = '';
 

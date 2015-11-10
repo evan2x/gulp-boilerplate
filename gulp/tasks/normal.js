@@ -173,12 +173,12 @@ export default function(debug){
   gulp.task('serve', () => {
     let conf = config.browserSync;
 
-    if(argv.port){
+    if(argv.port && typeof argv.port != 'boolean'){
       conf.port = argv.port;
     }
 
     // proxy port
-    if(argv.pport){
+    if(argv.pport && typeof argv.pport != 'boolean'){
       let proxy = '127.0.0.1:' + argv.pport;
       /*eslint-disable */
       switch (toString.call(conf.proxy)) {
@@ -198,11 +198,10 @@ export default function(debug){
 
     gulp.start('watch');
 
-    let list = [];
-    // 将模板加入到watch列表中
-    list.concat(util.getTemplatePath().src);
-    // 将JavaScript模块打包后的输出目录添加到watch列表中
-    list.push(util.getResourcePath(assets.js).target);
+    let list = [
+      ...util.getTemplatePath().src,
+      util.getResourcePath(assets.js).target
+    ];
     // watch列表变动时触发browser-sync的reload
     util.watch(list).on('change', bs.reload);
     bs.init(conf);

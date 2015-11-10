@@ -38,13 +38,15 @@ export default function(assets, debug) {
      * @type {Array}
      */
     entries = srcdir.reduce((arr, v) => {
-      return arr.concat(glob.sync(
+      let globs = glob.sync(
         path.join(
           assets.rootpath.src,
           v,
           `/**/${assets.js.entry}`
         )
-      ));
+      );
+
+      return [...arr, ...globs];
     }, []),
     /**
      * 打包后输出目录
@@ -92,7 +94,7 @@ export default function(assets, debug) {
   });
 
   let bundle = () => {
-    outputdir.forEach((dir) => mkdirp.sync(dir));
+    outputdir.forEach(dir => mkdirp.sync(dir));
 
     return packager
       .bundle()
