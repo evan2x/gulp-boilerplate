@@ -103,26 +103,26 @@ export function getResourcePath(resource) {
  */
 export function getTemplatePath() {
   let
-    tmpl = config.tmpl,
+    tpl = config.tpl,
     src = [],
     getPath = (dir) => {
       return path.join(
         dir,
-        `/**/*.${array2ext(tmpl.extensions)}`
+        `/**/*.${array2ext(tpl.extensions)}`
       );
     };
 
   // 针对配置中使用了数组的情况进行处理
-  if(Array.isArray(tmpl.src)){
-    src = tmpl.src.map((arr, v) => getPath(v));
+  if(Array.isArray(tpl.src)){
+    src = tpl.src.map((arr, v) => getPath(v));
   } else {
-    src.push(getPath(tmpl.src));
+    src.push(getPath(tpl.src));
   }
 
   return {
     src: src,
-    revsrc: getPath(tmpl.dest),
-    target: tmpl.dest
+    revsrc: getPath(tpl.dest),
+    target: tpl.dest
   };
 }
 

@@ -22,7 +22,7 @@ gulp.task('release', (done) => {
   runSequence(
     'clean',
     ['css', 'js', 'image', 'other', 'svg'],
-    'tmpl',
+    'tpl',
     done
   );
 });
@@ -37,7 +37,7 @@ gulp.task('rev', (done) => {
     ['image:rev', 'svg:rev', 'other:rev'],
     'css:rev',
     'js:rev',
-    ['tmpl:rev', 'original:del'],
+    ['tpl:rev', 'original:del'],
     done
   );
 });

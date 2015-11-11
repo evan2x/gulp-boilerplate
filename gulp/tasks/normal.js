@@ -34,7 +34,7 @@ export default function(debug){
   gulp.task('clean', (done) => {
     del([
       assets.rootpath.dest,
-      config.tmpl.dest,
+      config.tpl.dest,
       path.join(process.cwd(), '.__cache__')
     ])
     .then(() => {
@@ -133,14 +133,14 @@ export default function(debug){
    * 并且对添加了inline标识的资源进行内联
    * @todo debug模式下不对css及js进行压缩
    */
-  gulp.task('tmpl', function(){
+  gulp.task('tpl', function(){
     let
       paths = util.getTemplatePath(),
-      assets = plugins.useref.assets(config.tmpl.useref),
+      assets = plugins.useref.assets(config.tpl.useref),
       opts = {};
 
-    if(config.tmpl.base){
-      opts.base = config.tmpl.base;
+    if(config.tpl.base){
+      opts.base = config.tpl.base;
     }
 
     return gulp.src(paths.src, opts)
@@ -149,11 +149,18 @@ export default function(debug){
       .pipe(plugins.if(!debug, plugins.if('*.js', plugins.uglify())))
       .pipe(assets.restore())
       .pipe(plugins.useref())
-      .pipe(plugins.if(paths.src, plugins.inlineSource({
-        rootpath: './',
-        compress: !debug
-      })))
-      .pipe(gulp.dest(paths.target));
+      .pipe(gulp.dest(paths.target))
+      .on('end', () => {
+        gulp.src(paths.src, opts)
+          .pipe(plugins.inlineSource({
+            rootpath: './',
+            compress: !debug
+          }))
+          .pipe(gulp.dest(paths.target))
+          .on('end', () => {
+            done();
+          });
+      });
   });
 
   /**

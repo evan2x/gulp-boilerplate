@@ -96,7 +96,7 @@ export default {
    * @see 关于base属性的说明 https://github.com/contra/glob2base/blob/master/README.md
    * @type {Object}
    */
-  tmpl: {
+  tpl: {
     src: './views',
     dest: './dist',
     base: './',

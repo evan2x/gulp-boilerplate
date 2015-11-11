@@ -171,11 +171,11 @@ gulp.task('js:rev', () => {
 /**
  * 替换模板中的资源路径
  */
-gulp.task('tmpl:rev', () => {
+gulp.task('tpl:rev', () => {
   let
     paths = util.getTemplatePath(),
     manifest = gulp.src(config.manifest),
-    exts = config.tmpl.extensions;
+    exts = config.tpl.extensions;
 
   return gulp.src(paths.revsrc)
       .pipe(plugins.revReplace({
