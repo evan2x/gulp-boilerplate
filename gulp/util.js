@@ -70,15 +70,14 @@ export function watch(glob, opts, task) {
  * @return {String} resource.target  资源输出目录
  */
 export function getResourcePath(resource) {
-  let
+  let src = [],
+    target = path.join(rootpath.dest, resource.dest),
     getPath = (root, dir = '') => {
       return path.join(
         root,
         dir, `/**/*.${array2ext(resource.extensions)}`
       );
-    },
-    src = [],
-    target = path.join(rootpath.dest, resource.dest);
+    };
 
   // 针对配置中使用了数组的情况进行处理
   if(Array.isArray(resource.src)){
@@ -102,8 +101,7 @@ export function getResourcePath(resource) {
  * @return {String} resource.target  模板输出目录
  */
 export function getTemplatePath() {
-  let
-    tpl = config.tpl,
+  let tpl = config.tpl,
     src = [],
     getPath = (dir) => {
       return path.join(

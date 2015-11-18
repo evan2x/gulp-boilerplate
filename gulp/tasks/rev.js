@@ -17,12 +17,11 @@ import config from '../config';
 
 const plugins = loadPlugins();
 
-let
-  /**
-   * 资源配置项
-   * @type {Object}
-   */
-  assets = config.assets,
+/**
+ * 资源配置项
+ * @type {Object}
+ */
+let assets = config.assets,
   /**
    * 所有资源的输出目录
    * @type {String}
@@ -64,8 +63,7 @@ let
    * @param {Function} 写入完执行的回调函数
    */
   buildManifest = function(globs){
-    let
-      files = globs.reduce((arr, v) => [...arr, glob.sync(v)], []),
+    let files = globs.reduce((arr, v) => [...arr, glob.sync(v)], []),
       fileMaps = {},
       filepath = '';
 
@@ -124,8 +122,7 @@ gulp.task('svg:rev', () => {
 
 gulp.task('other:rev', (done) => {
 
-  let
-    paths = util.getOtherResourcePath(),
+  let paths = util.getOtherResourcePath(),
     otherTask = paths.map((resource) => {
       if(resource.useHash){
         return new Promise((resolve, reject) => {
@@ -172,8 +169,7 @@ gulp.task('js:rev', () => {
  * 替换模板中的资源路径
  */
 gulp.task('tpl:rev', () => {
-  let
-    paths = util.getTemplatePath(),
+  let paths = util.getTemplatePath(),
     manifest = gulp.src(config.manifest),
     exts = config.tpl.extensions;
 
@@ -192,8 +188,7 @@ gulp.task('tpl:rev', () => {
  */
 gulp.task('original:del', (done) => {
   if(fs.existsSync(config.manifest)){
-    let
-      manifest = {},
+    let manifest = {},
       files = [];
 
     try {

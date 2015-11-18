@@ -82,9 +82,9 @@ export default function(debug){
         console.log(chalk.red('\nSass error:\n' + e.messageFormatted));
         this.emit('end');
       }))
-      .pipe(plugins.if(debug, plugins.sourcemaps.write()))
       .pipe(plugins.autoprefixer(assets.css.autoprefixer))
       .pipe(plugins.if(!debug, plugins.csso()))
+      .pipe(plugins.if(debug, plugins.sourcemaps.write()))
       .pipe(gulp.dest(paths.target))
       .pipe(bs.stream());
   });
@@ -112,8 +112,7 @@ export default function(debug){
    * copy other列表中的静态资源
    */
   gulp.task('other', (done) => {
-    let
-      paths = util.getOtherResourcePath(),
+    let paths = util.getOtherResourcePath(),
       otherTask = paths.map((resource) => {
         return new Promise((resolve, reject) => {
           gulp.src(resource.src)
@@ -133,9 +132,8 @@ export default function(debug){
    * 并且对添加了inline标识的资源进行内联
    * @todo debug模式下不对css及js进行压缩
    */
-  gulp.task('tpl', function(){
-    let
-      paths = util.getTemplatePath(),
+  gulp.task('tpl', function(done){
+    let paths = util.getTemplatePath(),
       assets = plugins.useref.assets(config.tpl.useref),
       opts = {};
 
@@ -143,7 +141,7 @@ export default function(debug){
       opts.base = config.tpl.base;
     }
 
-    return gulp.src(paths.src, opts)
+    gulp.src(paths.src, opts)
       .pipe(assets)
       .pipe(plugins.if(!debug, plugins.if('*.css', plugins.csso())))
       .pipe(plugins.if(!debug, plugins.if('*.js', plugins.uglify())))

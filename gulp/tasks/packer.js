@@ -24,20 +24,18 @@ const db = level('./.__cache__');
 
 export default function(assets, debug) {
 
-  let
-    srcdir = assets.js.src,
+  let srcdir = assets.js.src,
     done = function() {};
 
   if (!Array.isArray(srcdir)) {
     srcdir = [srcdir];
   }
 
-  let
-    /**
-     * 提取所有browserify入口文件
-     * @type {Array}
-     */
-    entries = srcdir.reduce((arr, v) => {
+  /**
+   * 提取所有browserify入口文件
+   * @type {Array}
+   */
+  let entries = srcdir.reduce((arr, v) => {
       let globs = glob.sync(
         path.join(
           assets.rootpath.src,
