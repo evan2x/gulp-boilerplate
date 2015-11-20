@@ -133,9 +133,14 @@ export default function(debug){
    * @todo debug模式下不对css及js进行压缩
    */
   gulp.task('tpl', (done) => {
-    let paths = util.getTemplatePath();
+    let paths = util.getTemplatePath(),
+      opts = {};
 
-    gulp.src(paths.src)
+    if(config.tpl.base){
+      opts.base = config.tpl.base;
+    }
+
+    gulp.src(paths.src, opts)
       .pipe(plugins.useref(config.tpl.useref))
       .pipe(plugins.if(!debug, plugins.if('*.css', plugins.csso())))
       .pipe(plugins.if(!debug, plugins.if('*.js', plugins.uglify())))
