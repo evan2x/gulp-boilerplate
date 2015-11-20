@@ -99,7 +99,6 @@ export default {
   tpl: {
     src: './views',
     dest: './dist',
-    base: './',
     useref: {
       searchPath: './'
     },

@@ -132,24 +132,16 @@ export default function(debug){
    * 并且对添加了inline标识的资源进行内联
    * @todo debug模式下不对css及js进行压缩
    */
-  gulp.task('tpl', function(done){
-    let paths = util.getTemplatePath(),
-      assets = plugins.useref.assets(config.tpl.useref),
-      opts = {};
+  gulp.task('tpl', (done) => {
+    let paths = util.getTemplatePath();
 
-    if(config.tpl.base){
-      opts.base = config.tpl.base;
-    }
-
-    gulp.src(paths.src, opts)
-      .pipe(assets)
+    gulp.src(paths.src)
+      .pipe(plugins.useref(config.tpl.useref))
       .pipe(plugins.if(!debug, plugins.if('*.css', plugins.csso())))
       .pipe(plugins.if(!debug, plugins.if('*.js', plugins.uglify())))
-      .pipe(assets.restore())
-      .pipe(plugins.useref())
       .pipe(gulp.dest(paths.target))
       .on('end', () => {
-        gulp.src(paths.src, opts)
+        gulp.src(paths.revsrc)
           .pipe(plugins.inlineSource({
             rootpath: './',
             compress: !debug
