@@ -31,15 +31,12 @@ export default function(debug){
   /**
    * 清理dest目录
    */
-  gulp.task('clean', (done) => {
-    del([
+  gulp.task('clean', () => {
+    return del([
       assets.rootpath.dest,
       config.tpl.dest,
       path.join(process.cwd(), '.__cache__')
-    ])
-    .then(() => {
-      done();
-    });
+    ]);
   });
 
   /**
