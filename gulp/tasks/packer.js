@@ -103,7 +103,9 @@ export default function(assets, debug) {
       })
       .pipe(source(assets.js.commonChunk))
       .pipe(buffer())
-      .pipe(plugins.if(!debug, plugins.uglify()))
+      .pipe(plugins.if(!debug, plugins.uglify().on('error', function(){
+        this.end();
+      })))
       .pipe(gulp.dest(destdir))
       .on('end', () => {
         if (debug) {
@@ -112,7 +114,9 @@ export default function(assets, debug) {
           gulp.src(outputs, {
             base: './'
           })
-          .pipe(plugins.uglify())
+          .pipe(plugins.uglify().on('error', function(){
+            this.end();
+          }))
           .pipe(gulp.dest('./'))
           .on('end', () => {
             done();
