@@ -3,26 +3,26 @@
 $body-color: #0ff;
 
 html, body {
-    height: 100%;
+  height: 100%;
 }
 
 body, h1 {
-    margin: 0;
+  margin: 0;
 }
 
 body {
-    display: flex;
-    align-items: center;
-    background-color: $body-color;
+  display: flex;
+  align-items: center;
+  background-color: $body-color;
 }
 
 h1 {
-    flex: 1;
-    font-size: 120px;
-    text-align: center;
-    color: #333;
-    transition: font-size .5s;
-    @media only screen and (max-width: 414px) {
-        font-size: 60px;
-    }
+  flex: 1;
+  font-size: 120px;
+  text-align: center;
+  color: #333;
+  transition: font-size .5s;
+  @media only screen and (max-width: 414px) {
+    font-size: 60px;
+  }
 }
