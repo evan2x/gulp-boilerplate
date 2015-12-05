@@ -40,7 +40,7 @@ gulp [task]
 ## Task
 
 ```bash
-# 普通发布
+# 发布
 gulp release
 
 # 添加hash版本号发布
