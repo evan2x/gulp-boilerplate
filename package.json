@@ -35,7 +35,6 @@
     "glob": "^5.0.14",
     "gulp": "^3.9.0",
     "gulp-autoprefixer": "^3.0.1",
-    "gulp-cache": "^0.3.0",
     "gulp-csso": "^1.0.0",
     "gulp-eslint": "^1.0.0",
     "gulp-if": "^1.2.5",

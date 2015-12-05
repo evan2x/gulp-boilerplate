@@ -1,6 +1,6 @@
 /**
  * Copyright 2015 creditease Inc. All rights reserved.
- * @description revision tasks 给静态资源添加hash版本号并且增加domain
+ * @description file hash version tasks 静态资源添加hash版本号
  * @author evan2x(evan2zaw@gmail.com/aiweizhang@creditease.cn)
  * @date  2015/09/24
  */

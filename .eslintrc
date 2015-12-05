@@ -28,5 +28,5 @@ rules:
   strict: [2, global]
 env:
   node: true
-  browser: false
+  browser: true
   es6: true

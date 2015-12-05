@@ -1,6 +1,6 @@
 /**
  * Copyright 2015 creditease Inc. All rights reserved.
- * @description normal tasks
+ * @description general tasks
  * @author evan2x(evan2zaw@gmail.com/aiweizhang@creditease.cn)
  * @date  2015/09/24
  */
@@ -58,10 +58,10 @@ export default function(debug){
     let paths = util.getResourcePath(assets.img);
 
     return gulp.src(paths.src)
-      .pipe(plugins.if(!debug, plugins.cache(plugins.imagemin({
+      .pipe(plugins.if(!debug, plugins.imagemin({
         progressive: true,
         use: [pngquant()]
-      }))))
+      })))
       .pipe(gulp.dest(paths.target));
   });
 

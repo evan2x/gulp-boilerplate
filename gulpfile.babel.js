@@ -4,19 +4,17 @@
  * @author evan2x(evan2zaw@gmail.com/aiweizhang@creditease.cn)
  * @date  2015/09/24
  */
- /* eslint indent: [2, 2] */
 
 import 'babel-core/external-helpers';
 import gulp from 'gulp';
 import runSequence from 'run-sequence';
-import normal from './gulp/tasks/normal';
-import './gulp/tasks/rev';
+import general from './gulp/tasks/general';
+import './gulp/tasks/version';
 
-// 提取normal tasks
-normal(process.env.NODE_ENV !== 'production');
+general(process.env.NODE_ENV !== 'production');
 
 /**
- * 常规任务
+ * 普通任务
  */
 gulp.task('release', (done) => {
   runSequence(
@@ -43,6 +41,6 @@ gulp.task('rev', (done) => {
 });
 
 /**
- * 默认任务执行常规任务
+ * 默认任务执行普通任务
  */
 gulp.task('default', ['release']);
