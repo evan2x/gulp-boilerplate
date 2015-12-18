@@ -65,12 +65,14 @@ let assets = config.assets,
   buildManifest = function(globs){
     let files = globs.reduce((arr, v) => [...arr, glob.sync(v)], []),
       fileMaps = {},
-      filepath = '';
+      filepath = '',
+      stat = null;
 
     files.forEach((v) => {
       filepath = path.normalize(v).replace(regex, '');
+      stat = fs.statSync(path.join(process.cwd(), filepath));
 
-      if(path.isAbsolute(filepath)){
+      if(path.isAbsolute(filepath) && stat.isFile()){
         filepath = filepath.slice(path.sep.length);
       }
 
