@@ -12,15 +12,12 @@ import buffer from 'vinyl-buffer';
 import browserify from 'browserify';
 import watchify from 'watchify';
 import babelify from 'babelify';
-import cacheify from 'cacheify';
-import level from 'level';
 import loadPlugins from 'gulp-load-plugins';
 import mkdirp from 'mkdirp';
 import chalk from 'chalk';
 import glob from 'glob';
 
 const plugins = loadPlugins();
-const db = level('./.__cache__');
 
 export default function(assets, debug) {
 
@@ -59,8 +56,9 @@ export default function(assets, debug) {
       cache: {},
       packageCache: {},
       entries: entries,
-      debug: debug
-    }).transform(cacheify(babelify, db)),
+      debug: debug,
+      paths: assets.js.modulesDirectories
+    }).transform(babelify),
     /**
      * 提取需要删除的部分路径
      * @type {String}

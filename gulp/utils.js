@@ -6,6 +6,7 @@
  */
 
 import path from 'path';
+import fs from 'fs';
 import chokidar from 'chokidar';
 import gulp from 'gulp';
 import config from './config';
@@ -94,33 +95,61 @@ export function getResourcePath(resource) {
 }
 
 /**
+ * 提取useref的目标路径
+ * @param  {String} p1 比对路径，通常是静态资源的公共输出路径
+ * @param  {String} p2 比对路径，通常是模板的输入路径
+ * @return {String}    
+ */
+export function getUserefTarget(p1, p2){
+  p1 = path.normalize(p1);
+  p2 = path.normalize(p2);
+
+  let equalPath = '';
+  // 取字符串中两个相等的路径
+  for(let count = 0; count < p1.length; count++){
+    if(p1[count] === p2[count]){
+      equalPath += p1[count];
+    }
+  }
+
+  if(fs.existsSync(path.join(process.cwd(), equalPath))){
+    if(equalPath === p1){
+      return path.dirname(equalPath);
+    } else {
+      return equalPath;
+    }
+  } else {
+    return '';
+  }
+}
+
+/**
  * 获取模板的源路径与输出路径
  * @return {Object} resource
  * @return {Array<String>} resource.src  模板原路径
  * @return {Array<String>} resource.revsrc  revision模板原路径
  * @return {String} resource.target  模板输出目录
  */
-export function getTemplatePath() {
-  let tpl = config.tpl,
-    src = [],
+export function getTemplatePath(opts) {
+  let src = [],
     getPath = (dir) => {
       return path.join(
         dir,
-        `/**/*.${array2ext(tpl.extensions)}`
+        `/**/*.${array2ext(opts.extensions)}`
       );
     };
 
   // 针对配置中使用了数组的情况进行处理
-  if(Array.isArray(tpl.src)){
-    src = tpl.src.map((arr, v) => getPath(v));
+  if(Array.isArray(opts.src)){
+    src = opts.src.map((arr, v) => getPath(v));
   } else {
-    src.push(getPath(tpl.src));
+    src.push(getPath(opts.src));
   }
 
   return {
     src: src,
-    revsrc: getPath(tpl.dest),
-    target: tpl.dest
+    revsrc: getPath(opts.dest),
+    target: opts.dest
   };
 }
 
@@ -153,3 +182,5 @@ export function getOtherResourcePath(){
     };
   });
 }
+
+

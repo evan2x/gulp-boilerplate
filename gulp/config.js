@@ -37,17 +37,18 @@ export default {
       dest: '/js',
       /**
        * 抓取src下所有的`main.js`作为browserify入口模块
-       * @todo 不会使用extensions
+       * @todo 不使用extensions
        * @type {String}
        */
       entry: 'main.js',
       /**
        * 提取公共模块为`common.js`
-       * @todo 不会使用extensions
+       * @todo 不使用extensions
        * @type {String}
        */
       commonChunk: 'common.js',
-      extensions: ['js']
+      extensions: ['js'],
+      modulesDirectories: ['node_modules']
     },
     css: {
       src: '/css',
@@ -59,6 +60,14 @@ export default {
         browsers: ['last 2 versions', '> 1% in CN', 'Firefox ESR', 'Opera 12.1', 'Safari >= 5']
       },
       extensions: ['css', 'scss']
+    },
+    html: {
+      src: '/html',
+      dest: '/html',
+      useref: {
+        searchPath: './'
+      },
+      extensions: ['html']
     },
     svg: {
       src: '/svg',
@@ -84,22 +93,19 @@ export default {
      */
     other: [
       {
-        src: ['/iconfont/**/*.{eot,svg,ttf,woff}'],
-        dest: '/iconfont',
+        src: ['/icon/**/*.{eot,svg,ttf,woff}'],
+        dest: '/icon',
         useHash: true
       }
     ]
   },
   /**
    * 模板配置
-   * @todo
-   * @see 关于base属性的说明 https://github.com/contra/glob2base/blob/master/README.md
    * @type {Object}
    */
   tpl: {
     src: './views',
-    dest: './dist',
-    base: './',
+    dest: './dist/views',
     useref: {
       searchPath: './'
     },

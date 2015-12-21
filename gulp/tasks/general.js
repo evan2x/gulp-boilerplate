@@ -11,11 +11,12 @@ import loadPlugins from 'gulp-load-plugins';
 import pngquant from 'imagemin-pngquant';
 import browserSync from 'browser-sync';
 import chalk from 'chalk';
-import * as util from '../util';
+import * as utils from '../utils';
 import config from '../config';
 import minimist from 'minimist';
 import packer from './packer';
 import path from 'path';
+import fs from 'fs';
 
 const bs = browserSync.create();
 const argv = minimist(process.argv.slice(2));
@@ -34,8 +35,7 @@ export default function(debug){
   gulp.task('clean', () => {
     return del([
       assets.rootpath.dest,
-      config.tpl.dest,
-      path.join(process.cwd(), '.__cache__')
+      config.tpl.dest
     ]);
   });
 
@@ -43,7 +43,7 @@ export default function(debug){
    * 使用eslint对JavaScript代码进行检查
    */
   gulp.task('eslint', () => {
-    return gulp.src(util.getResourcePath(assets.js).src)
+    return gulp.src(utils.getResourcePath(assets.js).src)
       .pipe(plugins.eslint())
       .pipe(plugins.eslint.format());
       // 暂时不开启抛出异常，只进行检查，而不强制中断整个构建
@@ -55,7 +55,7 @@ export default function(debug){
    * @todo debug模式下不压缩图片
    */
   gulp.task('image', () => {
-    let paths = util.getResourcePath(assets.img);
+    let paths = utils.getResourcePath(assets.img);
 
     return gulp.src(paths.src)
       .pipe(plugins.if(!debug, plugins.imagemin({
@@ -70,7 +70,7 @@ export default function(debug){
    * @todo debug模式下保留sourcemap
    */
   gulp.task('css', () => {
-    let paths = util.getResourcePath(assets.css);
+    let paths = utils.getResourcePath(assets.css);
 
     return gulp.src(paths.src)
       .pipe(plugins.if(debug, plugins.sourcemaps.init()))
@@ -91,7 +91,7 @@ export default function(debug){
    * @todo debug模式不压缩
    */
   gulp.task('svg', () => {
-    let paths = util.getResourcePath(assets.svg);
+    let paths = utils.getResourcePath(assets.svg);
 
     return gulp.src(paths.src)
       .pipe(plugins.if(!debug, plugins.svgmin(assets.svg.compress)))
@@ -109,7 +109,7 @@ export default function(debug){
    * copy other列表中的静态资源
    */
   gulp.task('other', (done) => {
-    let paths = util.getOtherResourcePath(),
+    let paths = utils.getOtherResourcePath(),
       otherTask = paths.map((resource) => {
         return new Promise((resolve, reject) => {
           gulp.src(resource.src)
@@ -124,24 +124,18 @@ export default function(debug){
     });
   });
 
-  /**
-   * 从模板中对使用了useref语法的资源进行合并以及压缩
-   * 并且对添加了inline标识的资源进行内联
-   * @todo debug模式下不对css及js进行压缩
-   */
-  gulp.task('tpl', (done) => {
-    let paths = util.getTemplatePath(),
-      opts = {};
+  function templateTask(paths, conf, done){
+    let userefTarget = utils.getUserefTarget(assets.rootpath.dest, paths.target);
 
-    if(config.tpl.base){
-      opts.base = config.tpl.base;
+    if(userefTarget === ''){
+      userefTarget = paths.target;
     }
 
-    gulp.src(paths.src, opts)
-      .pipe(plugins.useref(config.tpl.useref))
+    gulp.src(paths.src, {base: './'})
+      .pipe(plugins.useref(conf.useref))
       .pipe(plugins.if(!debug, plugins.if('*.css', plugins.csso())))
       .pipe(plugins.if(!debug, plugins.if('*.js', plugins.uglify())))
-      .pipe(gulp.dest(paths.target))
+      .pipe(gulp.dest(userefTarget))
       .on('end', () => {
         gulp.src(paths.revsrc)
           .pipe(plugins.inlineSource({
@@ -153,6 +147,21 @@ export default function(debug){
             done();
           });
       });
+  }
+
+  gulp.task('html', (done) => {
+    let paths = utils.getResourcePath(assets.html);
+    templateTask(paths, assets.html, done);
+  });
+
+  /**
+   * 从模板中对使用了useref语法的资源进行合并以及压缩
+   * 并且对添加了inline标识的资源进行内联
+   * @todo debug模式下不对css及js进行压缩
+   */
+  gulp.task('tpl', (done) => {
+    let paths = utils.getTemplatePath(config.tpl);
+    templateTask(paths, config.tpl, done);
   });
 
   /**
@@ -161,7 +170,7 @@ export default function(debug){
    */
   gulp.task('watch', () => {
     // watch CSS/SCSS
-    util.watch(util.getResourcePath(assets.css).src, ['css']);
+    utils.watch(utils.getResourcePath(assets.css).src, ['css']);
     // 启用打包器的watch模式
     bundler('watch');
   });
@@ -198,11 +207,11 @@ export default function(debug){
     gulp.start('watch');
 
     let list = [
-      ...util.getTemplatePath().src,
-      util.getResourcePath(assets.js).target
+      ...utils.getTemplatePath(config.tpl).src,
+      utils.getResourcePath(assets.js).target
     ];
     // watch列表变动时触发browser-sync的reload
-    util.watch(list).on('change', bs.reload);
+    utils.watch(list).on('change', bs.reload);
     bs.init(conf);
   });
 

@@ -12,7 +12,7 @@ import lazypipe from 'lazypipe';
 import loadPlugins from 'gulp-load-plugins';
 import glob from 'glob';
 import del from 'del';
-import * as util from '../util';
+import * as utils from '../utils';
 import config from '../config';
 
 const plugins = loadPlugins();
@@ -108,7 +108,7 @@ gulp.task('clean:rev', (done) => {
  * image revision
  */
 gulp.task('image:rev', () => {
-  let paths = util.getResourcePath(assets.img);
+  let paths = utils.getResourcePath(assets.img);
   return gulp.src(paths.revsrc, {base: basedir})
     .pipe(channel());
 });
@@ -117,14 +117,14 @@ gulp.task('image:rev', () => {
  * svg revision
  */
 gulp.task('svg:rev', () => {
-  let paths = util.getResourcePath(assets.svg);
+  let paths = utils.getResourcePath(assets.svg);
   return gulp.src(paths.revsrc, {base: basedir})
     .pipe(channel());
 });
 
 gulp.task('other:rev', (done) => {
 
-  let paths = util.getOtherResourcePath(),
+  let paths = utils.getOtherResourcePath(),
     otherTask = paths.map((resource) => {
       if(resource.useHash){
         return new Promise((resolve, reject) => {
@@ -155,7 +155,7 @@ gulp.task('other:rev', (done) => {
  * css revision
  */
 gulp.task('css:rev', () => {
-  let paths = util.getResourcePath(assets.css);
+  let paths = utils.getResourcePath(assets.css);
   return revision(paths.revsrc);
 });
 
@@ -163,32 +163,40 @@ gulp.task('css:rev', () => {
  * js revision
  */
 gulp.task('js:rev', () => {
-  let paths = util.getResourcePath(assets.js);
+  let paths = utils.getResourcePath(assets.js);
   return revision(paths.revsrc);
+});
+
+function templateRevisionTask(paths, ext){
+  let manifest = gulp.src(config.manifest);
+
+  return gulp.src(paths.revsrc)
+    .pipe(plugins.revReplace({
+      prefix: config.domain || '',
+      manifest: manifest,
+      replaceInExtensions: ext.map((suffix) => `.${suffix}`)
+    }))
+    .pipe(gulp.dest(paths.target));
+}
+
+gulp.task('html:rev', () => {
+  let paths = utils.getResourcePath(assets.html);
+  return templateRevisionTask(paths, assets.html.extensions);
 });
 
 /**
  * 替换模板中的资源路径
  */
 gulp.task('tpl:rev', () => {
-  let paths = util.getTemplatePath(),
-    manifest = gulp.src(config.manifest),
-    exts = config.tpl.extensions;
-
-  return gulp.src(paths.revsrc)
-      .pipe(plugins.revReplace({
-        prefix: config.domain || '',
-        manifest: manifest,
-        replaceInExtensions: exts.map((suffix) => `.${suffix}`)
-      }))
-      .pipe(gulp.dest(paths.target));
+  let paths = utils.getTemplatePath(config.tpl);
+  return templateRevisionTask(paths, config.tpl.extensions);
 });
 
 /**
- * 根据rev-manifest.json文件中的key删除原本的资源文件
+ * 回收无用的静态资源，根据rev-manifest.json文件中的key删除原本的资源文件，保留增加了版本号的资源
  * @todo 当资源表中K/V一致时保留原文件
  */
-gulp.task('original:del', (done) => {
+gulp.task('assets:gc', (done) => {
   if(fs.existsSync(config.manifest)){
     let manifest = {},
       files = [];
