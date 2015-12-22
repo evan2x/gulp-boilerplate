@@ -101,22 +101,25 @@ export function getResourcePath(resource) {
  * @return {String}    
  */
 export function getUserefTarget(p1, p2){
-  p1 = path.normalize(p1);
-  p2 = path.normalize(p2);
+  p1 = path.normalize(p1).split(path.sep);
+  p2 = path.normalize(p2).split(path.sep);
 
-  let equalPath = '';
+  let same = [];
   // 取字符串中两个相等的路径
   for(let count = 0; count < p1.length; count++){
     if(p1[count] === p2[count]){
-      equalPath += p1[count];
+      same.push(p1[count]);
+    } else {
+      break;
     }
   }
 
-  if(fs.existsSync(path.join(process.cwd(), equalPath))){
-    if(equalPath === p1){
-      return path.dirname(equalPath);
+  same = same.join(path.sep);
+  if(fs.existsSync(path.join(process.cwd(), same))){
+    if(same === p1.join(path.sep)){
+      return path.dirname(same);
     } else {
-      return equalPath;
+      return same;
     }
   } else {
     return '';

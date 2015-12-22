@@ -121,6 +121,9 @@ export default function(debug){
 
     Promise.all(otherTask).then(() => {
       done();
+    })
+    .catch((err) => {
+      done(err);
     });
   });
 

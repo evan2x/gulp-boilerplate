@@ -63,7 +63,7 @@ let assets = config.assets,
    * @param {Function} 写入完执行的回调函数
    */
   buildManifest = function(globs){
-    let files = globs.reduce((arr, v) => [...arr, glob.sync(v)], []),
+    let files = globs.reduce((arr, v) => [...arr, ...glob.sync(v)], []),
       fileMaps = {},
       filepath = '',
       stat = null;
@@ -148,7 +148,10 @@ gulp.task('other:rev', (done) => {
 
   Promise.all(otherTask).then(() => {
     done();
-  });
+  })
+  .catch((err) => {
+    done(err);
+  });;
 });
 
 /**
