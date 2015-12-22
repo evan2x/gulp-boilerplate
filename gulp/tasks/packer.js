@@ -63,7 +63,7 @@ export default function(assets, debug) {
      * 提取需要删除的部分路径
      * @type {String}
      */
-    delpaths = srcdir.map((v) => path.join(assets.rootpath.src, v)).join('|'),
+    delpaths = srcdir.map((v) => path.join(assets.rootpath.src, v)).join('|').replace(/\\/, '\\\\'),
     /**
      * 生成一个需要删除路径的正则
      * @type {RegExp}
@@ -79,7 +79,7 @@ export default function(assets, debug) {
      * @type {Array}
      */
     outputs = entries.reduce((arr, v) => {
-      var filepath = path.join(destdir, v.replace(regex, ''));
+      var filepath = path.join(destdir, path.join(v).replace(regex, ''));
       outputdir.push(path.dirname(filepath));
       arr.push(filepath);
       return arr;
