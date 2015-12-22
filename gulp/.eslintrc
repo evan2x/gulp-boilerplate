@@ -1,2 +1,10 @@
+parser: babel-eslint
+ecmaFeatures:
+  modules: true
 rules:
+  indent: [2, 2]
   no-console: 0
+env:
+  node: true
+  browser: false
+  es6: true
