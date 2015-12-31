@@ -1,5 +1,6 @@
+/*eslint no-console: 0 */
 
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 import {mixin} from './lib/decorators';
 
 @mixin(EventEmitter.prototype)
@@ -20,10 +21,8 @@ let evan = new Person({
   age: 22
 });
 
-evan.on('say', function(msg){
-  /* eslint-disable */
+evan.on('say', (msg) => {
   console.log(`${msg} \n${' '.repeat(msg.length - 4)}----by 'say' event`);
-  /* eslint-enable */
 });
 
 evan.say('Hello!');
