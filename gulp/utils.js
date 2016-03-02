@@ -9,23 +9,26 @@ import path from 'path';
 import fs from 'fs';
 import chokidar from 'chokidar';
 import gulp from 'gulp';
+import glob from 'glob';
+import del from 'del';
 import config from './config';
 
 const rootpath = config.assets.rootpath;
+const wasteManifest = path.join(process.cwd(), './.waste-manifest.json');
 
 /**
- * 扩展名数组转为glob模式的字符
+ * [1,2,3] -> '{1,2,3}'
  * @param  {Array<String>} arr
  * @return {String}
  */
 function array2ext(arr) {
   let ret = '';
 
-  if(Array.isArray(arr)){
-    if(arr.length === 1){
+  if (Array.isArray(arr)) {
+    if (arr.length === 1) {
       ret = arr[0];
-    } else if(arr.length > 1){
-      ret = '{' + arr + '}';
+    } else if (arr.length > 1) {
+      ret = `{${arr}}`;
     }
   }
 
@@ -33,24 +36,37 @@ function array2ext(arr) {
 }
 
 /**
+ * 检测文件是否存在
+ * @param  {String} filePath 文件路径
+ * @return {Boolean}
+ */
+export function existsSync(filePath) {
+  try {
+    fs.accessSync(filePath, fs.F_OK);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
  * 使用chokidar实现watch，弃用vinyl-fs(gulp)的watch
  * @see https://www.npmjs.com/package/chokidar
- * @param {Glob} glob
- * @param {Object} opts
- * @param {Array|String} task
+ * @param  {Glob} glob
+ * @param  {Object} options
+ * @param  {Array|String} task
+ * @return {Watcher}
  */
-export function watch(glob, opts, task) {
-  if(opts == null){
-    opts = {};
-  } else if(typeof opts === 'string' || Array.isArray(opts)){
-    task = opts;
-    opts = {};
+export function watch(pattern, options = {}, task) {
+  if (typeof options === 'string' || Array.isArray(options)) {
+    task = options;
+    options = {};
   }
 
-  opts.ignoreInitial = !!opts.ignoreInitial;
-  let watcher = chokidar.watch(glob, opts);
+  options.ignoreInitial = !!options.ignoreInitial;
+  let watcher = chokidar.watch(pattern, options);
 
-  if(Array.isArray(task) || typeof task === 'string'){
+  if (Array.isArray(task) || typeof task === 'string') {
     let fn = () => gulp.start(task);
 
     watcher
@@ -63,127 +79,192 @@ export function watch(glob, opts, task) {
 }
 
 /**
- * 获取资源的源路径与输出路径
- * @param  {Object} resource
- * @return {Object} resource
- * @return {Array<String>} resource.src  资源原路径
- * @return {Array<String>} resource.revsrc  revision资源原路径
- * @return {String} resource.target  资源输出目录
+ * 创建一个用于glob读取资源的对象
+ * @param  {Object} options 参数列表
+ * @param  {Array|String} options.src 原路径
+ * @param  {Array|String} options.ext 扩展名
+ * @param  {String} options.target 目标路径
+ * @return {Object} object
  */
-export function getResourcePath(resource) {
-  let src = [],
-    target = path.join(rootpath.dest, resource.dest),
-    getPath = (root, dir = '') => {
-      return path.join(
-        root,
-        dir, `/**/*.${array2ext(resource.extensions)}`
-      );
-    };
+export function createPattern(options = {}) {
+  const prefixPath = Object.assign({
+      src: '',
+      dest: ''
+    }, options.rootpath),
+    createMatchPattern = (prefix, filePath) => path.join(
+      prefix,
+      filePath,
+      `/**/*.${array2ext(options.extensions)}`
+    );
 
-  // 针对配置中使用了数组的情况进行处理
-  if(Array.isArray(resource.src)){
-    src = resource.src.map((v) => getPath(rootpath.src, v));
+  let src = [];
+  if (Array.isArray(options.src)) {
+    src = options.src.map((p) => createMatchPattern(prefixPath.src, p));
   } else {
-    src.push(getPath(rootpath.src, resource.src));
+    src.push(createMatchPattern(prefixPath.src, options.src));
   }
 
   return {
-    src: src,
-    revsrc: getPath(target),
-    target: target
+    src,
+    target: createMatchPattern(prefixPath.dest, options.dest),
+    destPath: path.join(prefixPath.dest, options.dest)
   };
 }
 
 /**
- * 提取useref的目标路径
- * @param  {String} p1 比对路径，通常是静态资源的公共输出路径
- * @param  {String} p2 比对路径，通常是模板的输入路径
- * @return {String}    
+ * 删除空目录
+ * @param {String} dir 目标目录
  */
-export function getUserefTarget(p1, p2){
-  p1 = path.normalize(p1).split(path.sep);
-  p2 = path.normalize(p2).split(path.sep);
+export function deleteEmptyDir(dir) {
+  let files = fs.readdirSync(dir);
 
-  let same = [];
-  // 取字符串中两个相等的路径
-  for(let count = 0; count < p1.length; count++){
-    if(p1[count] === p2[count]){
-      same.push(p1[count]);
-    } else {
-      break;
-    }
-  }
-
-  same = same.join(path.sep);
-  if(fs.existsSync(path.join(process.cwd(), same))){
-    if(same === p1.join(path.sep)){
-      return path.dirname(same);
-    } else {
-      return same;
-    }
+  if (files.length === 0) {
+    fs.rmdirSync(dir);
   } else {
-    return '';
+    let count = 0,
+      file = null;
+    while (file = files[count++]) {
+      file = path.join(dir, file);
+      if (fs.statSync(file).isDirectory()) {
+        deleteEmptyDir(file);
+      }
+    }
   }
 }
 
 /**
- * 获取模板的源路径与输出路径
- * @return {Object} resource
- * @return {Array<String>} resource.src  模板原路径
- * @return {Array<String>} resource.revsrc  revision模板原路径
- * @return {String} resource.target  模板输出目录
+ * 将冗余的垃圾资源写入到.waste-manifest.json文件中，方面后期回收
+ * @todo 通常是js/css构建后的冗余资源
+ * @param  {Object} data 要写入的数据
+ * @return {Promise}
  */
-export function getTemplatePath(opts) {
-  let src = [],
-    getPath = (dir) => {
-      return path.join(
-        dir,
-        `/**/*.${array2ext(opts.extensions)}`
-      );
-    };
-
-  // 针对配置中使用了数组的情况进行处理
-  if(Array.isArray(opts.src)){
-    src = opts.src.map((arr, v) => getPath(v));
-  } else {
-    src.push(getPath(opts.src));
-  }
-
-  return {
-    src: src,
-    revsrc: getPath(opts.dest),
-    target: opts.dest
-  };
-}
-
-/**
- * 提取other task中的原路径与输出路径
- * @return {Array<Object>} arr<resource>
- * @return {Array<String>} resource.src  其他资源原路径
- * @return {Array<String>} resource.revsrc  revision 其他资源原路径
- * @return {String} resource.target  其他输出目录
- */
-export function getOtherResourcePath(){
-  let getPath;
-
-  return config.assets.other.map((resource) => {
-    if(!Array.isArray(resource.src)){
-      resource.src = [resource.src];
+export function writeWaste(data) {
+  return new Promise((resolve, reject) => {
+    if (Object.keys(data).length === 0) {
+      resolve(data);
+      return;
     }
 
-    getPath = (base) => {
-      return resource.src.map((glob) => {
-        return path.join(base, glob);
-      });
-    };
+    let oldData = {};
+    
+    if (existsSync(wasteManifest)) {
+      try {
+        oldData = JSON.parse(fs.readFileSync(wasteManifest, 'utf8'));
+      } catch (e) {}
+    }
 
-    return {
-      src: getPath(rootpath.src),
-      revsrc: getPath(rootpath.dest),
-      target: path.join(rootpath.dest, resource.dest),
-      useHash: !!resource.useHash
-    };
+    let newData = Object.assign({}, oldData, data);
+
+    fs.writeFile(
+      wasteManifest,
+      JSON.stringify(newData, null, '  '),
+      (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(newData);
+        }
+      }
+    );
   });
 }
 
+/**
+ * 清理脏资源(通常是js/css构建后的冗余资源)
+ * @return {Promise}
+ */
+export function delWaste() {
+  return new Promise((resolve, reject) => {
+    if (existsSync(wasteManifest)) {
+      fs.readFile(wasteManifest, 'utf8', (err, data) => {
+        if (err) {
+          return reject(err);
+        }
 
+        let manifest = {};
+        try {
+          manifest = JSON.parse(data);
+        } catch (e) {}
+
+        let cwd = process.cwd(),
+          waste = Object.keys(manifest).map((key) => path.join(cwd, key));
+
+        del(waste)
+          .then(() => {
+            resolve(wasteManifest);
+          })
+          .catch(reject);
+      });
+    } else {
+      resolve(wasteManifest);
+    }
+  });
+}
+
+/**
+ * 标准化文件资源的引用路径
+ * @param  {String} filePath 资源路径
+ * @return {String}
+ */
+export function normalizeReferencePath(filePath) {
+  let resultPath = path.normalize(filePath).split(path.sep).join('/');
+  if (path.isAbsolute(filePath)) {
+    resultPath = `/${resultPath}`;
+  }
+
+  return resultPath;
+}
+
+/**
+ * 将匹配到的资源路径写入到manifest
+ * @param  {String}  patterns   file globbing格式
+ * @param  {Object} options
+ * @param  {Boolean} options.merge 是否将匹配到的资源合并到已有的manifest.json文件
+ * @return {Promise}
+ */
+export function writeManifest(patterns, options = {}) {
+  let src = normalizeReferencePath(rootpath.src),
+    dest = normalizeReferencePath(rootpath.dest),
+    regex = new RegExp(`^${dest}`, 'g'),
+    prefix = options.prefix || '';
+
+  return new Promise((resolve, reject) => {
+    let maps = {},
+      files = patterns.reduce((arr, v) => [...arr, ...glob.sync(v)], []);
+
+    files.forEach((v) => {
+      let originalFile = path.join(src, normalizeReferencePath(v).replace(regex, '')),
+        revisionedFile = originalFile;
+
+      if (prefix.endsWith('/') && originalFile.startsWith('/')) {
+        revisionedFile = originalFile.slice(1);
+      }
+
+      if (!prefix.endsWith('/') && !originalFile.startsWith('/')) {
+        revisionedFile = `/${revisionedFile}`;
+      }
+
+      maps[originalFile] = prefix + revisionedFile;
+    });
+
+    // 合并原有的manifest文件
+    if (options.merge && existsSync(config.manifest)) {
+      let manifest = {};
+      try {
+        manifest = JSON.parse(fs.readFileSync(config.manifest, 'utf8'));
+      } catch (e) {}
+
+      maps = Object.assign(manifest, maps);
+    }
+
+    let out = JSON.stringify(maps, null, '  ');
+
+    fs.writeFile(config.manifest, out, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(maps);
+      }
+    });
+  });
+}

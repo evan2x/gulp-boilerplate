@@ -1,7 +1,9 @@
 
 # gulp-boilerplate
 
-[![](https://img.shields.io/badge/node.js->=_0.12-brightgreen.svg?style=flat-square)]()
+[![Badge](https://img.shields.io/badge/node.js->=_4.0-brightgreen.svg?style=flat)]()
+
+[![David](https://img.shields.io/david/dev/evan2x/gulp-boilerplate.svg)]()
 
 ## 启动项目
 
@@ -40,11 +42,11 @@ gulp [task]
 ## Task
 
 ```bash
-# 发布
-gulp release
+# 构建
+gulp build
 
-# 添加hash版本号发布
-gulp rev
+# 生产环境构建
+gulp prod
 
 # 执行watch
 # 实时打包JS模块以及编译Sass

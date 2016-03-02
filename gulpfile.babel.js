@@ -5,42 +5,79 @@
  * @date  2015/09/24
  */
 
-import 'babel-core/external-helpers';
 import gulp from 'gulp';
+import del from 'del';
 import runSequence from 'run-sequence';
+import loadPlugins from 'gulp-load-plugins';
+import config from './gulp/config';
 import general from './gulp/tasks/general';
-import './gulp/tasks/version';
+import version from './gulp/tasks/version';
+import * as utils from './gulp/utils';
 
-general(process.env.NODE_ENV !== 'production');
+const plugins = loadPlugins();
+
+general(config, plugins, process.env.NODE_ENV !== 'production');
+version(config, plugins);
 
 /**
- * 普通任务
+ * 清理构建后的资源目录
  */
-gulp.task('release', (done) => {
+gulp.task('clean', () => del([
+  config.assets.rootpath.dest,
+  config.tpl.dest
+]));
+
+/**
+ * 删除manifest文件
+ */
+gulp.task('clean:manifest', () => del([config.manifest]));
+
+/**
+ * 清除冗余资源
+ */
+gulp.task('clean:redundancy', () => {
+  return utils.delWaste()
+    .then((wasteManifest) => {
+      // 删除收集的垃圾资源表
+      return del(wasteManifest);
+    })
+    .then(() => {
+      // 清理静态资源目录下的空目录
+      return utils.deleteEmptyDir(config.assets.rootpath.dest);
+    });
+});
+
+/**
+ * 构建
+ */
+gulp.task('build', (done) => {
   runSequence(
-    'clean',
+    'clean:manifest',
     ['css', 'js', 'image', 'other', 'svg'],
-    ['tpl', 'html'],
+    ['html', 'tpl'],
+    'prefix',
+    'clean:redundancy',
     done
   );
 });
 
 /**
- * 增加hash版本号任务
+ * 生产环境
  */
-gulp.task('rev', (done) => {
+gulp.task('prod', (done) => {
   runSequence(
-    'release',
-    'clean:rev',
+    'clean',
+    'build',
+    'clean:manifest',
     ['image:rev', 'svg:rev', 'other:rev'],
     'css:rev',
     'js:rev',
-    ['tpl:rev', 'html:rev', 'assets:gc'],
+    ['tpl:rev', 'html:rev', 'clean:hashgarbage'],
     done
   );
 });
 
 /**
- * 默认任务执行普通任务
+ * 默认task
  */
-gulp.task('default', ['release']);
+gulp.task('default', ['build']);

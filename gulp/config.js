@@ -7,11 +7,14 @@
 
 export default {
   /**
-   * 替换静态资源路径时，需要添加的domain
-   * @todo 常用于替换为CDN域名，暂不支持domain sharding
+   * 静态资源引用添加的前缀
    * @type {String}
    */
-  domain: '',
+  prefix: '',
+  /**
+   * 静态资源路径清单
+   * @type {String}
+   */
   manifest: './rev-manifest.json',
   browserSync: {
     server: {
@@ -48,18 +51,15 @@ export default {
        */
       commonChunk: 'common.js',
       extensions: ['js'],
-      modulesDirectories: ['node_modules']
+      modulesDirectories: ['node_modules', 'assets']
     },
     css: {
       src: '/css',
       dest: '/css',
-      sass: {
-        outputStyle: 'expanded'
-      },
       autoprefixer: {
-        browsers: ['last 2 versions', '> 1% in CN', 'Firefox ESR', 'Opera 12.1', 'Safari >= 5']
+        browsers: ['last 2 versions', '> 1% in CN', 'Firefox ESR', 'Opera 12.1', 'Safari >= 5', 'ie >= 8']
       },
-      extensions: ['css', 'scss']
+      extensions: ['css']
     },
     html: {
       src: '/html',
@@ -74,9 +74,9 @@ export default {
       dest: '/svg',
       compress: {
         plugins: [
-          { removeHiddenElems: false },
-          { removeUselessDefs: false },
-          { cleanupIDs: false }
+          {removeHiddenElems: false},
+          {removeUselessDefs: false},
+          {cleanupIDs: false}
         ]
       },
       extensions: ['svg']
@@ -93,8 +93,9 @@ export default {
      */
     other: [
       {
-        src: ['/icon/**/*.{eot,svg,ttf,woff}'],
-        dest: '/icon',
+        src: ['/font'],
+        dest: '/font',
+        extensions: ['eot', 'svg', 'ttf', 'woff'],
         useHash: true
       }
     ]

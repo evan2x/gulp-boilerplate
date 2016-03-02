@@ -8,218 +8,187 @@
 import path from 'path';
 import fs from 'fs';
 import gulp from 'gulp';
-import lazypipe from 'lazypipe';
-import loadPlugins from 'gulp-load-plugins';
-import glob from 'glob';
 import del from 'del';
+import lazypipe from 'lazypipe';
 import * as utils from '../utils';
-import config from '../config';
 
-const plugins = loadPlugins();
+export default function(config, plugins) {
+  let assets = config.assets,
+    rootpath = assets.rootpath,
+    /**
+     * 根输出目录
+     * @type {String}
+     */
+    basedir = path.normalize(rootpath.dest).split(path.sep)[0],
+    /**
+     * 解析manifest的文件路径
+     * @type {Object}
+     */
+    opts = path.parse(config.manifest),
+    channel = lazypipe()
+      .pipe(plugins.rev, opts.base)
+      .pipe(gulp.dest, basedir)
+      .pipe(plugins.rev.manifest, {
+        base: opts.dir,
+        merge: true
+      })
+      .pipe(gulp.dest, opts.dir);
 
-/**
- * 资源配置项
- * @type {Object}
- */
-let assets = config.assets,
   /**
-   * 所有资源的输出目录
-   * @type {String}
+   * image revision
    */
-  basedir = path.normalize(assets.rootpath.dest).split(path.sep)[0],
+  gulp.task('image:rev', () => {
+    let pattern = utils.createPattern({
+      ...assets.img,
+      rootpath
+    });
+
+    return gulp.src(pattern.target, {base: basedir})
+      .pipe(plugins.changed(opts.dir))
+      .pipe(channel());
+  });
+
   /**
-   * 解析manifest的文件路径
-   * @type {Object}
+   * svg revision
    */
-  opts = path.parse(config.manifest),
-  channel = lazypipe()
-    .pipe(plugins.rev, opts.base)
-    .pipe(gulp.dest, basedir)
-    .pipe(plugins.rev.manifest, {
-      base: opts.dir,
-      merge: true
-    })
-    .pipe(gulp.dest, opts.dir),
+  gulp.task('svg:rev', () => {
+    let pattern = utils.createPattern({
+      ...assets.svg,
+      rootpath
+    });
+
+    return gulp.src(pattern.target, {base: basedir})
+      .pipe(plugins.changed(opts.dir))
+      .pipe(channel());
+  });
+
   /**
-   * JS,CSS 替换hash文件路径的通用task
+   * js css替换hash文件路径task
    */
-  revision = function(src){
+  function resourceRevTask(src) {
     let manifest = gulp.src(config.manifest);
 
     return gulp.src(src, {base: basedir})
+      .pipe(plugins.changed(opts.dir))
       .pipe(plugins.revReplace({
-        prefix: config.domain || '',
-        manifest: manifest
+        manifest
       }))
       .pipe(channel());
-  },
-
-  regex = new RegExp(`^${path.normalize(basedir)}`),
+  }
 
   /**
-   * 读取manifest文件，将globs匹配到的文件路径合并到manifest已有的列表中
-   * @todo 针对未使用hash版本号的资源
-   * @param  {Array<Glob>|Glob} globs
-   * @param {Function} 写入完执行的回调函数
+   * css revision
    */
-  buildManifest = function(globs){
-    let files = globs.reduce((arr, v) => [...arr, ...glob.sync(v)], []),
-      fileMaps = {},
-      filepath = '',
-      stat = null;
-
-    files.forEach((v) => {
-      filepath = path.normalize(v).replace(regex, '');
-      stat = fs.statSync(path.join(process.cwd(), filepath));
-
-      if(path.isAbsolute(filepath) && stat.isFile()){
-        filepath = filepath.slice(path.sep.length);
-      }
-
-      fileMaps[filepath] = filepath;
+  gulp.task('css:rev', () => {
+    let pattern = utils.createPattern({
+      ...assets.css,
+      rootpath
     });
 
-    if(fs.existsSync(config.manifest)){
-      let maps = {};
-      try {
-        maps = JSON.parse(fs.readFileSync(config.manifest));
-      }catch(e){
-        throw new Error(e.message);
-      }
-
-      fileMaps = Object.assign(maps, fileMaps);
-    }
-
-    return fileMaps;
-  };
-
-
-/**
- * 删除manifest文件
- */
-gulp.task('clean:rev', (done) => {
-  del([config.manifest])
-  .then(() => {
-    done();
+    return resourceRevTask(pattern.target);
   });
-});
 
-/**
- * image revision
- */
-gulp.task('image:rev', () => {
-  let paths = utils.getResourcePath(assets.img);
-  return gulp.src(paths.revsrc, {base: basedir})
-    .pipe(channel());
-});
+  /**
+   * js revision
+   */
+  gulp.task('js:rev', () => {
+    let pattern = utils.createPattern({
+      ...assets.js,
+      rootpath
+    });
 
-/**
- * svg revision
- */
-gulp.task('svg:rev', () => {
-  let paths = utils.getResourcePath(assets.svg);
-  return gulp.src(paths.revsrc, {base: basedir})
-    .pipe(channel());
-});
+    return resourceRevTask(pattern.target);
+  });
 
-gulp.task('other:rev', (done) => {
+  gulp.task('other:rev', (done) => {
+    let tasks = assets.other.filter((item) => {
+      let pattern = utils.createPattern({
+        ...item,
+        rootpath
+      });
 
-  let paths = utils.getOtherResourcePath(),
-    otherTask = paths.map((resource) => {
-      if(resource.useHash){
+      if (item.useHash) {
         return new Promise((resolve, reject) => {
-          gulp.src(resource.revsrc, {base: basedir})
+          gulp.src(pattern.target, {base: basedir})
+            .pipe(plugins.changed(opts.dir))
             .pipe(channel())
             .on('end', resolve)
             .on('error', reject);
         });
-      } else {
-        return new Promise((resolve, reject) => {
-          let str = JSON.stringify(buildManifest(resource.revsrc));
-          try {
-            fs.writeFileSync(config.manifest, str);
-            resolve();
-          } catch(e){
-            reject(e.message);
-          }
-        });
       }
+
+      return false;
     });
 
-  Promise.all(otherTask).then(() => {
-    done();
-  })
-  .catch((err) => {
-    done(err);
-  });;
-});
-
-/**
- * css revision
- */
-gulp.task('css:rev', () => {
-  let paths = utils.getResourcePath(assets.css);
-  return revision(paths.revsrc);
-});
-
-/**
- * js revision
- */
-gulp.task('js:rev', () => {
-  let paths = utils.getResourcePath(assets.js);
-  return revision(paths.revsrc);
-});
-
-function templateRevisionTask(paths, ext){
-  let manifest = gulp.src(config.manifest);
-
-  return gulp.src(paths.revsrc)
-    .pipe(plugins.revReplace({
-      prefix: config.domain || '',
-      manifest: manifest,
-      replaceInExtensions: ext.map((suffix) => `.${suffix}`)
-    }))
-    .pipe(gulp.dest(paths.target));
-}
-
-gulp.task('html:rev', () => {
-  let paths = utils.getResourcePath(assets.html);
-  return templateRevisionTask(paths, assets.html.extensions);
-});
-
-/**
- * 替换模板中的资源路径
- */
-gulp.task('tpl:rev', () => {
-  let paths = utils.getTemplatePath(config.tpl);
-  return templateRevisionTask(paths, config.tpl.extensions);
-});
-
-/**
- * 回收无用的静态资源，根据rev-manifest.json文件中的key删除原本的资源文件，保留增加了版本号的资源
- * @todo 当资源表中K/V一致时保留原文件
- */
-gulp.task('assets:gc', (done) => {
-  if(fs.existsSync(config.manifest)){
-    let manifest = {},
-      files = [];
-
-    try {
-      manifest = JSON.parse(fs.readFileSync(config.manifest));
-    }catch(e){
-      throw new Error(e.message);
-    }
-
-    for(var key in manifest){
-      if(manifest.hasOwnProperty(key) && manifest[key] !== key){
-        files.push(path.join(basedir, key));
-      }
-    }
-
-    del(files).then(() => {
+    Promise.all(tasks).then(() => {
       done();
+    })
+    .catch((err) => {
+      done(err);
     });
-  } else {
-    done();
+  });
+
+  /**
+   * HTML/模板文件替换hash文件名的task
+   */
+  function htmlRevTask(pattern, ext) {
+    let manifest = gulp.src(config.manifest);
+
+    return gulp.src(pattern.target)
+      .pipe(plugins.changed(pattern.destPath))
+      .pipe(plugins.revReplace({
+        manifest,
+        replaceInExtensions: ext.map((suffix) => `.${suffix}`)
+      }))
+      .pipe(gulp.dest(pattern.destPath));
   }
-});
+
+  gulp.task('html:rev', () => {
+    let pattern = utils.createPattern({
+      ...assets.html,
+      rootpath
+    });
+
+    return htmlRevTask(pattern, assets.html.extensions);
+  });
+
+  /**
+   * 替换模板中的资源路径
+   */
+  gulp.task('tpl:rev', () => {
+    let pattern = utils.createPattern({...config.tpl});
+
+    return htmlRevTask(pattern, config.tpl.extensions);
+  });
+
+  /**
+   * 文件名hash后产生新文件，删除旧文件。
+   */
+  gulp.task('clean:hashgarbage', (done) => {
+    if (utils.existsSync(config.manifest)) {
+      let manifest = {},
+        files = [];
+
+      try {
+        manifest = JSON.parse(fs.readFileSync(config.manifest, 'utf8'));
+      } catch (err) {
+        done(err);
+      }
+
+      for (let key in manifest) {
+        if (manifest.hasOwnProperty(key)) {
+          files.push(path.join(basedir, key));
+        }
+      }
+
+      del(files).then(() => {
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
+    } else {
+      done();
+    }
+  });
+}

@@ -1,7 +1,9 @@
 {
-    "externalHelpers": true,
-    "optional": [
-        "es7.classProperties",
-        "es7.decorators"
-    ]
+  "presets": [
+    "es2015",
+    "stage-2"
+  ],
+  "plugins": [
+    "transform-runtime"
+  ]
 }

@@ -12,10 +12,10 @@ import buffer from 'vinyl-buffer';
 import browserify from 'browserify';
 import watchify from 'watchify';
 import babelify from 'babelify';
-import loadPlugins from 'gulp-load-plugins';
 import mkdirp from 'mkdirp';
 import chalk from 'chalk';
 import glob from 'glob';
+import loadPlugins from 'gulp-load-plugins';
 
 const plugins = loadPlugins();
 
@@ -33,7 +33,7 @@ export default function(assets, debug) {
    * @type {Array}
    */
   let entries = srcdir.reduce((arr, v) => {
-      let globs = glob.sync(
+      let files = glob.sync(
         path.join(
           assets.rootpath.src,
           v,
@@ -41,7 +41,7 @@ export default function(assets, debug) {
         )
       );
 
-      return [...arr, ...globs];
+      return [...arr, ...files];
     }, []),
     /**
      * 打包后输出目录
@@ -55,15 +55,18 @@ export default function(assets, debug) {
     packager = browserify({
       cache: {},
       packageCache: {},
-      entries: entries,
-      debug: debug,
+      entries,
+      debug,
       paths: assets.js.modulesDirectories
     }).transform(babelify),
     /**
      * 提取需要删除的部分路径
      * @type {String}
      */
-    delpaths = srcdir.map((v) => path.join(assets.rootpath.src, v)).join('|').replace(/\\/, '\\\\'),
+    delpaths = srcdir
+      .map((v) => path.join(assets.rootpath.src, v))
+      .join('|')
+      .replace(/\\/, '\\\\'),
     /**
      * 生成一个需要删除路径的正则
      * @type {RegExp}
@@ -79,29 +82,27 @@ export default function(assets, debug) {
      * @type {Array}
      */
     outputs = entries.reduce((arr, v) => {
-      var filepath = path.join(destdir, path.join(v).replace(regex, ''));
+      let filepath = path.join(destdir, path.join(v).replace(regex, ''));
       outputdir.push(path.dirname(filepath));
       arr.push(filepath);
       return arr;
     }, []);
 
-  packager.plugin('factor-bundle', {
-    outputs: outputs
-  });
+  packager.plugin('factor-bundle', {outputs});
 
   let bundle = () => {
-    outputdir.forEach(dir => mkdirp.sync(dir));
+    outputdir.forEach((dir) => mkdirp.sync(dir));
 
     return packager
       .bundle()
       .on('error', function(e) {
         // print browserify or babelify error
-        console.log(chalk.red('\nBrowserify or Babelify error:\n' + e.message));
-        this.emit('end');
+        console.log(chalk.red(`\nBrowserify or Babelify error:\n${e.message}`));
+        this.end();
       })
       .pipe(source(assets.js.commonChunk))
       .pipe(buffer())
-      .pipe(plugins.if(!debug, plugins.uglify().on('error', function(){
+      .pipe(plugins.if(!debug, plugins.uglify().on('error', function() {
         this.end();
       })))
       .pipe(gulp.dest(destdir))
@@ -112,7 +113,7 @@ export default function(assets, debug) {
           gulp.src(outputs, {
             base: './'
           })
-          .pipe(plugins.uglify().on('error', function(){
+          .pipe(plugins.uglify().on('error', function() {
             this.end();
           }))
           .pipe(gulp.dest('./'))
@@ -125,19 +126,17 @@ export default function(assets, debug) {
 
   return (mode, cb) => {
     if (typeof mode === 'function') {
-      cb = mode;
-    }
-
-    if (mode === 'watch') {
+      done = mode;
+    } else if (mode === 'watch') {
       packager = watchify(packager);
       packager.on('update', bundle);
       packager.on('log', (msg) => {
         console.log(chalk.green(msg));
       });
-    }
 
-    if (typeof cb === 'function') {
-      done = cb;
+      if (typeof cb === 'function') {
+        done = cb;
+      }
     }
 
     return bundle();
