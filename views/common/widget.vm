@@ -1,0 +1,183 @@
+
+#macro(gridsum)
+<!-- Gridsum tracking code begin. -->
+<script type='text/javascript'>
+  window._gsq = window._gsq || [];
+  (function () {
+      var s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.async = true;
+      s.src = (location.protocol == 'https:' ? 'https://ssl.' : 'http://static.') + 'gridsumdissector.com/js/Clients/GWD-002544-80065A/gs.js';
+      var    firstScript = document.getElementsByTagName('script')[0];
+      firstScript.parentNode.insertBefore(s, firstScript);
+  })();
+
+  function gsTrackPage(path) {
+      if (window._gsTracker) {
+          _gsTracker.track(path);
+
+      } else {
+          window._gsq.push(['track', path]);
+      }
+  }
+
+  function gsTrackEvent(category, name, detail) {
+      if (window._gsTracker) {
+          _gsTracker.trackEvent(category, name, detail);
+
+      } else {
+          window._gsq.push(['trackEvent', category, name, detail]);
+      }
+  }
+</script>
+<!--Gridsum tracking code end. -->
+#end
+
+#macro(toolbar)
+<div class="toolbar" id="toolbar">
+  <div class="toolbar-tabs" id="toolbarTabs">
+    <div class="toolbar-tab-item pull-item toolbar-calculator-btn" data-item="calculator">
+      <a class="icon-calculator"></a>
+    </div>
+    <div class="toolbar-tab-item toolbar-earnings-btn">
+      <a href="/bxt/showAssets.html">
+        <span class="icon-purse"></span>
+        <span class="earnings-btn-content">变现通收益</span>
+      </a>
+    </div>
+    <div class="toolbar-tab-item toolbar-backtop" onclick="window.scrollTo(document.body.scrollLeft, 0)">
+      <span class="icon-backtop"></span>
+    </div>
+  </div>
+  <div class="toolbar-content" id="toolbarContent">
+    <div class="toolbar-calculator" data-content="calculator">
+      <div class="toolbar-calculator-title">
+        <h3>计算器</h3>
+      </div>
+      <div class="calculator-content">
+        <div class="investment-plate" id="investmentPlate">
+          <div class="calculator-form-group special-form-group column-4">
+            <label>预期年化收益率</label>
+            <div class="calculator-form-control">
+              <input type="text" class="use-unit-control" id="calculatorAnnualRate">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <div class="calculator-form-group column-horizontal column-7 column-right">
+            <label>投资日期</label>
+            <div class="calculator-form-control datepicker-control">
+              <input type="text" id="calculatorInvestmentDate" readonly>
+            </div>
+            <span id="calculatorInvestmentDateBtn" class="datepicker-choose-btn"></span>
+          </div>
+          <div class="calculator-form-group column-horizontal column-7 column-right" id="calculatorDueDaysContainer">
+            <label>到期天数</label>
+            <div class="calculator-form-control">
+              <input type="text" id="calculatorDueDays">
+            </div>
+          </div>
+          <div class="calculator-form-group column-horizontal column-7 column-right" id="calculatorDueDateContainer" style="display:none">
+            <label>到期日期</label>
+            <div class="calculator-form-control datepicker-control">
+              <input type="text" id="calculatorDueDate" readonly>
+            </div>
+            <span id="calculatorDueDateBtn" class="datepicker-choose-btn"></span>
+          </div>
+          <div class="calculator-form-group column-12 column-right">
+            <input type="checkbox" class="calculator-checkbox" id="calculatorUseDueDate" autocomplete="off">
+            <label for="calculatorUseDueDate">选择到期日期</label>
+          </div>
+          <div class="calculator-form-group column-12">
+            <div class="calculator-form-control special">
+              <input type="text" class="use-unit-control" placeholder="购买金额" id="calculatorBuyAmount">
+              <span class="unit">元</span>
+            </div>
+          </div>
+        </div>
+        <div class="cash-plate" id="cashPlate">
+          <div class="calculator-form-group column-4">
+            <div class="calculator-form-control">
+              <input type="text" class="use-unit-control" id="calculatorCashRate" placeholder="变现利率">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <div class="calculator-form-group column-5 column-right" id="calculatorCashDaysContainer">
+            <div class="calculator-form-control">
+              <input type="text" class="use-unit-control" id="calculatorCashDays" placeholder="持有天数">
+              <span class="unit">天</span>
+            </div>
+          </div>
+          <div class="calculator-form-group column-5 column-right no-label-control" id="calculatorCashDateContainer" style="display:none">
+            <div class="calculator-form-control datepicker-control">
+              <input type="text" id="calculatorCashDate" placeholder="变现日期" readonly>
+            </div>
+            <span id="calculatorCashDateDate" class="datepicker-choose-btn"></span>
+          </div>
+          <div class="calculator-form-group column-12 column-right">
+            <input type="checkbox" class="calculator-checkbox" id="calculatorUseCashDate" autocomplete="off">
+            <label for="calculatorUseCashDate">选择变现日期</label>
+          </div>
+          <div class="calculator-form-group column-12">
+            <div class="calculator-form-control special">
+              <input type="text" class="use-unit-control" placeholder="变现金额" id="calculatorCashAmount">
+              <span class="unit">元</span>
+            </div>
+          </div>
+          <div class="calculator-tips" id="calculatorTips"></div>
+        </div>
+        <div class="calculator-opeartion">
+          <input type="button" value="快速计算" class="calculator-calculate" id="calculatorCalculate">
+          <input type="button" value="重置" class="calculator-reset" id="calculatorReset">
+        </div>
+        <div class="calculate-result">
+          <div class="result-plate" id="investmentResult">
+            <ul>
+              <li>
+                <span class="result-item-label">起息日:</span>
+                <div class="result-item-content" id="interestDate"></div>
+              </li>
+              <li>
+                <span class="result-item-label">可变现日:</span>
+                <div class="result-item-content" id="realizableDate"></div>
+              </li>
+              <li>
+                <span class="result-item-label">预估到期本息:</span>
+                <div class="result-item-content">￥<span id="estimatePrincipalAndInterest">0.00</span></div>
+              </li>
+            </ul>
+          </div>
+          <div class="result-plate" id="cashResult">
+            <div class="cash-tips">若持有<span id="holdingsDays">0</span>天后申请变现</div>
+            <ul>
+              <li>
+                <span class="result-item-label">预估最晚到帐日:</span>
+                <div class="result-item-content" id="lastDay"></div>
+              </li>
+              <li>
+                <span class="result-item-label">预估到帐金额:</span>
+                <div class="result-item-content">￥<span id="estimateAmount">0.00</span></div>
+              </li>
+              <li class="result-all-cash">
+                <span class="result-item-label">投资实际收益:</span>
+                <div class="result-item-content">￥<span id="realEarnings">0.00</span></div>
+              </li>
+              <li class="result-all-cash">
+                <span class="result-item-label">实际年化收益率:</span>
+                <div class="tooltips rate-question" data-tips="实际年化收益率=实际收益*365/投资本金/持有天数">
+                  <span class="icon-question"></span>
+                  <i></i>
+                </div>
+                <div class="result-item-content"><span id="realAnnualRate">0.00</span>%</div>
+              </li>
+              <li class="result-part-cash">
+                <span class="result-item-label">剩余到期本息:</span>
+                <div class="result-item-content">￥<span id="remainDuePrincipalAndInterest">0.00</span></div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+#end

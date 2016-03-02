@@ -1,0 +1,54 @@
+<div class="topbar">
+  <div class="topbar-content">
+    <div class="hotline">服务热线：400-078-9900</div>
+    <div class="top-navbar">
+      <div class="login-area">
+        #if($onlineInfo)
+        <a href="/assets/index.shtml" class="user-name">
+          #if($onlineInfo.realNameView)
+          $!{onlineInfo.realNameView}
+          #else
+          $!{onlineInfo.mobileView}
+          #end
+        </a>
+        <span>, 您好</span>
+        <a href="/bxt/user/logout.html?product=bxt" data-before-href="//www.itoumi.com/logoutbxt.jspx" data-id="$!{userIdEncrypt}" id="logout" rel="nofollow">安全退出</a>
+        #else
+        <a href="/bxt/user/login.html" id="login" rel="nofollow">登录</a>
+        <a href="/register.shtml" rel="nofollow">注册</a>
+        #end
+      </div>
+      <div class="quick-area">
+        <a href="/help.shtml?type=%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%22">帮助中心</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="header">
+  <div class="header-content">
+    <div class="logo">
+      <a href="/">
+        <span class="logo-icon">投米</span>
+        <span>宜信<sup>&reg;</sup>旗下互联网金融服务平台</span>
+      </a>
+    </div>
+    <div class="nav">
+      <ul id="navigation">
+        <li><a href="/">首页</a></li>
+        <li>
+          <a href="/invest.shtml" class="use-arrow">我要理财</a>
+          <div class="sub-nav">
+            <ul>
+              <li><a href="/lt.shtml">零投宝</a></li>
+              <li><a href="/cbb.shtml">猜宝宝</a></li>
+              <li><a href="/hdb.shtml">还贷宝</a></li>
+              <li><a href="/sxb/index.html?param=$!{userId}">随心宝</a></li>
+            </ul>
+          </div>
+        </li>
+        <li><a href="/bxt/index.html">变现专区</a></li>
+        <li><a href="/safeguard.shtml">安全保障</a></li>
+      </ul>
+    </div>
+  </div>
+</div>

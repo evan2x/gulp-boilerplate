@@ -1,0 +1,203 @@
+/**
+ * Copyright 2015 creditease Inc. All rights reserved.
+ * @desc 公共样式
+ * @author aiweizhang(aiweizhang@creditease.cn)
+ * @date 2015/11/22
+ */
+
+@charset "utf-8";
+
+body {
+  background-color: #f1f1f1;
+  min-width: 1190px; /* 小于1190px的屏幕保持1190px显示，显示出横向滚动条 */
+}
+
+@font-face {
+	font-family: 'icon';
+	src:url('/assets/font/icon.eot');
+	src:url('/assets/font/icon.eot#iefix') format('embedded-opentype'),
+		url('/assets/font/icon.ttf') format('truetype'),
+		url('/assets/font/icon.woff') format('woff'),
+		url('/assets/font/icon.svg#icomoon') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+[class^="icon-"]:before, [class*=" icon-"]:before {
+	font-family: 'icon';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.icon-backtop:before {
+    content: "\e90e";
+}
+.icon-calculator:before {
+  content: "\e90c";
+}
+.icon-purse:before {
+  content: "\e90d";
+}
+.icon-minus:before {
+  content: "\e909";
+}
+.icon-plus:before {
+  content: "\e90a";
+}
+.icon-question:before {
+  content: "\e90b";
+}
+.icon-battery:before {
+  content: "\e900";
+}
+.icon-card:before {
+  content: "\e901";
+}
+.icon-clock:before {
+  content: "\e902";
+}
+.icon-dollar:before {
+  content: "\e903";
+}
+.icon-gold:before {
+  content: "\e904";
+}
+.icon-horns:before {
+  content: "\e905";
+}
+.icon-indicatrix:before {
+  content: "\e906";
+}
+.icon-keyboard:before {
+  content: "\e907";
+}
+.icon-users:before {
+  content: "\e908";
+}
+
+.clearfix:after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+.tooltips {
+  display: inline-block;
+  position: relative;
+  cursor: default;
+}
+
+.tooltips:hover:after {
+  content: attr(data-tips);
+  display: block;
+  position: absolute;
+  left: -50px;
+  bottom: 100%;
+  margin-bottom: 6px;
+  color: #cd6600;
+  background-color: #fcf8e3;
+  border: 1px solid #f7dfad;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 5px;
+  white-space: pre;
+  line-height: 1.5;
+}
+.tooltips:hover:before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  display: inline-block;
+  width: 0;
+  height: 0;
+  left: 2px;
+  top: -7px;
+  border: 6px dotted transparent;
+  border-top-style: solid;
+  border-top-color: #f7dfad;
+}
+
+.tooltips > i {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.tooltips:hover > i {
+  display: block;
+  z-index: 1;
+  left: 3px;
+  top: -7px;
+  border: 5px dotted transparent;
+  border-top-style: solid;
+  border-top-color: #fcf8e3;
+}
+
+.main {
+  background: url(/assets/img/bg.png) repeat-x;
+  min-height: 600px;
+  background-size: 100% auto;
+  overflow: hidden;
+}
+
+.main-content {
+  width: 1190px;
+  margin: 0 auto;
+}
+
+.bold-font {
+  font-weight: bold;
+}
+
+.unit {
+  margin-left: 3px;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+/* 对话框中的iframe，目前用于协议的展示 */
+.dialog-iframe {
+  width: 100%;
+  height: 500px;
+  border: none;
+}
+
+/* 选项卡通用样式 */
+.tabs {
+  margin-bottom: 10px;
+}
+
+.tabs ul {
+  overflow: hidden;
+}
+
+.tabs li {
+  float: left;
+  padding: 0 20px;
+  height: 30px;
+  line-height: 30px;
+  font-size: 14px;
+  background-color: #f6f6f6;
+  color: #333;
+  cursor: pointer;
+}
+
+.tabs li.active,
+.tabs li:hover {
+  background-color: #0aa8ec;
+  color: #fff;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}

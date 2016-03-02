@@ -1,0 +1,127 @@
+/**
+ * Copyright 2015 creditease Inc. All rights reserved.
+ * @desc 投资流程公用样式模块
+ * @author aiweizhang(aiweizhang@creditease.cn)
+ * @date 2015/11/22
+ */
+
+@charset "utf-8";
+
+.invest-flow {
+  background-color: #0aa8ec;
+  padding: 40px 0 30px 36px;
+  margin-top: 20px;
+  color: #fff;
+}
+
+.invest-flow-label {
+  height: 38px;
+  float: left;
+  line-height: 38px;
+}
+
+.invest-flow-label:before {
+  content: '';
+  width: 18px;
+  height: 38px;
+  background: url(/assets/img/flow_bg.png) no-repeat -1px -1px;
+  float: left;
+}
+
+.invest-flow-label span {
+  float: left;
+  display: block;
+  height: 100%;
+  padding: 0 6px;
+  background-color: #99ddff;
+  font-size: 20px;
+}
+
+.invest-flow-label:after {
+  content: '';
+  display: block;
+  height: 38px;
+  width: 33px;
+  background: url(/assets/img/flow_bg.png) no-repeat -2px -42px;
+  float: right;
+}
+
+.invest-flow-content {
+  position: relative;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+.invest-flow-content:before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  width: 88%;
+  border-bottom: 2px solid #99ddff;
+}
+
+.invest-flow-content ul {
+  overflow: hidden;
+  padding-left: 50px;
+}
+
+.invest-flow-content li {
+  float: left;
+  width: 25%;
+  position: relative;
+  padding-top: 40px;
+}
+
+.point-name,
+.point-dot {
+  display: block;
+  margin: 0 auto;
+}
+
+.point-dot {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  background: url(/assets/img/flow_bg.png) no-repeat 0 -116px;
+}
+
+.point-dot.current {
+  width: 32px;
+  top: 3px;
+
+  height: 33px;
+  background-position: -1px -82px;
+}
+
+.point-name {
+  text-align: center;
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 2) {
+  .invest-flow-label:before,
+  .invest-flow-label:after,
+  .point-dot {
+    background-image: url(/assets/img/flow_bg@2x.png);
+  }
+
+  .invest-flow-label:before {
+    background-size: 36px 135px;
+  }
+
+  .invest-flow-label:after {
+    background-size: 36px 134px;
+  }
+
+  .point-dot {
+    background-size: 35px 131px;
+    background-position: 0 -114px;
+  }
+
+  .point-dot.current {
+    height: 32px;
+    background-position: -1px -81px;
+  }
+}

@@ -1,0 +1,106 @@
+/**
+ * Copyright 2015 creditease Inc. All rights reserved.
+ * @desc 变现历史样式
+ * @author aiweizhang(aiweizhang@creditease.cn)
+ * @date 2015/11/22
+ */
+
+@charset "utf-8";
+
+.main-content {
+  background-color: #fff;
+  margin-top: 20px;
+}
+
+.product-title {
+  padding: 30px 0;
+}
+
+.product-name {
+  float: left;
+  font-size: 24px;
+  color: #666;
+  border-right: 1px solid #ccc;
+  padding: 0 20px;
+  min-width: 100px;
+  line-height: 24px;
+}
+
+.product-other {
+  overflow: hidden;
+  position: relative;
+  min-height: 24px;
+  line-height: 24px;
+}
+
+.product-other:before {
+  content: '';
+  display: block;
+  height: 0;
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  right: 20px;
+  border-bottom: 1px dotted #ccc;
+}
+
+.what-is-cash {
+  background-color: #fff;
+  padding-left: 10px;
+  position: relative;
+  z-index: 1;
+  float: right;
+  font-size: 12px;
+  color: #0099ff;
+}
+
+.cash-analysis {
+  background-color: #0aa8ec;
+  color: #fff;
+}
+
+.cash-analysis ul {
+  padding: 10px 0;
+}
+
+.cash-analysis li {
+  float: left;
+  width: 20%;
+  border-left: 1px solid #42bcf1;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.cash-analysis li:first-child {
+  border-left: none;
+}
+
+.analysis-label {
+  font-size: 14px;
+  text-align: left;
+  padding: 10px 45px 5px;
+}
+
+.analysis-content {
+  font-size: 30px;
+  padding: 10px 5px;
+  min-height: 40px;
+}
+
+.expire-date {
+  font-size: 22px;
+}
+
+.cash-records {
+  padding: 30px;
+}
+
+.cancel-cash-btn {
+  font-size: 12px;
+  color: #0aa8ec;
+  cursor: pointer;
+}
+
+.cancel-cash-btn:hover {
+  text-decoration: underline;
+}

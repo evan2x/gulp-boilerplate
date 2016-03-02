@@ -1,0 +1,135 @@
+/**
+ * Copyright 2015 creditease Inc. All rights reserved.
+ * @desc 公共底部样式
+ * @author aiweizhang(aiweizhang@creditease.cn)
+ * @date 2015/11/22
+ */
+
+@charset "utf-8";
+
+.footer-hd {
+  padding: 40px 0;
+}
+
+.footer-bd {
+  padding: 30px 0 80px;
+}
+
+.footer-content {
+  width: 1190px;
+  margin: 0 auto;
+}
+
+.footer-content:after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+.footer-nav {
+  float: left;
+  padding-left: 20px;
+}
+
+.footer-nav-item {
+  float: left;
+  margin-right: 30px;
+}
+
+.footer-nav-item a:hover,
+.footer-nav-item span:hover {
+  text-decoration: underline;
+}
+
+.footer-nav-item span {
+  cursor: pointer;
+}
+
+.footer-nav-item dt {
+  margin-bottom: 10px;
+}
+
+.footer-nav-item dd {
+  font-size: 12px;
+}
+
+.footer-nav-item dd li {
+  height: 28px;
+  line-height: 28px;
+}
+
+.qrcode-group {
+  float: right;
+  padding-right: 80px;
+}
+
+.qrcode-item {
+  float: left;
+  margin-left: 30px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.qrcode-item dd {
+  height: 30px;
+  line-height: 30px;
+}
+
+.qrcode-item img {
+  vertical-align: middle;
+}
+
+.certification {
+  float: left;
+  padding-left: 20px;
+}
+
+.copyright {
+  margin-bottom: 30px;
+}
+
+.service {
+  float: right;
+  padding-right: 80px;
+}
+
+.service .hotline {
+  float: none;
+}
+
+.certification,
+.service {
+  font-size: 14px;
+}
+
+.organization {
+  overflow: hidden;
+}
+
+.organization a {
+  float: left;
+  margin-right: 10px;
+}
+
+.organization a img {
+  vertical-align: middle;
+}
+
+.service .hotline {
+  font-size: 32px;
+}
+
+.service .hotline:before {
+  content: '';
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  background: url(/assets/img/customer_service.png) no-repeat 50% 50%;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+.working-hour {
+  font-size: 12px;
+  text-align: center;
+}

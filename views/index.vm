@@ -1,0 +1,248 @@
+#set($layout = "/common/layout.vm")
+
+## TDK 设置
+#set($title = "$!{title}")
+#set($description = "$!{description}")
+#set($keywords = "$!{keywords}")
+
+#define($head)
+<script>
+  var __GLOBAL_CONFIG__ = {
+    DEGREE_OF_DIFFICULTY: '$!{bidCoef}'
+  }
+</script>
+<!-- build:css /assets/css/components.css -->
+<link rel="stylesheet" href="/dist/assets/css/common/components.css">
+<!-- endbuild -->
+<link rel="stylesheet" href="/dist/assets/css/index.css" inline>
+<!--[if IE 8]>
+<style>
+  .gauge-annular, .gauge-pointer {background: none;}
+  .gauge-annular {top: 14px;}
+</style>
+<![endif]-->
+#end
+
+#define($body)
+## 页头
+#parse('/common/header.vm')
+
+<div class="banner">
+  <ul class="banner-content" id="slider">
+    <li>
+      <a href="/bxt/introduction.html">
+        <img src="/assets/img/banner_1.jpg" height="360">
+      </a>
+    </li>
+  </ul>
+  <div class="gauge">
+    <div class="gauge-annular" id="gaugeAnnular">
+      <!--[if IE 8]>
+        <img src="/assets/img/gauge_annular_ie8.png" width="402" height="418">
+      <![endif]-->
+    </div>
+    <div class="gauge-mask"></div>
+    <div class="gauge-dial-plate"></div>
+    <div class="gauge-pointer" id="gaugePointer">
+      <!--[if IE 8]>
+        <img src="/assets/img/gauge_pointer_ie8.png" width="310" height="310">
+      <![endif]-->
+    </div>
+    <div class="gauge-dial-plate-content">
+      <span class="gauge-text" id="gaugeIndex">0</span>
+      <span class="gauge-tips">今日抢标难易指数</span>
+    </div>
+  </div>
+</div>
+#if($recordList)
+<div class="notice bold-font">
+  <div class="notice-content icon-horns">
+    <div class="close-composited-layer">
+      <ul id="notice">
+        #foreach($record in $recordList)
+        <li>
+          今日手机号$!{record.mobile}的用户#if($record.type == 0)变现#else购买#end了$!{number.format('#,##0.00', $record.amount)}元
+        </li>
+        #end
+      </ul>
+    </div>
+  </div>
+</div>
+#end
+<div class="main">
+  <div class="main-content">
+    <div class="index-analysis clearfix">
+      <div class="analysis-item icon-gold">
+        <span class="analysis-label">累计变现金额：</span>
+        <div class="analysis-result bold-font">$!{sumAmount}</div>
+      </div>
+      <div class="analysis-item icon-dollar">
+        <span class="analysis-label">昨日交易金额：</span>
+        <div class="analysis-result bold-font">$!{number.format('#,##0', $yesterdayAmount)}<span class="unit">元</span></div>
+      </div>
+      <div class="analysis-item icon-indicatrix">
+        <span class="analysis-label">昨日变现平均利率：</span>
+        <div class="analysis-result bold-font">$!{number.format('0.00', $yesterAverageRate)}<span class="unit">%</span>
+        </div>
+      </div>
+      <div class="analysis-item icon-users">
+        <span class="analysis-label">累计参与人数：</span>
+        <div class="analysis-result bold-font">$!{number.format('#,##0', $totalPeople)}<span class="unit">人</span></div>
+      </div>
+    </div>
+    <div class="buy-flow clearfix">
+      <dt>
+        <span class="icon-card"></span>
+        <span class="flow-title">投资流程</span>
+      </dt>
+      <dd>
+        <img src="/assets/img/buy_flow.png" alt="">
+      </dd>
+    </div>
+    <div class="main-body clearfix">
+      <div class="main-sidebar-wrap">
+        <div class="main-sidebar" id="mainSidebar">
+          <ul id="sidebarTabs" class="sidebar-tabs">
+            <li class="active" data-tag="today">
+              <span class="icon-clock"></span>
+              <span class="tab-text">今日在售</span>
+            </li>
+            <li data-tag="yesterday">
+              <span class="icon-battery"></span>
+              <span class="tab-text">昨日满标</span>
+            </li>
+            <li data-tag="history">
+              <span class="icon-keyboard"></span>
+              <span class="tab-text">历史满标</span>
+            </li>
+          </ul>
+          #*<div class="friendship-mark">
+            <div class="friendship-icon">
+              <img src="/assets/img/friendship_mark.png" width="34" height="34">
+              <span>友情标</span>
+            </div>
+            <div class="search-subscription-code">
+              <input type="text" class="subscription-input" placeholder="输入友情认购码">
+              <input type="button" class="subscription-btn" value="GO">
+            </div>
+            <div class="what-is-it">
+              <a href="#">什么是友情标？</a>
+            </div>
+          </div>*#
+        </div>
+      </div>
+      <div class="sidebar-tabs-panel-group" id="sidebarTabsPanelGroup">
+        <div class="tab-panel sidebar-tab-panel active">
+          <div class="sidebar-tab-header">
+            <h2 class="bold-font">今日在售</h2>
+            <div class="product-tips">
+              <span class="hand-down">
+                <img src="/assets/img/hand_down.png" width="20" height="24">
+              </span>
+              <span>以下所有产品投资<i class="bold-font">1</i>天<sub>(工作日)</sub>后可申请变现</span>
+            </div>
+          </div>
+          ## 过滤器
+          <div class="product-filter" id="todayFilter"></div>
+          ## 今日在售数据表
+          <div class="product-table" id="todayTable"></div>
+          ## 分页
+          <div class="product-pagination" id="todayPagination"></div>
+        </div>
+        <div class="tab-panel sidebar-tab-panel">
+          <div class="sidebar-tab-header">
+            <h2>昨日满标</h2>
+          </div>
+          ## 昨日满标数据表
+          <div class="product-table" id="yesterdayTable"></div>
+          ## 分页
+          <div class="product-pagination" id="yesterdayPagination"></div>
+        </div>
+        <div class="tab-panel sidebar-tab-panel">
+          <div class="sidebar-tab-header">
+            <h2>历史满标</h2>
+          </div>
+          ## 历史满标数据表
+          <div class="product-table" id="historyTable"></div>
+          ## 分页
+          <div class="product-pagination" id="historyPagination"></div>
+        </div>
+      </div>
+    </div>
+    <div class="question-center">
+      <div class="question-title">
+        <h3>问题中心</h3>
+      </div>
+      <div class="tabs question-tabs">
+        <ul id="questionTabs">
+          <li class="active">常见问题</li>
+          <li>变现问题</li>
+          <li>购买问题</li>
+        </ul>
+      </div>
+      <div class="tabs-panel-group question-tabs-panel-group" id="questionTabsPanelGroup">
+        <div class="tab-panel active">
+          <dl class="question-list">
+            <dt>购买变现贷后何时可以变现？</dt>
+            <dd>成功购买变现贷后的下一个工作日即可发起变现，例如：您在周五成功购买了变现贷产品，那么在下周一您就可以发起变现申请。</dd>
+            <dt>发起变现后，如未满标，如何处理？</dt>
+            <dd>用户发起变现后，如未满标，则按照当日实际成交金额为准，成交多少金额，则变现成功多少金额。变现成功的金额通常第二个工作日转出到用户银行卡。未变现成功部分，可以在第二日再次发起变现。</dd>
+            <dt>什么是变现通？</dt>
+            <dd>变现通是投米平台为了增加投资人的资金流动性而提供的服务。</dd>
+            <dt>变现通能为我带来什么便利？</dt>
+            <dd>变现通服务能满足您的高流动性需求，当您急需资金不想继续投资时，可以通过发起变现的方式赎回您的投资，并且在优惠期内不需要支付任何费用。</dd>
+            <dt>日常生活中，什么时候需要变现通？</dt>
+            <dd>在日常生活中，您每月为偿还信用卡、房贷、房租时，可能都会预先准备一笔钱，这些钱放在银行卡里是不产生收益的。这时，您可以用来购买变现通，并在付款日前通过变现的方式赎回。既不耽误还贷，又能产生收益。</dd>
+            <dt>如果在变现或者购买过程中遇到问题，该如何解决？</dt>
+            <dd>首先，您遇到的任何问题都不用着急，首先会保证您资金和操作的安全。如遇到问题，您可以拨打全国免费咨询电话：400-078-9900 进行咨询，我们也会竭诚为您服务。</dd>
+          </dl>
+        </div>
+        <div class="tab-panel">
+          <dl class="question-list">
+            <dt>什么是部分变现成功？</dt>
+            <dd>用户在变现通平台进行变现，不论是否满标，都算作变现成功。即当天发布的变现贷被购买多少金额，则成交多少金额。未成交部分在第二日可以再次发起变现。变现详情可以进入变现通收益页和变现记录页查看。变现成功部分通常在第二个工作日转出到用户的银行卡。</dd>
+            <dt>什么是变现？</dt>
+            <dd>变现服务是在投米平台或者变现通平台购买的可变现产品后，如果在产品到期日前，有急用钱的需求，则可以通过变现的方式获得资金。变现成功后，资金将转出到您绑定的银行卡中。</dd>
+            <dt>我申请变现就一定可以成功吗？</dt>
+            <dd>不一定。您申请发布的变现产品在有效期内被投资人所购买后才会变现成功，在有效期内如果没有被购买，则变现不成功，但不会影响原先投米产品的每日收益。</dd>
+            <dt>如何提高我的变现成功率？</dt>
+            <dd>
+              <ol>
+                <li>适当地提高变现利率：可以引起更多投资人的关注而被购买，即可以变现成功。</li>
+                <li>尽早发起变现：您发起的变现在当天晚上24点前失效，所以尽早发起变现，可以延长被购买时间。</li>
+                <li>提高变现金额：据统计，500元以上的变现更容易被购买，适当提高变现金额，可以提高成功率。</li>
+              </ol>
+            </dd>
+            <dt>变现后何时可以到帐？</dt>
+            <dd>变现成功后，我们承诺3个工作日内到帐，通常在下一个工作日就可以到达您绑定的银行卡。</dd>
+          </dl>
+        </div>
+        <div class="tab-panel">
+          <dl class="question-list">
+            <dt>购买的变现贷未满标，是否会退款？</dt>
+            <dd>不会退款。购买变现贷的用户，无论购买的变现贷产品是否满标，都视为购买成功。</dd>
+            <dt>购买变现贷要收取费用吗？</dt>
+            <dd>购买变现贷不收取任何费用。</dd>
+            <dt>购买变现贷何时开始计算收益？</dt>
+            <dd>购买成功后的第二个工作日开始计算收益。收益可以在投米财富中心左下角“变现贷收益”以及该页面“变现通收益”处查看。</dd>
+            <dt>购买的变现贷可以再次变现吗？</dt>
+            <dd>购买的变现贷都可以再次发起变现。</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+## 页尾
+#parse("/common/footer.vm")
+#end
+
+#define($bodyScript)
+<!-- build:js /assets/js/lib/plugins/jquery.rotate.js -->
+<!--[if IE 8]>
+<script src="/assets/js/lib/plugins/jquery.rotate.js"></script>
+<![endif]-->
+<!-- endbuild -->
+<script src="/dist/assets/js/index/main.js" inline></script>
+#end

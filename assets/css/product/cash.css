@@ -1,0 +1,398 @@
+/**
+ * Copyright 2015 creditease Inc. All rights reserved.
+ * @desc 变现发起页样式
+ * @author aiweizhang(aiweizhang@creditease.cn)
+ * @date 2015/11/22
+ */
+
+@charset "utf-8";
+
+.cp-dialog-content h4 {
+  font-size: 20px;
+  font-weight: normal;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.cp-dialog-content .success-icon {
+  display: block;
+  margin: 10px auto;
+}
+
+.cp-dialog-content p {
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-align: center;
+  color: #666;
+}
+
+.cp-dialog-content .operation-area {
+  margin-bottom: 10px;
+  overflow: hidden;
+  text-align: center;
+  letter-spacing: -6px;
+}
+
+.cp-dialog-content .operation-area a {
+  display: inline-block;
+  width: 140px;
+  margin: 0 15px;
+  letter-spacing: 0;
+  height: 34px;
+  line-height: 34px;
+  text-align: center;
+  background-color: #fafafa;
+  border: 1px solid #999;
+  box-sizing: border-box;
+  color: #666;
+}
+
+.cp-dialog-content .operation-area a.cash-btn-primary {
+  color: #fff;
+  background-color: #f63;
+  border: 1px solid #f63;
+}
+
+.cash-info {
+  background-color: #fff;
+  padding: 20px;
+}
+
+.cash-name {
+  margin-bottom: 10px;
+  font-size: 24px;
+  color: #666;
+  font-weight: normal;
+}
+
+.cash-info-content ul {
+  overflow: hidden;
+}
+
+.cash-info-content li {
+  float: left;
+  width: 25%;
+  border-left: 1px solid #d9ebf3;
+  padding: 10px;
+  box-sizing: border-box;
+  text-align: center;
+  color: #666;
+}
+
+.cash-info li:first-child {
+  border-left: none;
+}
+
+.info-label {
+  width: 70%;
+  margin: 0 auto 10px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.info-content {
+  color: #f63;
+  font-size: 30px;
+}
+
+.info-content .unit {
+  color: #666;
+}
+
+.product-detail {
+  margin: 20px 0;
+  padding: 30px;
+  background-color: #fff;
+}
+
+.detail-title {
+  margin-bottom: 10px; 
+  overflow: hidden;
+}
+
+.detail-title > h3 {
+  float: left;
+  margin-right: 20px;
+  font-size: 30px;
+  color: #666;
+}
+
+.detail-title > em {
+  float: left;
+  margin-top: 20px;
+  color: #f60;
+  font-style: normal;
+  font-size: 12px;
+}
+
+.detail-content {
+  background-color: #f6f6f6;
+  padding: 30px;
+}
+
+.cash-control-group {
+  /*overflow: hidden;*/
+  margin-bottom: 14px;
+  color: #999;
+}
+
+.icon-question {
+  display: inline-block;
+  font-size: 16px;
+  color: #5498dc !important;
+  vertical-align: middle;
+}
+
+.cash-control-group > label {
+  float: left;
+  display: block;
+  min-width: 100px;
+  min-height: 40px;
+  line-height: 40px;
+  font-size: 16px;
+  text-align: right;
+  margin-right: 20px;
+  color: #666;
+}
+
+.cash-control {
+  float: left;
+  max-width: 950px;
+}
+
+.control-input {
+  float: left;
+  border: 1px solid #ccc;
+  padding: 5px 5px 5px 10px;
+  margin-right: 10px;
+  background-color: #fff;
+}
+
+.control-input > input {
+  float: left;
+  padding: 0;
+  border: none;
+  height: 28px;
+  line-height: 28px;
+  color: #666;
+  outline: none;
+  font-size: 16px;
+  width: 160px;
+}
+
+.control-input .unit {
+  display: block;
+  float: left;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  min-width: 24px;
+}
+
+.cash-tips {
+  clear: both;
+  height: 16px;
+  font-size: 12px;
+  color: #0e9ddb;
+}
+
+.rate-btn-group {
+  float: left;
+  margin: 2px 20px 0 0;
+  border: 1px solid #d2d2d2;
+  background-color: #fff;
+  border-radius: 3px;
+}
+
+.rate-btn-group > a {
+  display: block;
+  float: left;
+  width: 38px;
+  height: 32px;
+  color: #ccc;
+  text-align: center;
+  line-height: 35px;
+  overflow: hidden;
+  font-size: 18px;
+}
+
+.rate-btn-group .icon-minus {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+.rate-btn-group .icon-plus {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.rate-btn-group > a:first-child {
+  border-right: 1px solid #d2d2d2;
+}
+
+.rate-btn-group > a:hover {
+  background-color: #0aa8ec;
+  color: #fff;
+}
+
+.rate-btn-group .disabled {
+  cursor: default;
+  color: #ccc !important;
+  background-color: #f3f3f3 !important;
+}
+
+.also-rate {
+  float: left;
+  padding-top: 10px;
+  font-size: 12px;
+}
+
+.also-rate span {
+  color: #f93;
+}
+
+.all-cash {
+  float: left;
+  min-width: 79px;
+  margin: 10px 20px 0 0;
+  font-size: 14px;
+  user-select: none;
+}
+
+.all-cash > label {
+  vertical-align: middle;
+}
+
+.all-cash > input {
+  margin: 0;
+  margin-top: -2px;
+}
+
+.available-cash {
+  float: left;
+  padding-top: 12px;
+  font-size: 12px;
+}
+
+.available-cash > span {
+  color: #f63;
+  font-size: 14px;
+}
+
+.charge-container {
+  padding-top: 11px;
+  font-size: 12px;
+}
+
+.charge {
+  color: #f60;
+  font-size: 14px;
+}
+
+.estimate-amount {
+  float: left;
+  padding-top: 11px;
+  margin-right: 40px;
+  font-size: 14px;
+}
+
+.estimate-amount-money {
+  display: inline-block;
+  margin: -5px 5px 0 0;
+  color: #f60;
+  font-size: 24px;
+  vertical-align: middle;
+}
+
+.also-estimate-amount {
+  float: left;
+  padding-top: 12px;
+  font-size: 12px;
+}
+
+.cash-type {
+  padding-top: 10px;
+  clear: both;
+}
+
+.cash-type-intro {
+  display: inline-block;
+  font-size: 12px;
+}
+
+.cash-type li {
+  padding: 3px 0;
+}
+
+.cash-type li label {
+  color: #666;
+  font-size: 14px;
+}
+
+.agreement-intro {
+  padding-left: 120px;
+  font-size: 12px;
+}
+
+.agreement-intro span {
+  color: #1840ea;
+  margin-right: 3px;
+  cursor: pointer;
+}
+
+.agreement-intro span:hover {
+  text-decoration: underline;
+}
+
+.btn-group {
+  padding-left: 120px;
+  margin-top: 10px;
+}
+
+.btn-primary {
+  background-color: #f60;
+  color: #fff;
+  border: none;
+  width: 320px;
+  height: 56px;
+  font-size: 26px;
+  border-radius: 5px;
+  outline: none;
+}
+
+.btn-primary:hover {
+  background-color: #ff7800;
+}
+
+.btn-disabled {
+  cursor: default !important;
+  background-color: #ccc !important;
+}
+
+.cash-intro {
+  background-color: #fff;
+  padding: 30px;
+  color: #666;
+}
+
+.cash-intro > h3 {
+  margin-bottom: 10px;
+  font-size: 28px;
+}
+
+.cash-intro p {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.cash-intro .highlight {
+  color: #f60;
+  font-style: normal;
+  margin: 0 2px;
+}
+
+.cash-intro > strong {
+  display: block;
+  margin: 20px 0 5px;
+  font-size: 18px;
+}
