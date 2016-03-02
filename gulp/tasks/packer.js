@@ -22,7 +22,7 @@ const plugins = loadPlugins();
 export default function(assets, debug) {
 
   let srcdir = assets.js.src,
-    done = function() {};
+    done = function() {}; // eslint-disable-line
 
   if (!Array.isArray(srcdir)) {
     srcdir = [srcdir];

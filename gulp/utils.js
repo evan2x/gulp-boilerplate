@@ -123,7 +123,7 @@ export function deleteEmptyDir(dir) {
   } else {
     let count = 0,
       file = null;
-    while (file = files[count++]) {
+    while ((file = files[count++])) {
       file = path.join(dir, file);
       if (fs.statSync(file).isDirectory()) {
         deleteEmptyDir(file);
@@ -146,7 +146,7 @@ export function writeWaste(data) {
     }
 
     let oldData = {};
-    
+
     if (existsSync(wasteManifest)) {
       try {
         oldData = JSON.parse(fs.readFileSync(wasteManifest, 'utf8'));
@@ -216,6 +216,24 @@ export function normalizeReferencePath(filePath) {
 }
 
 /**
+ * 拼接两个引用路径
+ * @param  {String} first
+ * @param  {String} second
+ * @return {String}
+ */
+export function concatReferencePath(first, second) {
+  if (first.endsWith('/')) {
+    first = first.slice(0, -1);
+  }
+
+  if (second.startsWith('/')) {
+    second = second.slice(1);
+  }
+
+  return `${first}/${second}`;
+}
+
+/**
  * 将匹配到的资源路径写入到manifest
  * @param  {String}  patterns   file globbing格式
  * @param  {Object} options
@@ -223,9 +241,7 @@ export function normalizeReferencePath(filePath) {
  * @return {Promise}
  */
 export function writeManifest(patterns, options = {}) {
-  let src = normalizeReferencePath(rootpath.src),
-    dest = normalizeReferencePath(rootpath.dest),
-    regex = new RegExp(`^${dest}`, 'g'),
+  let regex = new RegExp(`^${normalizeReferencePath(rootpath.dest)}`, 'g'),
     prefix = options.prefix || '';
 
   return new Promise((resolve, reject) => {
@@ -233,18 +249,12 @@ export function writeManifest(patterns, options = {}) {
       files = patterns.reduce((arr, v) => [...arr, ...glob.sync(v)], []);
 
     files.forEach((v) => {
-      let originalFile = path.join(src, normalizeReferencePath(v).replace(regex, '')),
-        revisionedFile = originalFile;
+      let filePath = concatReferencePath(
+          normalizeReferencePath(rootpath.src),
+          normalizeReferencePath(v).replace(regex, '')
+        );
 
-      if (prefix.endsWith('/') && originalFile.startsWith('/')) {
-        revisionedFile = originalFile.slice(1);
-      }
-
-      if (!prefix.endsWith('/') && !originalFile.startsWith('/')) {
-        revisionedFile = `/${revisionedFile}`;
-      }
-
-      maps[originalFile] = prefix + revisionedFile;
+      maps[filePath] = concatReferencePath(prefix, filePath);
     });
 
     // 合并原有的manifest文件
