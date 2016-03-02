@@ -2,7 +2,6 @@
 # gulp-boilerplate
 
 [![Badge](https://img.shields.io/badge/node.js->=_4.0-brightgreen.svg?style=flat)]()
-
 [![David](https://img.shields.io/david/dev/evan2x/gulp-boilerplate.svg)]()
 
 ## 启动项目
