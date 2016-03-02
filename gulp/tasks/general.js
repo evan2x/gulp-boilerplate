@@ -321,7 +321,6 @@ export default function(config, plugins, debug) {
       },
       prefixRelpace = (pattern, manifest) => new Promise((resolve, reject) => {
         gulp.src(pattern.target)
-          .pipe(plugins.changed(pattern.destPath))
           .pipe(fileReplace({manifest}))
           .pipe(gulp.dest(pattern.destPath))
           .on('end', () => {
