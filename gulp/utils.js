@@ -14,14 +14,14 @@ import del from 'del';
 import config from './config';
 
 const rootpath = config.assets.rootpath;
-const wasteManifest = path.join(process.cwd(), './.waste-manifest.json');
+const trashManifest = path.join(process.cwd(), './.trash-manifest.json');
 
 /**
  * [1,2,3] -> '{1,2,3}'
  * @param  {Array<String>} arr
  * @return {String}
  */
-function array2ext(arr) {
+export function array2ext(arr) {
   let ret = '';
 
   if (Array.isArray(arr)) {
@@ -133,12 +133,12 @@ export function deleteEmptyDir(dir) {
 }
 
 /**
- * 将冗余的垃圾资源写入到.waste-manifest.json文件中，方面后期回收
+ * 将冗余的垃圾资源写入到.trash-manifest.json文件中，方面后期回收
  * @todo 通常是js/css构建后的冗余资源
  * @param  {Object} data 要写入的数据
  * @return {Promise}
  */
-export function writeWaste(data) {
+export function writeTrash(data) {
   return new Promise((resolve, reject) => {
     if (Object.keys(data).length === 0) {
       resolve(data);
@@ -147,16 +147,16 @@ export function writeWaste(data) {
 
     let oldData = {};
 
-    if (existsSync(wasteManifest)) {
+    if (existsSync(trashManifest)) {
       try {
-        oldData = JSON.parse(fs.readFileSync(wasteManifest, 'utf8'));
+        oldData = JSON.parse(fs.readFileSync(trashManifest, 'utf8'));
       } catch (e) {}
     }
 
     let newData = Object.assign({}, oldData, data);
 
     fs.writeFile(
-      wasteManifest,
+      trashManifest,
       JSON.stringify(newData, null, '  '),
       (err) => {
         if (err) {
@@ -170,13 +170,13 @@ export function writeWaste(data) {
 }
 
 /**
- * 清理脏资源(通常是js/css构建后的冗余资源)
+ * 清理垃圾资源(通常是js/css构建后的冗余资源)
  * @return {Promise}
  */
-export function delWaste() {
+export function delTrash() {
   return new Promise((resolve, reject) => {
-    if (existsSync(wasteManifest)) {
-      fs.readFile(wasteManifest, 'utf8', (err, data) => {
+    if (existsSync(trashManifest)) {
+      fs.readFile(trashManifest, 'utf8', (err, data) => {
         if (err) {
           return reject(err);
         }
@@ -187,16 +187,16 @@ export function delWaste() {
         } catch (e) {}
 
         let cwd = process.cwd(),
-          waste = Object.keys(manifest).map((key) => path.join(cwd, key));
+          trashList = Object.keys(manifest).map((key) => path.join(cwd, key));
 
-        del(waste)
+        del(trashList)
           .then(() => {
-            resolve(wasteManifest);
+            resolve(trashManifest);
           })
           .catch(reject);
       });
     } else {
-      resolve(wasteManifest);
+      resolve(trashManifest);
     }
   });
 }

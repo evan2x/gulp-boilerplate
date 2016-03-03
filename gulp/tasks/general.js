@@ -57,7 +57,7 @@ function fileReplace(options = {}) {
  * @param  {String} options.prefix 针对特定前缀的文件路径，如果为空则不记录任何资源
  * @return {Stream<Writable>}
  */
-function userefRecordGarbage(options = {}) {
+function userefTrashRecord(options = {}) {
   let prefix = options.prefix || '';
 
   if (prefix) {
@@ -73,7 +73,7 @@ function userefRecordGarbage(options = {}) {
     }
 
     if (file.isStream()) {
-      this.emit('error', new gutil.PluginError('collect-waste', 'Streaming not supported'));
+      this.emit('error', new gutil.PluginError('trash-collect', 'Streaming not supported'));
       return cb();
     }
 
@@ -84,7 +84,7 @@ function userefRecordGarbage(options = {}) {
 
     if (prefix) {
       let result = useref(file.contents.toString())[1],
-        collectWaste = (resources, dirtyMaps) => {
+        collectTrash = (resources, dirtyMaps) => {
           Object.keys(resources).forEach((key) => {
             let replacedFiles = resources[key].assets;
             if (replacedFiles && Array.isArray(replacedFiles)) {
@@ -98,17 +98,17 @@ function userefRecordGarbage(options = {}) {
           });
         };
 
-      let wasteMap = {};
+      let trashMap = {};
 
       if (result.css) {
-        collectWaste(result.css, wasteMap);
+        collectTrash(result.css, trashMap);
       }
 
       if (result.js) {
-        collectWaste(result.js, wasteMap);
+        collectTrash(result.js, trashMap);
       }
 
-      utils.writeWaste(wasteMap)
+      utils.writeTrash(trashMap)
         .then(nextStream)
         .catch(nextStream);
     } else {
@@ -232,24 +232,44 @@ export default function(config, plugins, debug) {
 
   });
 
+  /**
+   * 处理HTML中的inline资源及useref统计的资源
+   * @param  {Object} pattern
+   * @param  {Object} conf
+   * @return {Promise}
+   */
   function processHTML(pattern, conf) {
-    let userefDestPath = path.normalize(pattern.destPath).split(path.sep)[0],
-      regex = new RegExp(`^${process.cwd()}`);
-
     return new Promise((resolve, reject) => {
-      let wasteMap = {};
+      let trashMap = {},
+        regex = new RegExp(`^${process.cwd()}`),
+        searchPaths = {
+          src: rootpath.src,
+          dest: rootpath.dest
+        },
+        ext = {
+          html: utils.array2ext(conf.extensions),
+          assets: utils.array2ext([
+            ...assets.css.extensions,
+            ...assets.js.extensions
+          ])
+        };
 
-      gulp.src(pattern.src, {base: './'})
-        .pipe(plugins.changed(userefDestPath))
-        .pipe(userefRecordGarbage({prefix: rootpath.dest}))
-        .pipe(plugins.useref(conf.useref))
-        .pipe(plugins.if(!debug, plugins.if('*.css', plugins.csso())))
-        .pipe(plugins.if(!debug, plugins.if('*.js', plugins.uglify())))
-        .pipe(gulp.dest(userefDestPath))
+      Object.keys(searchPaths).forEach((key) => {
+        searchPaths[key] = path.normalize(searchPaths[key]).split(path.sep)[0];
+      });
+
+      gulp.src(pattern.src)
+        .pipe(plugins.useref({
+          searchPath: Object.values(searchPaths)
+        }))
+        .pipe(plugins.filter(`**/*.${ext.html}`))
+        .pipe(gulp.dest(pattern.destPath))
+        .pipe(plugins.filter(`**/*.${ext.assets}`))
+        .pipe(gulp.dest(searchPaths.dest))
         .on('end', () => {
           gulp.src(pattern.target)
             .pipe(plugins.inlineSource({
-              rootpath: './',
+              rootpath: searchPaths.src,
               compress: !debug,
               handlers: (source, context, next) => {
                 let filePath = source.filepath.replace(regex, ''),
@@ -260,7 +280,7 @@ export default function(config, plugins, debug) {
                 }
 
                 if (filePath.startsWith(prefix)) {
-                  wasteMap[filePath] = filePath;
+                  trashMap[filePath] = filePath;
                 }
 
                 next();
@@ -268,13 +288,10 @@ export default function(config, plugins, debug) {
             }))
             .pipe(gulp.dest(pattern.destPath))
             .on('end', () => {
-              utils.writeWaste(wasteMap)
+              utils.writeTrash(trashMap)
               .then(resolve)
               .catch(reject);
             })
-            .on('error', (err) => {
-              reject(err);
-            });
         })
         .on('error', (err) => {
           reject(err);
@@ -304,7 +321,7 @@ export default function(config, plugins, debug) {
   gulp.task('tpl', () => {
     let pattern = utils.createPattern({...config.tpl});
 
-    return processHTML(pattern, assets.html);
+    return processHTML(pattern, config.tpl);
   });
 
   /**

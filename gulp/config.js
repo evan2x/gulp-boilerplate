@@ -64,9 +64,6 @@ export default {
     html: {
       src: '/html',
       dest: '/html',
-      useref: {
-        searchPath: './'
-      },
       extensions: ['html']
     },
     svg: {
@@ -107,9 +104,6 @@ export default {
   tpl: {
     src: './views',
     dest: './dist/views',
-    useref: {
-      searchPath: './'
-    },
-    extensions: ['vm', 'ftl', 'html']
+    extensions: ['html']
   }
 };

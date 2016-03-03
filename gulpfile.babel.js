@@ -36,10 +36,10 @@ gulp.task('clean:manifest', () => del([config.manifest]));
  * 清除冗余资源
  */
 gulp.task('clean:redundancy', () => {
-  return utils.delWaste()
-    .then((wasteManifest) => {
+  return utils.delTrash()
+    .then((trashManifest) => {
       // 删除收集的垃圾资源表
-      return del(wasteManifest);
+      return del(trashManifest);
     })
     .then(() => {
       // 清理静态资源目录下的空目录
