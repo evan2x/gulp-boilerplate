@@ -4,11 +4,22 @@
 [![Badge](https://img.shields.io/badge/node.js->=_4.0-brightgreen.svg?style=flat)]()
 [![David](https://img.shields.io/david/dev/evan2x/gulp-boilerplate.svg)]()
 
-## 启动项目
+## gulp task说明
 
 ```bash
 # browser-sync service
 gulp serve
+
+# 通用构建
+gulp build
+
+# 带 hash 版本号的构建任务
+gulp prod
+
+# watch css/js
+# 使用babel将ES2015(ES6)语法转译为ES5
+# 使用PostCSS处理css
+gulp watch
 ```
 
 `gulp serve` 有以下两个参数：
@@ -18,7 +29,7 @@ gulp serve
 
 访问 `http://127.0.0.1:3000`
 
-## Task执行环境
+## task执行环境
 
 ### Mac/Linux
 
@@ -36,20 +47,4 @@ rem 生产环境
 set NODE_ENV=production && gulp [task] && set NODE_ENV=
 rem 开发环境
 gulp [task]
-```
-
-## Task
-
-```bash
-# 构建
-gulp build
-
-# 生产环境构建
-gulp prod
-
-# 执行watch
-# 实时打包JS模块以及编译Sass
-# 使用babel将ES2015(ES6)语法转译为ES5
-gulp watch
-
 ```
