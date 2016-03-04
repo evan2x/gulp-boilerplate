@@ -98,12 +98,12 @@ export default function(assets, debug) {
       .on('error', function(e) {
         // print browserify or babelify error
         console.log(chalk.red(`\nBrowserify or Babelify error:\n${e.message}`));
-        this.end();
+        this.emit('end');
       })
       .pipe(source(assets.js.commonChunk))
       .pipe(buffer())
       .pipe(plugins.if(!debug, plugins.uglify().on('error', function() {
-        this.end();
+        this.emit('end');
       })))
       .pipe(gulp.dest(destdir))
       .on('end', () => {
@@ -114,7 +114,7 @@ export default function(assets, debug) {
             base: './'
           })
           .pipe(plugins.uglify().on('error', function() {
-            this.end();
+            this.emit('end');
           }))
           .pipe(gulp.dest('./'))
           .on('end', () => {
