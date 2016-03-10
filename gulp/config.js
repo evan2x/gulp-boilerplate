@@ -104,6 +104,6 @@ export default {
   tpl: {
     src: './views',
     dest: './dist/views',
-    extensions: ['html']
+    extensions: ['vm']
   }
 };

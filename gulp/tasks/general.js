@@ -255,15 +255,15 @@ export default function(config, plugins, debug) {
         };
 
       Object.keys(searchPaths).forEach((key) => {
-        searchPaths[key] = path.normalize(searchPaths[key]).split(path.sep)[0];
+        let directories = path.normalize(searchPaths[key]).split(path.sep);
+        searchPaths[key] = directories.length > 1 ? directories[0] : './';
       });
 
       gulp.src(pattern.src)
         .pipe(plugins.useref({
           searchPath: Object.values(searchPaths)
         }))
-        .pipe(plugins.filter(`**/*.${ext.html}`))
-        .pipe(gulp.dest(pattern.destPath))
+        .pipe(plugins.if(`*.${ext.html}`, gulp.dest(pattern.destPath)))
         .pipe(plugins.filter(`**/*.${ext.assets}`))
         .pipe(gulp.dest(searchPaths.dest))
         .on('end', () => {

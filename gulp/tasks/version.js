@@ -44,7 +44,6 @@ export default function(config, plugins) {
     });
 
     return gulp.src(pattern.target, {base: basedir})
-      .pipe(plugins.changed(opts.dir))
       .pipe(channel());
   });
 
@@ -58,7 +57,6 @@ export default function(config, plugins) {
     });
 
     return gulp.src(pattern.target, {base: basedir})
-      .pipe(plugins.changed(opts.dir))
       .pipe(channel());
   });
 
@@ -69,7 +67,6 @@ export default function(config, plugins) {
     let manifest = gulp.src(config.manifest);
 
     return gulp.src(src, {base: basedir})
-      .pipe(plugins.changed(opts.dir))
       .pipe(plugins.revReplace({
         manifest
       }))
@@ -110,7 +107,6 @@ export default function(config, plugins) {
       if (item.useHash) {
         return new Promise((resolve, reject) => {
           gulp.src(pattern.target, {base: basedir})
-            .pipe(plugins.changed(opts.dir))
             .pipe(channel())
             .on('end', resolve)
             .on('error', reject);
@@ -135,7 +131,6 @@ export default function(config, plugins) {
     let manifest = gulp.src(config.manifest);
 
     return gulp.src(pattern.target)
-      .pipe(plugins.changed(pattern.destPath))
       .pipe(plugins.revReplace({
         manifest,
         replaceInExtensions: ext.map((suffix) => `.${suffix}`)
