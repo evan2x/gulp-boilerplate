@@ -261,7 +261,7 @@ export default function(config, plugins, debug) {
 
       gulp.src(pattern.src)
         .pipe(plugins.useref({
-          searchPath: Object.values(searchPaths)
+          searchPath: [searchPaths.dest, searchPaths.src]
         }))
         .pipe(plugins.if(`*.${ext.html}`, gulp.dest(pattern.destPath)))
         .pipe(plugins.filter(`**/*.${ext.assets}`))
@@ -269,7 +269,7 @@ export default function(config, plugins, debug) {
         .on('end', () => {
           gulp.src(pattern.target)
             .pipe(plugins.inlineSource({
-              rootpath: searchPaths.src,
+              rootpath: searchPaths.dest,
               compress: !debug,
               handlers: (source, context, next) => {
                 let filePath = source.filepath.replace(regex, ''),
