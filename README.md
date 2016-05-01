@@ -51,7 +51,7 @@ npm run [task]
 
 ## Misc
 
-### 为了更好的平衡浏览器缓存与模块合并，以下为我们建议的方式：
+### 为了更好的平衡浏览器缓存与模块合并，以下为我们建议的JS组织方式：
 
 1. 第三方模块统一打包到一个JS下，默认是 `vendor.js`，需要打包的第三方模块及最终输出文件名称可以在 `build/config.js` 中自己配置。
 2. 业务公用模块打包到一个JS下，默认是 `common.js`，注意该处将 `babelHelpers.js` 合并到 `common.js` 中是因为 `babelHelpers.js` 在打包的过程中只打包需要用到的 `babel-helpers`，同样的可以在 `build/config.js`中配置输出文件名。
@@ -127,7 +127,7 @@ assets/
 import * as util from '../../common/util';
 ```
 
-配置 `modulesDirectories: ['node_modules', 'assets']` 后：
+配置 `modulesDirectories: ['assets']` 后：
 
 ```js
 // Datepicker/index.js
