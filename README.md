@@ -20,6 +20,9 @@ npm run watch
 
 # browser-sync service
 npm run serve -- --port 3000
+
+# 执行任意 gulp task
+npm run build [task]
 ```
 
 `npm run serve` 有以下两个参数：
@@ -35,18 +38,18 @@ npm run serve -- --port 3000
 
 ```bash
 # 生产环境
-NODE_ENV=production npm run [task]
+NODE_ENV=production npm run [script name]
 # 开发环境
-npm run [task]
+npm run [script name]
 ```
 
 ### Windows
 
 ```bat
 rem 生产环境
-set NODE_ENV=production && npm run [task] && set NODE_ENV=
+set NODE_ENV=production && npm run [script name] && set NODE_ENV=
 rem 开发环境
-npm run [task]
+npm run [script name]
 ```
 
 ## Misc
