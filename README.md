@@ -138,3 +138,35 @@ import * as util from '../../common/util';
 // 引入工具模块
 import * as util from 'common/util';
 ```
+
+### 针对低端浏览器(IE8)的支持
+
+在页面中引入 `es5-sham.js` 和 `es5-shim.js` 
+
+* [es5-sham.js](https://github.com/es-shims/es5-shim/blob/master/es5-sham.js)
+
+* [es5-shim.js](https://github.com/es-shims/es5-shim/blob/master/es5-shim.js)
+
+#### babel的支持
+
+安装两个插件
+
+```shell
+npm install --save-dev babel-plugin-transform-es3-member-expression-literals babel-plugin-transform-es3-property-literals
+```
+
+配置 `.babelrc`
+
+```json
+{
+  "presets": [
+    "es2015",
+    "stage-2"
+  ],
+  "plugins": [
+    "transform-es3-member-expression-literals",
+    "transform-es3-property-literals",
+    "external-helpers"
+  ] 
+}
+```
