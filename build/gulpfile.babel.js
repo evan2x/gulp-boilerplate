@@ -33,11 +33,11 @@ gulp.task('clean', () => del([
 gulp.task('clean:manifest', () => del([config.manifest]));
 
 /**
- * 清除冗余资源
+ * 删除垃圾资源
  * @todo 删除收集的垃圾资源表
  * @todo 清理静态资源目录下的空目录
  */
-gulp.task('clean:redundancy', () => util.delTrash()
+gulp.task('clean:grabage', () => util.delGarbage()
   .then(del)
   .then(() => util.deleteEmptyDir(config.assets.rootpath.dest))
 );
@@ -51,7 +51,7 @@ gulp.task('build', (done) => {
     ['css', 'js', 'image', 'other', 'svg'],
     ['html', 'tpl'],
     'prefix',
-    'clean:redundancy',
+    'clean:grabage',
     done
   );
 });
@@ -67,7 +67,7 @@ gulp.task('revision', (done) => {
     ['image:rev', 'svg:rev', 'other:rev'],
     'css:rev',
     'js:rev',
-    ['tpl:rev', 'html:rev', 'clean:hashgarbage'],
+    ['tpl:rev', 'html:rev', 'clean:rev:garbage'],
     done
   );
 });

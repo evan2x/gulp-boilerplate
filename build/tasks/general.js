@@ -140,7 +140,7 @@ export default function(config, plugins, debug) {
    */
   function processHTML(pattern, conf) {
     return new Promise((resolve, reject) => {
-      let trashMap = {},
+      let garbageMap = {},
         regex = new RegExp(`^${process.cwd()}`),
         searchPaths = {
           src: rootpath.src,
@@ -160,7 +160,7 @@ export default function(config, plugins, debug) {
       });
 
       gulp.src(pattern.src)
-        .pipe(util.userefTrashRecord({prefix: rootpath.dest}))
+        .pipe(util.collectGarbageByUseref({prefix: rootpath.dest}))
         .pipe(plugins.useref({
           searchPath: [searchPaths.dest, searchPaths.src]
         }))
@@ -183,7 +183,7 @@ export default function(config, plugins, debug) {
                 }
 
                 if (filePath.startsWith(prefix)) {
-                  trashMap[filePath] = filePath;
+                  garbageMap[filePath] = filePath;
                 }
 
                 next();
@@ -191,7 +191,7 @@ export default function(config, plugins, debug) {
             }))
             .pipe(gulp.dest(pattern.destPath))
             .on('end', () => {
-              util.writeTrash(trashMap)
+              util.writeGarbage(garbageMap)
               .then(resolve)
               .catch(reject);
             });

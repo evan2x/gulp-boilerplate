@@ -17,6 +17,7 @@ import {buildExternalHelpers} from 'babel-core';
 import mkdirp from 'mkdirp';
 import chalk from 'chalk';
 import glob from 'glob';
+import gutil from 'gulp-util';
 import loadPlugins from 'gulp-load-plugins';
 
 const plugins = loadPlugins();
@@ -24,6 +25,7 @@ const plugins = loadPlugins();
 export default function(assets, debug) {
 
   let srcdir = assets.js.src,
+    isWatch = false,
     done = function() {}; // eslint-disable-line
 
   if (!Array.isArray(srcdir)) {
@@ -124,6 +126,7 @@ export default function(assets, debug) {
         // print browserify or babelify error
         console.log(chalk.red(`\nBrowserify or Babelify error:\n${e.message}`));
         this.emit('end');
+        if (!isWatch) process.exit(1);
       })
       .pipe(source(assets.js.commonChunk))
       .pipe(buffer())
@@ -178,10 +181,11 @@ export default function(assets, debug) {
       if (typeof mode === 'function') {
         done = mode;
       } else if (mode === 'watch') {
+        isWatch = true;
         packager = watchify(packager);
         packager.on('update', bundle);
         packager.on('log', (msg) => {
-          console.log(chalk.green(msg));
+          gutil.log('Watching ' + chalk.cyan('\'browserify\'') + ': ' + chalk.green(msg));
         });
 
         if (typeof cb === 'function') {

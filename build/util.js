@@ -17,7 +17,7 @@ import gutil from 'gulp-util';
 import config from './config';
 
 const rootpath = config.assets.rootpath;
-const trashManifest = path.join(process.cwd(), '.trash-manifest.json');
+const garbageManifest = path.join(process.cwd(), '.garbage-manifest.json');
 
 /**
  * [1,2,3] -> '{1,2,3}'
@@ -136,12 +136,12 @@ export function deleteEmptyDir(dir) {
 }
 
 /**
- * 将冗余的垃圾资源写入到.trash-manifest.json文件中，方面后期回收
+ * 将冗余的垃圾资源写入到.garbage-manifest.json文件中，方面后期回收
  * @todo 通常是js/css构建后的冗余资源
  * @param  {Object} data 要写入的数据
  * @return {Promise}
  */
-export function writeTrash(data) {
+export function writeGarbage(data) {
   return new Promise((resolve, reject) => {
     if (Object.keys(data).length === 0) {
       resolve(data);
@@ -150,16 +150,16 @@ export function writeTrash(data) {
 
     let oldData = {};
 
-    if (existsSync(trashManifest)) {
+    if (existsSync(garbageManifest)) {
       try {
-        oldData = JSON.parse(fs.readFileSync(trashManifest, 'utf8'));
+        oldData = JSON.parse(fs.readFileSync(garbageManifest, 'utf8'));
       } catch (e) {}
     }
 
     let newData = Object.assign({}, oldData, data);
 
     fs.writeFile(
-      trashManifest,
+      garbageManifest,
       JSON.stringify(newData, null, '  '),
       (err) => {
         if (err) {
@@ -176,10 +176,10 @@ export function writeTrash(data) {
  * 清理垃圾资源(通常是js/css构建后的冗余资源)
  * @return {Promise}
  */
-export function delTrash() {
+export function delGarbage() {
   return new Promise((resolve, reject) => {
-    if (existsSync(trashManifest)) {
-      fs.readFile(trashManifest, 'utf8', (err, data) => {
+    if (existsSync(garbageManifest)) {
+      fs.readFile(garbageManifest, 'utf8', (err, data) => {
         if (err) {
           return reject(err);
         }
@@ -190,16 +190,16 @@ export function delTrash() {
         } catch (e) {}
 
         let cwd = process.cwd(),
-          trashList = Object.keys(manifest).map((key) => path.join(cwd, key));
+          garbageList = Object.keys(manifest).map((key) => path.join(cwd, key));
 
-        del(trashList)
+        del(garbageList)
           .then(() => {
-            resolve(trashManifest);
+            resolve(garbageManifest);
           })
           .catch(reject);
       });
     } else {
-      resolve(trashManifest);
+      resolve(garbageManifest);
     }
   });
 }
@@ -314,12 +314,12 @@ export function fileReplace(options = {}) {
 }
 
 /**
- * 利用useref记录产生的垃圾资源
+ * 使用useref来收集垃圾资源
  * @param  {Object} options 参数
  * @param  {String} options.prefix 针对特定前缀的文件路径，如果为空则不记录任何资源
  * @return {Stream<Writable>}
  */
-export function userefTrashRecord(options = {}) {
+export function collectGarbageByUseref(options = {}) {
   let prefix = options.prefix || '';
 
   if (prefix) {
@@ -335,7 +335,7 @@ export function userefTrashRecord(options = {}) {
     }
 
     if (file.isStream()) {
-      this.emit('error', new gutil.PluginError('trash-collect', 'Streaming not supported'));
+      this.emit('error', new gutil.PluginError('collect-grabage-resources', 'Streaming not supported'));
       return cb();
     }
 
@@ -346,7 +346,7 @@ export function userefTrashRecord(options = {}) {
 
     if (prefix) {
       let result = useref(file.contents.toString())[1],
-        collectTrash = (resources, dirtyMaps) => {
+        collectGarbage = (resources, dirtyMaps) => {
           Object.keys(resources).forEach((key) => {
             let replacedFiles = resources[key].assets;
             if (replacedFiles && Array.isArray(replacedFiles)) {
@@ -361,17 +361,17 @@ export function userefTrashRecord(options = {}) {
           });
         };
 
-      let trashMap = {};
+      let garbageMap = {};
 
       if (result.css) {
-        collectTrash(result.css, trashMap);
+        collectGarbage(result.css, garbageMap);
       }
 
       if (result.js) {
-        collectTrash(result.js, trashMap);
+        collectGarbage(result.js, garbageMap);
       }
 
-      writeTrash(trashMap)
+      writeGarbage(garbageMap)
         .then(nextStream)
         .catch(nextStream);
     } else {

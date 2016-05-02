@@ -157,9 +157,9 @@ export default function(config, plugins) {
   });
 
   /**
-   * 文件名hash后产生新文件，删除旧文件。
+   * 清理掉旧文件, 只删除dest目录中的旧资源
    */
-  gulp.task('clean:hashgarbage', (done) => {
+  gulp.task('clean:rev:garbage', (done) => {
     if (util.existsSync(config.manifest)) {
       let manifest = {},
         files = [];
