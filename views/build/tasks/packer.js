@@ -98,23 +98,20 @@ export default function(assets, debug) {
     }, []);
 
   packager.plugin('factor-bundle', {outputs});
-
+  
   // 排除第三方模块
   for (let i = 0; i < vendorModules.length; i++) {
     packager.exclude(vendorModules[i]);
   }
-
+  
   // 提取babel helpers file
-  let usedHelpers = [];
   packager.on('transform', (tr) => {
     if (tr instanceof babelify) {
       tr.once('babelify', (result) => {
-        usedHelpers = usedHelpers.concat(result.metadata.usedHelpers);
-        usedHelpers = Array.from(usedHelpers);
-
-        let babelHelpersCode = buildExternalHelpers(usedHelpers, 'umd'),
+        let list = result.metadata.usedHelpers,
+          babelHelpersCode = buildExternalHelpers(list, 'umd'),
           babelHelpersPath = path.join(destdir, assets.js.babelHelper);
-
+         
         fs.writeFileSync(babelHelpersPath, babelHelpersCode, 'utf8');
       });
     }
@@ -122,7 +119,7 @@ export default function(assets, debug) {
 
   let bundle = () => {
     outputdir.forEach((dir) => mkdirp.sync(dir));
-
+    
     return packager
       .bundle()
       .on('error', function(e) {
@@ -154,7 +151,7 @@ export default function(assets, debug) {
         }
       });
   };
-
+  
   /**
    * 打包第三方模块
    */
@@ -162,14 +159,14 @@ export default function(assets, debug) {
     if (!Array.isArray(vendorModules) || vendorModules.length === 0) {
       return Promise.resolve();
     }
-
+    
     return new Promise((resolve, reject) => {
       let vendorPackager = browserify();
-
+      
       for (let i = 0; i < vendorModules.length; i++) {
         vendorPackager.require(vendorModules[i]);
       }
-
+      
       vendorPackager
         .bundle()
         .pipe(source(assets.js.vendor.output))
@@ -195,7 +192,7 @@ export default function(assets, debug) {
           done = cb;
         }
       }
-
+      
       return bundle();
     });
 }
