@@ -141,17 +141,11 @@ export default function(config, plugins, debug) {
   function processHTML(pattern, conf) {
     return new Promise((resolve, reject) => {
       let garbageMap = {},
-        regex = new RegExp(`^${process.cwd()}`),
+        rcwdDir = new RegExp(`^${process.cwd()}`),
+        rhtmlExt = new RegExp(`\.(?:${conf.extensions.join('|')})`),
         searchPaths = {
           src: rootpath.src,
           dest: rootpath.dest
-        },
-        ext = {
-          html: util.array2ext(conf.extensions),
-          assets: util.array2ext([
-            ...assets.css.extensions,
-            ...assets.js.extensions
-          ])
         };
 
       Object.keys(searchPaths).forEach((key) => {
@@ -164,10 +158,10 @@ export default function(config, plugins, debug) {
         .pipe(plugins.useref({
           searchPath: [searchPaths.dest, searchPaths.src]
         }))
-        .pipe(plugins.if(`*.${ext.html}`, gulp.dest(pattern.destPath)))
-        .pipe(plugins.filter(`**/*.${ext.assets}`))
+        .pipe(plugins.if(rhtmlExt, gulp.dest(pattern.destPath)))
         .pipe(plugins.if(!debug, plugins.if('*.css', plugins.csso())))
         .pipe(plugins.if(!debug, plugins.if('*.js', plugins.uglify())))
+        .pipe(plugins.filter((file) => !rhtmlExt.test(file.path)))
         .pipe(gulp.dest(searchPaths.dest))
         .on('end', () => {
           gulp.src(pattern.target)
@@ -175,7 +169,7 @@ export default function(config, plugins, debug) {
               rootpath: searchPaths.dest,
               compress: !debug,
               handlers: (source, context, next) => {
-                let filePath = source.filepath.replace(regex, ''),
+                let filePath = source.filepath.replace(rcwdDir, ''),
                   prefix = util.normalizeReferencePath(rootpath.dest);
 
                 if (!path.isAbsolute(prefix)) {
