@@ -125,7 +125,7 @@ export default function(assets, debug) {
 
     return packager
       .bundle()
-      .on('error', function(e) {
+      .once('error', function(e) {
         // print browserify or babelify error
         console.log(chalk.red(`\nBrowserify or Babelify error:\n${e.message}`));
         this.emit('end');
@@ -133,22 +133,22 @@ export default function(assets, debug) {
       })
       .pipe(source(assets.js.commonChunk))
       .pipe(buffer())
-      .pipe(plugins.if(!debug, plugins.uglify().on('error', function() {
+      .pipe(plugins.if(!debug, plugins.uglify().once('error', function() {
         this.emit('end');
       })))
       .pipe(gulp.dest(destdir))
-      .on('end', () => {
+      .once('end', () => {
         if (debug) {
           done();
         } else {
           gulp.src(outputs, {
             base: './'
           })
-          .pipe(plugins.uglify().on('error', function() {
+          .pipe(plugins.uglify().once('error', function() {
             this.emit('end');
           }))
           .pipe(gulp.dest('./'))
-          .on('end', () => {
+          .once('end', () => {
             done();
           });
         }

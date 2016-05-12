@@ -39,7 +39,7 @@ gulp.task('clean:manifest', () => del([config.manifest]));
  */
 gulp.task('clean:grabage', () => util.delGarbage()
   .then(del)
-  .then(() => util.deleteEmptyDir(config.assets.rootpath.dest))
+  .then(() => util.removeEmptyDirectory(config.assets.rootpath.dest))
 );
 
 /**

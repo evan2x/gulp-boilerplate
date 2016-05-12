@@ -115,24 +115,58 @@ export function createPattern(options = {}) {
 }
 
 /**
- * 删除空目录
- * @param {String} dir 目标目录
+ * 去除首尾的斜杠
+ * @param {String} p
+ * @return {String}
  */
-export function deleteEmptyDir(dir) {
-  let files = fs.readdirSync(dir);
+export function trimSlash(p) {
+  if (!p) {
+    return '';
+  }
 
-  if (files.length === 0) {
-    fs.rmdirSync(dir);
-  } else {
-    let count = 0,
-      file = null;
-    while ((file = files[count++])) {
-      file = path.join(dir, file);
-      if (fs.statSync(file).isDirectory()) {
-        deleteEmptyDir(file);
+  if (p.startsWith('/')) {
+    p = p.slice(1);
+  }
+
+  if (p.endsWith('/')) {
+    p = p.slice(0, -1);
+  }
+
+  return p;
+}
+
+/**
+ * 删除空目录
+ * @param {String} rootdir 目标目录
+ */
+export function removeEmptyDirectory(rootdir) {
+  if (!rootdir) {
+    return;
+  }
+
+  let collectDirectory = (directory, directories = []) => {
+    let files = fs.readdirSync(directory),
+      count = 0,
+      dir = null;
+
+    while ((dir = files[count++]) != null) {
+      dir = path.join(directory, dir);
+      if (fs.statSync(dir).isDirectory()) {
+        directories.push(dir);
+        directories.concat(collectDirectory(dir, directories));
       }
     }
-  }
+
+    return directories;
+  };
+
+  collectDirectory(rootdir)
+    .sort((a, b) => trimSlash(b).split('/').length - trimSlash(a).split('/').length)
+    .forEach((directory) => {
+      if (!fs.readdirSync(directory).length) {
+        fs.rmdirSync(directory);
+      }
+    });
 }
 
 /**
@@ -346,15 +380,20 @@ export function collectGarbageByUseref(options = {}) {
 
     if (prefix) {
       let result = useref(file.contents.toString())[1],
-        collectGarbage = (resources, dirtyMaps) => {
+        collectGarbage = (resources, garbageMaps) => {
           Object.keys(resources).forEach((key) => {
             let replacedFiles = resources[key].assets;
             if (replacedFiles && Array.isArray(replacedFiles)) {
               replacedFiles.forEach((filePath) => {
-                filePath = '/' + filePath.replace(/^(?:\.\/|\.\.\/)+/, ''); // eslint-disable-line prefer-template
+                filePath = filePath.replace(/^(?:\.\/|\.\.\/)+/, '');
+
+                if (!filePath.startsWith('/')) {
+                  filePath = `/${filePath}`;
+                }
+
                 // 以prefix开头及以打包后与输出资源不是同一路径的文件加入到待回收资源表中
                 if (filePath.startsWith(prefix) && !filePath.endsWith(key)) {
-                  dirtyMaps[filePath] = filePath;
+                  garbageMaps[filePath] = filePath;
                 }
               });
             }

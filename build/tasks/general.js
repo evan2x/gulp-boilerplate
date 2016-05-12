@@ -26,7 +26,7 @@ export default function(config, plugins, debug) {
   /**
    * 使用eslint对JavaScript代码进行检查
    */
-  gulp.task('eslint', () => {
+  gulp.task('lint', () => {
     let pattern = util.createPattern({
       ...assets.js,
       rootpath
@@ -158,9 +158,9 @@ export default function(config, plugins, debug) {
         .pipe(plugins.useref({
           searchPath: [searchPaths.dest, searchPaths.src]
         }))
-        .pipe(plugins.if(rhtmlExt, gulp.dest(pattern.destPath)))
-        .pipe(plugins.if(!debug, plugins.if('*.css', plugins.csso())))
-        .pipe(plugins.if(!debug, plugins.if('*.js', plugins.uglify())))
+        .pipe(plugins.if((file) => rhtmlExt.test(file.path), gulp.dest(pattern.destPath)))
+        .pipe(plugins.if(!debug, plugins.if((file) => /\.css$/.test(file.path), plugins.csso())))
+        .pipe(plugins.if(!debug, plugins.if((file) => /\.js$/.test(file.path), plugins.uglify())))
         .pipe(plugins.filter((file) => !rhtmlExt.test(file.path)))
         .pipe(gulp.dest(searchPaths.dest))
         .on('end', () => {
