@@ -74,6 +74,7 @@ npm run [script name]
 <body>
   <h1>Hello World!</h1>
   <!-- build:js /assets/js/vendor.js -->
+  <script src="/node_modules/babel-polyfill/dist/polyfill.js"></script>
   <script src="/dist/assets/js/vendor.js"></script>
   <!-- endbuild -->
   <!-- build:js /assets/js/common.js -->
@@ -95,7 +96,6 @@ npm run [script name]
 <!-- build:css /assets/css/index.css inline -->
 <link rel="stylesheet" href="/dist/assets/css/index.css">
 <!-- endbuild -->
-
 
 <!-- build:js /assets/js/main.js inline -->
 <script src="/dist/assets/js/main.js"></script>
@@ -141,7 +141,7 @@ import * as util from 'common/util';
 
 ### 针对低端浏览器(IE8)的支持
 
-安装两个插件
+安装两个Babel插件
 
 ```shell
 npm install --save-dev babel-plugin-transform-es3-member-expression-literals babel-plugin-transform-es3-property-literals
@@ -159,6 +159,6 @@ npm install --save-dev babel-plugin-transform-es3-member-expression-literals bab
     "transform-es3-member-expression-literals",
     "transform-es3-property-literals",
     "external-helpers"
-  ] 
+  ]
 }
 ```
