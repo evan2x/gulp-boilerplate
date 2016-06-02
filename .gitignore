@@ -3,3 +3,9 @@ npm-debug.log
 rev-manifest.json
 node_modules/
 dist/
+
+assets/
+!assets/.gitkeep
+
+views/
+!views/.gitkeep

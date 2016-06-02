@@ -1,9 +1,3 @@
-/**
- * Copyright 2015 creditease Inc. All rights reserved.
- * @description gulp tasks config
- * @author evan2x(evan2zaw@gmail.com/aiweizhang@creditease.cn)
- * @date  2015/09/24
- */
 
 export default {
   /**
@@ -78,6 +72,13 @@ export default {
       dest: '/css',
       autoprefixer: {
         browsers: ['last 2 versions', '> 1% in CN', 'Firefox ESR', 'Opera 12.1', 'Safari >= 5', 'ie >= 8']
+      },
+      /**
+       * CSS Sprites config
+       * @type {Object}
+       */
+      sprite: {
+        extensions: ['png']
       },
       extensions: ['css']
     },

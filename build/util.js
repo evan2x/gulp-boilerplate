@@ -1,13 +1,8 @@
-/**
- * Copyright 2015 creditease Inc. All rights reserved.
- * @description gulp tasks utils
- * @author evan2x(evan2zaw@gmail.com/aiweizhang@creditease.cn)
- * @date  2015/09/24
- */
 
 import path from 'path';
 import fs from 'fs';
 import chokidar from 'chokidar';
+import postcss from 'postcss';
 import through from 'through2';
 import gulp from 'gulp';
 import glob from 'glob';
@@ -417,4 +412,43 @@ export function collectGarbageByUseref(options = {}) {
       nextStream();
     }
   });
+}
+
+export function updateSpritesRule(rule, token, image) {
+  const { retina, ratio, coords, spriteWidth, spriteHeight } = image;
+	const posX = coords.x / ratio;
+	const posY = coords.y / ratio;
+	const sizeX = spriteWidth / ratio;
+	const sizeY = spriteHeight / ratio;
+
+  let dist = rootpath.dest.replace(/^\.*\//, '');
+  let spritePath = image.spritePath.replace(dist, '');
+
+  spritePath = path.join(rootpath.src, spritePath).split(path.sep).join('/');
+
+  if (!spritePath.startsWith('/')) {
+    spritePath = `/${spritePath}`;
+  }
+
+	const backgroundImageDecl = postcss.decl({
+		prop: 'background-image',
+		value: `url(${spritePath})`
+	});
+
+	const backgroundPositionDecl = postcss.decl({
+		prop: 'background-position',
+		value: `${-1 * posX}px ${-1 * posY}px`
+	});
+
+	rule.insertAfter(token, backgroundImageDecl);
+	rule.insertAfter(backgroundImageDecl, backgroundPositionDecl);
+
+	if (retina) {
+		const backgroundSizeDecl = postcss.decl({
+			prop: 'background-size',
+			value: `${sizeX}px ${sizeY}px`
+		});
+
+		rule.insertAfter(backgroundPositionDecl, backgroundSizeDecl);
+	}
 }

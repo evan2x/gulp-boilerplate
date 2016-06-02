@@ -1,9 +1,3 @@
-/**
- * Copyright 2015 creditease Inc. All rights reserved.
- * @description browserify bundler
- * @author evan2x(evan2zaw@gmail.com/aiweizhang@creditease.cn)
- * @date  2015/09/24
- */
 
 import path from 'path';
 import fs from 'fs';

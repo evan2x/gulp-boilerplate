@@ -1,14 +1,10 @@
-/**
- * Copyright 2015 creditease Inc. All rights reserved.
- * @description general tasks
- * @author evan2x(evan2zaw@gmail.com/aiweizhang@creditease.cn)
- * @date  2015/09/24
- */
 
 import path from 'path';
 import gulp from 'gulp';
 import pngquant from 'imagemin-pngquant';
 import autoprefixer from 'autoprefixer';
+import sprites from 'postcss-sprites';
+import willChange from 'postcss-will-change';
 import minimist from 'minimist';
 import browserSync from 'browser-sync';
 import * as util from '../util';
@@ -75,21 +71,61 @@ export default function(config, plugins, debug) {
   });
 
   /**
-   * SCSS样式转换为CSS，并且使用autoprefixer处理前缀
-   * @todo debug模式下保留sourcemap
+   * 对CSS进行处理
+   * @todo debug模式下保留sourcemap, 非debug模式下会启动CSS Sprites功能。
    */
   gulp.task('css', () => {
-    let pattern = util.createPattern({
-      ...assets.css,
-      rootpath
-    });
+    let css = assets.css,
+      pattern = util.createPattern({
+        ...css,
+        rootpath
+      }),
+      processors = [],
+      regex = new RegExp('\\.(.+)\\.(?:' + css.sprite.extensions.join('|') + ')$');
+
+    if (debug) {
+      // support css sprites
+      processors.push(sprites({
+        stylesheetPath: pattern.destPath,
+        spritePath: path.join(rootpath.dest, assets.img.dest),
+        relativeTo: 'assets',
+        retina: true,
+        hooks: {
+          onUpdateRule: util.updateSpritesRule
+        },
+        filterBy(image) {
+          if (regex.test(image.url)) {
+            return Promise.resolve();
+          }
+
+          return Promise.reject();
+        },
+        groupBy(image) {
+          let match = image.url.match(regex);
+
+          image.groups = [];
+
+          if (match && match[1]) {
+            return Promise.resolve(match[1]);
+          }
+
+          return Promise.reject();
+        },
+        spritesmith: {
+          padding: 1
+        }
+      }));
+    }
+
+    processors.push(
+      willChange(),
+      autoprefixer(assets.css.autoprefixer)
+    );
 
     return gulp.src(pattern.src)
-      .pipe(plugins.changed(pattern.destPath))
+      // .pipe(plugins.changed(pattern.destPath))
       .pipe(plugins.if(debug, plugins.sourcemaps.init()))
-      .pipe(plugins.postcss([
-        autoprefixer(assets.css.autoprefixer)
-      ]))
+      .pipe(plugins.postcss(processors))
       .pipe(plugins.if(!debug, plugins.csso()))
       .pipe(plugins.if(debug, plugins.sourcemaps.write()))
       .pipe(gulp.dest(pattern.destPath))

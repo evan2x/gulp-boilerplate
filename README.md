@@ -102,6 +102,31 @@ npm run [script name]
 <!-- endbuild -->
 ```
 
+### CSS Sprites
+
+该功能只会在非debug模式下启用。
+
+使用此功能需要符合以下要求：
+
+图片格式必须是 `image.[group].png`, 此处的`group`表示当前图片将合并到哪个分组下, 如下示例：
+
+```
+// input
+picture1.common.png
+picture2.common.png
+picture3.common.png
+
+picture1.home.png
+picture2.home.png
+picture3.home.png
+
+// output
+sprite.common.png
+sprite.home.png
+```
+
+**注意：默认仅会处理.png文件，可以在`config.js`下的css#sprite中配置`extensions`**
+
 ### 关于 `../../../../` 引用模块的解决方式
 
 在 `build/config.js` 中可以配置 `modulesDirectories` 来避免 `../../../../` 的方式引用模块。
