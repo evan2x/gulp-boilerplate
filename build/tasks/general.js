@@ -455,27 +455,15 @@ export default function(config, plugins, debug) {
    * browser-sync service
    */
   gulp.task('serve', () => {
-    let conf = config.browserSync;
+    let options = config.browserSync;
 
     if (argv.port && typeof argv.port != 'boolean') {
-      conf.port = argv.port;
+      options.port = argv.port;
     }
 
-    // proxy port
-    if (argv.pport && typeof argv.pport != 'boolean') {
-      let proxy = `127.0.0.1:${argv.pport}`;
-      switch (Object.prototype.toString.call(conf.proxy)) {
-        case '[object Object]':
-          conf.proxy.target = proxy;
-          break;
-
-        // 字符串或者其他非对象类型重新修正proxy配置项
-        case '[object String]':
-        default:
-          conf.proxy = proxy;
-      }
-
-      delete conf.server;
+    if (argv.proxy && typeof argv.proxy != 'boolean') {
+      delete options.server;
+      options.proxy = argv.proxy;
     }
 
     gulp.start('watch');
@@ -493,6 +481,6 @@ export default function(config, plugins, debug) {
     util.watch(group)
       .on('change', bs.reload);
 
-    bs.init(conf);
+    bs.init(options);
   });
 }

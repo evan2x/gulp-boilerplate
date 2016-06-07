@@ -34,7 +34,7 @@ npm run build [task]
 `npm run serve` 有以下两个参数：
 
 * `--port 3000` 指定browser-sync服务监听端口，默认：`3000`
-* `--pport 8080` 指定代理端口，如被代理的tomcat服务监听端口为`8080`
+* `--proxy 127.0.0.1:8080` 指定代理地址
 
 访问 `http://127.0.0.1:3000`
 
