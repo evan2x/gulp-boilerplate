@@ -1,0 +1,31 @@
+@font-face {
+  font-family: "iconfont";
+  src: url('iconfont.eot');
+  src: url('iconfont.eot?#iefix') format('eot'),
+    url('iconfont.woff') format('woff'),
+    url('iconfont.ttf') format('truetype'),
+    url('iconfont.svg#iconfont') format('svg');
+}
+
+.iconfont:before {
+  font-family: "iconfont" !important;
+  font-style: normal;
+  font-weight: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased; /* 修复锯齿问题 */
+  -moz-osx-font-smoothing: grayscale; /* 修复锯齿问题 */
+}
+
+
+.icon-backtop:before {
+  content: "\ea01";
+}
+
+.icon-battery:before {
+  content: "\ea02";
+}
+
+.icon-calculator:before {
+  content: "\ea03";
+}

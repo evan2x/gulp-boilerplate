@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      body {
+        margin: 0;
+        background: #f7f7f7;
+        color: #555;
+      }
+
+      ul, ol {
+        padding: 0;
+        list-style: none;
+      }
+
+      .header {
+        background-color: #f1f1f1;
+        padding: 10px 0;
+      }
+
+      .header > h1 {
+        color: #999;
+        text-align: center;
+      }
+
+      .symbol-length {
+        font-size: 20px;
+        vertical-align: middle;
+      }
+
+      .symbol-list {
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: -moz-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-flex-wrap: wrap;
+            -ms-flex-wrap: wrap;
+                flex-wrap: wrap;
+        padding-right: 10px;
+      }
+
+      .symbol-use > pre {
+        text-align: left;
+        margin: 0 auto;
+      }
+
+      .symbol-list > li {
+        padding-left: 10px;
+        margin-bottom: 20px;
+        width: 25%;
+        box-sizing: border-box;
+      }
+
+      .symbol-name {
+        display: block;
+        padding: 10px 0;
+        font-size: 26px;
+        color: #999;
+      }
+
+      .symbol-use {
+        border: 1px solid #999;
+      }
+
+      .symbol-use-title {
+        display: block;
+        background-color: #f1f1f1;
+        padding: 10px 5px;
+      }
+
+      .symbol-use > pre {
+        text-align: left;
+        overflow-x: auto;
+        margin: 10px;
+      }
+    </style>
+    <style>
+      <% _.each( icons, function( icon ){ %><%= icon.className %> {
+        width: <%= icon.width %>;
+        height: <%= icon.height %>;
+        fill: #555;
+      }
+      <%= icon.style %>
+      <% }); %>
+    </style>
+  </head>
+  <body>
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <% if (defs) { %>
+        <defs><%= defs %></defs>
+      <% } %>
+      <% _.each(icons, function(icon){ %>
+      <symbol id="<%= icon.id %>" viewBox="<%= icon.svg.viewBox %>">
+        <% if (icon.title) { %>
+        <title><%= icon.title %></title>
+        <% } %>
+        <%=  icon.svg.content %>
+      </symbol>
+      <% }); %>
+    </svg>
+    <header class="header">
+      <h1>SVG Symbols <span class="symbol-length">(symbols: <%= icons.length %>)</span></h1>
+    </header>
+    <ul class="symbol-list">
+      <% _.each(icons, function(icon){ %>
+      <li>
+        <div class="symbol-icon">
+          <svg role="img" class="<%= icon.id %>">
+            <use xlink:href="#<%= icon.id %>"></use>
+          </svg>
+        </div>
+        <span class="symbol-name"><%= icon.id %></span>
+        <div class="symbol-use">
+          <span class="symbol-use-title">Usage</span>
+<pre>
+<code><%= _.escape('<svg role="img" class="') %><%= icon.id %><%= _.escape('">') %>
+  <%= _.escape('<use xlink:href="') %><%= icon.filePath %>#<%= icon.id %><%= _.escape('"></use>') %>
+<%= _.escape('</svg>') %></code>
+</pre>
+        </div>
+      </li>
+      <% }); %>
+    </ul>
+  </body>
+</html>
