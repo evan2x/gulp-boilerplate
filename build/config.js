@@ -99,6 +99,37 @@ export default {
       },
       extensions: ['svg']
     },
+    /**
+     * 图标配置，可生成SVG Symbols和iconfont
+     * @type {Object}
+     */
+    icon: {
+      src: '/icon',
+      /**
+       * SVG Symbols配置项
+       * @type {Object}
+       */
+      symbols: {
+        dest: '/svg',
+        name: 'icon-symbols.svg',
+        related: {
+          doc: '/doc/svg-symbols/demo.html'
+        }
+      },
+      /**
+       * iconfont配置项
+       * @type {Object}
+       */
+      font: {
+        dest: '/font',
+        name: 'iconfont',
+        formats: ['svg', 'ttf', 'eot', 'woff'],
+        related: {
+          style: '/css/iconfont.css',
+          doc: '/doc/iconfont/demo.html'
+        }
+      }
+    },
     img: {
       src: '/img',
       dest: '/img',
@@ -111,7 +142,7 @@ export default {
      */
     other: [
       {
-        src: ['/font'],
+        src: '/font',
         dest: '/font',
         extensions: ['eot', 'svg', 'ttf', 'woff'],
         useHash: true

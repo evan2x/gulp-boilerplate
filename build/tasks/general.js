@@ -71,6 +71,125 @@ export default function(config, plugins, debug) {
   });
 
   /**
+   * svg图标生成svg symbols
+   */
+  gulp.task('symbols:gen', () => {
+    let icon = assets.icon,
+      src = path.join(rootpath.src, icon.src, '**/*.svg'),
+      dest = path.join(rootpath.src, icon.symbols.dest),
+      docPath = icon.symbols.related.doc,
+      docDest = path.join(rootpath.src, path.dirname(docPath)),
+      tmpl = path.join(rootpath.src, icon.src, 'templates/svg-symbols.html');
+
+    let filter = {
+      svg: plugins.filter((file) => /\.svg$/.test(file.path), {
+        restore: true
+      }),
+      html: plugins.filter((file) => /\.html$/.test(file.path), {
+        restore: true
+      })
+    }
+
+    return gulp.src(src)
+      .pipe(plugins.cheerio({
+        run($) {
+          $('style').remove();
+          $('[class]').removeAttr('class');
+          $('[id]').removeAttr('id');
+          $('[fill]').removeAttr('fill');
+          $('[stroke]').removeAttr('stroke');
+        },
+        parserOptions: {
+          xmlMode: true
+        }
+      }))
+      .pipe(plugins.svgSymbols({
+        templates: ['default-svg', tmpl],
+        transformData(svg, defaultData, options) {
+          let filePath = path.join(dest, icon.symbols.name).split(path.sep).join('/');
+
+          if (!filePath.startsWith('/')) {
+            filePath = `/${filePath}`;
+          }
+
+          return {
+            id: defaultData.id,
+            className: defaultData.className,
+            width: '48px',
+            height: '48px',
+            filePath: filePath
+          }
+        }
+      }))
+      .pipe(filter.svg)
+      .pipe(plugins.rename(icon.symbols.name))
+      .pipe(gulp.dest(dest))
+      .pipe(filter.svg.restore)
+      .pipe(filter.html)
+      .pipe(plugins.rename('demo.html'))
+      .pipe(gulp.dest(docDest));
+  });
+
+  /**
+   * svg图标生成iconfont
+   */
+  gulp.task('iconfont:gen', () => {
+    let icon = assets.icon,
+      src = path.join(rootpath.src, icon.src, '**/*.svg'),
+      dest = path.join(rootpath.src, icon.font.dest),
+      tmpl = {
+        css: 'templates/iconfont.css',
+        html: 'templates/iconfont.html'
+      },
+      stylePath = icon.font.related.style,
+      docPath = icon.font.related.doc,
+      docDest = path.join(rootpath.src, path.dirname(docPath));
+
+    return gulp.src(src)
+      .pipe(plugins.iconfont({
+        fontName: icon.font.name,
+        formats: icon.font.formats,
+        timestamp: Math.round(Date.now() / 1000)
+      }))
+      .on('glyphs', (glyphs) => {
+        let options = {
+          className: 'icon',
+          fontName: icon.font.name,
+          glyphs
+        };
+
+        options.fontPath = path.join(rootpath.src, icon.font.dest).split(path.sep).join('/');
+
+        if (!options.fontPath.startsWith('/')) {
+          options.fontPath = `/${options.fontPath}`;
+        }
+
+        // 生成项目所需的CSS
+        gulp.src(path.join(rootpath.src, icon.src, tmpl.css))
+          .pipe(plugins.consolidate('lodash', options))
+          .pipe(plugins.rename(path.basename(stylePath)))
+          .pipe(gulp.dest(path.join(rootpath.src, path.dirname(stylePath))));
+
+        // 文档使用同级目录下的iconfont
+        options.fontPath = '';
+
+        // 生成iconfont文档所需的css
+        gulp.src(path.join(rootpath.src, icon.src, tmpl.css))
+          .pipe(plugins.consolidate('lodash', options))
+          .pipe(plugins.rename('style.css'))
+          .pipe(gulp.dest(docDest));
+
+        // 生成iconfont文档页面
+        gulp.src(path.join(rootpath.src, icon.src, tmpl.html))
+          .pipe(plugins.consolidate('lodash', options))
+          .pipe(plugins.rename(path.basename(docPath)))
+          .pipe(gulp.dest(docDest));
+      })
+      .pipe(gulp.dest(docDest))
+      .pipe(gulp.dest(dest));
+  });
+
+  /**
    * 对CSS进行处理
    * @todo debug模式下保留sourcemap, 非debug模式下会启动CSS Sprites功能。
    */

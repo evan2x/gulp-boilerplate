@@ -414,6 +414,10 @@ export function collectGarbageByUseref(options = {}) {
   });
 }
 
+/**
+ * postcss-sprites 插件更新CSS规则
+ * @reference https://github.com/2createStudio/postcss-sprites/blob/master/src/index.js#L422
+ */
 export function updateSpritesRule(rule, token, image) {
   const { retina, ratio, coords, spriteWidth, spriteHeight } = image;
 	const posX = coords.x / ratio;

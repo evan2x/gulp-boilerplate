@@ -23,6 +23,12 @@ npm run serve -- --port 3000
 
 # 执行任意 gulp task
 npm run build [task]
+
+# 生成 svg symbols
+npm run symbols:gen
+
+# 生成iconfont
+npm run iconfont:gen
 ```
 
 `npm run serve` 有以下两个参数：
