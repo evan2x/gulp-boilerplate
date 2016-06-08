@@ -351,7 +351,7 @@ export default function(config, plugins, debug) {
       .pipe(plugins.svgSymbols({
         templates: ['default-svg', tmpl],
         transformData(svg, defaultData, options) {
-          let filePath = path.join(dest, icon.symbols.name).split(path.sep).join('/');
+          let filePath = util.concatReferencePath(dest, icon.symbols.name);
 
           if (!filePath.startsWith('/')) {
             filePath = `/${filePath}`;
@@ -403,7 +403,7 @@ export default function(config, plugins, debug) {
           glyphs
         };
 
-        options.fontPath = path.join(rootpath.src, icon.font.dest).split(path.sep).join('/');
+        options.fontPath = util.concatReferencePath(rootpath.src, icon.font.dest);
 
         if (!options.fontPath.startsWith('/')) {
           options.fontPath = `/${options.fontPath}`;
