@@ -71,6 +71,251 @@ export default function(config, plugins, debug) {
   });
 
   /**
+   * 对CSS进行处理
+   * @todo debug模式下保留sourcemap, 非debug模式下会启动CSS Sprites功能。
+   */
+  gulp.task('css', () => {
+    let css = assets.css,
+      pattern = util.createPattern({
+        ...css,
+        rootpath
+      }),
+      processors = [],
+      regex = new RegExp('\\.(.+)\\.(?:' + css.sprite.extensions.join('|') + ')$');
+
+    if (!debug) {
+      // support css sprites
+      processors.push(sprites({
+        stylesheetPath: pattern.destPath,
+        spritePath: path.join(rootpath.dest, assets.img.dest),
+        relativeTo: 'assets',
+        retina: true,
+        hooks: {
+          onUpdateRule: util.updateSpritesRule
+        },
+        filterBy(image) {
+          if (regex.test(image.url)) {
+            return Promise.resolve();
+          }
+
+          return Promise.reject();
+        },
+        groupBy(image) {
+          let match = image.url.match(regex);
+
+          image.groups = [];
+
+          if (match && match[1]) {
+            return Promise.resolve(match[1]);
+          }
+
+          return Promise.reject();
+        },
+        spritesmith: {
+          padding: 1
+        }
+      }));
+    }
+
+    processors.push(
+      willChange(),
+      autoprefixer(assets.css.autoprefixer)
+    );
+
+    return gulp.src(pattern.src)
+      .pipe(plugins.changed(pattern.destPath))
+      .pipe(plugins.if(debug, plugins.sourcemaps.init()))
+      .pipe(plugins.postcss(processors))
+      .pipe(plugins.if(!debug, plugins.csso()))
+      .pipe(plugins.if(debug, plugins.sourcemaps.write()))
+      .pipe(gulp.dest(pattern.destPath))
+      .pipe(bs.stream());
+  });
+
+  /**
+   * 使用browserify打包JavaScript模块
+   */
+  gulp.task('js', (done) => {
+    bundler(done);
+  });
+
+  /**
+   * copy other列表中的静态资源
+   */
+  gulp.task('other', (done) => {
+    let tasks = assets.other.map((item) => {
+      let pattern = util.createPattern({
+        ...item,
+        rootpath
+      });
+
+      return new Promise((resolve, reject) => {
+        gulp.src(pattern.src)
+          .pipe(plugins.changed(pattern.destPath))
+          .pipe(gulp.dest(pattern.destPath))
+          .on('end', resolve)
+          .on('error', reject);
+      });
+    });
+
+    Promise.all(tasks)
+      .then(() => {
+        done();
+      })
+      .catch((err) => {
+        done(err);
+      });
+  });
+
+  /**
+   * 处理HTML中的inline资源及useref统计的资源
+   * @param  {Object} pattern
+   * @param  {Object} conf
+   * @return {Promise}
+   */
+  function processHTML(pattern, conf) {
+    return new Promise((resolve, reject) => {
+      let garbageMap = {},
+        rcwdDir = new RegExp(`^${process.cwd()}`),
+        rhtmlExt = new RegExp(`\.(?:${conf.extensions.join('|')})`),
+        searchPaths = {...rootpath};
+
+      // 提取rootpath的第一层目录
+      Object.keys(searchPaths).forEach((key) => {
+        let directory = path.normalize(searchPaths[key]).split(path.sep);
+        searchPaths[key] = directory.length > 1 ? directory[0] : './';
+      });
+
+      /**
+       * 处理内嵌CSS/JS资源
+       */
+      let inlineSourceProcessor = () => {
+        let processer
+        gulp.src(pattern.target)
+          .pipe(plugins.inlineSource({
+            rootpath: searchPaths.dest,
+            compress: !debug,
+            handlers: (source, context, next) => {
+              let filePath = source.filepath.replace(rcwdDir, ''),
+                prefix = util.normalizeReferencePath(rootpath.dest);
+
+              if (!path.isAbsolute(prefix)) {
+                prefix = `/${prefix}`;
+              }
+
+              if (filePath.startsWith(prefix)) {
+                garbageMap[filePath] = filePath;
+              }
+
+              next();
+            }
+          }))
+          .pipe(gulp.dest(pattern.destPath))
+          .on('end', () => {
+            util.writeGarbage(garbageMap)
+            .then(resolve)
+            .catch(reject);
+          });
+      }
+
+      gulp.src(pattern.src)
+        .pipe(util.collectGarbageByUseref({prefix: rootpath.dest}))
+        .pipe(plugins.useref({
+          searchPath: [searchPaths.dest, searchPaths.src]
+        }))
+        .pipe(plugins.if((file) => rhtmlExt.test(file.path), gulp.dest(pattern.destPath)))
+        .pipe(plugins.if((file) => !debug && /\.css$/.test(file.path), plugins.csso()))
+        .pipe(plugins.if((file) => !debug && /\.js$/.test(file.path), plugins.uglify()))
+        .pipe(plugins.filter((file) => !rhtmlExt.test(file.path)))
+        .pipe(gulp.dest(searchPaths.dest))
+        .on('end', inlineSourceProcessor)
+        .on('error', reject);
+    });
+  }
+
+  /**
+   * 对静态HTML中对使用了useref语法的资源进行合并以及压缩
+   * 并且对添加了inline标识的资源进行内联
+   * @todo debug模式下不对css及js进行压缩
+   */
+  gulp.task('html', () => {
+    let pattern = util.createPattern({
+      ...assets.html,
+      rootpath
+    });
+
+    return processHTML(pattern, assets.html);
+  });
+
+  /**
+   * 对模板中对使用了useref语法的资源进行合并以及压缩
+   * 并且对添加了inline标识的资源进行内联
+   * @todo debug模式下不对css及js进行压缩
+   */
+  gulp.task('tpl', () => {
+    let pattern = util.createPattern({
+      ...config.tpl
+    });
+
+    return processHTML(pattern, config.tpl);
+  });
+
+  /**
+   * 替换image/css/js/html/template中的引用路径
+   */
+  gulp.task('prefix', (done) => {
+    let patterns = {},
+      maps = {
+        svg: assets.svg,
+        img: assets.img,
+        css: assets.css,
+        js: assets.js,
+        html: assets.html
+      },
+      prefixRelpace = (pattern, manifest) => new Promise((resolve, reject) => {
+        gulp.src(pattern.target)
+          .pipe(util.fileReplace({manifest}))
+          .pipe(gulp.dest(pattern.destPath))
+          .on('end', resolve)
+          .on('error', reject);
+      });
+
+    assets.other.forEach((item, index) => {
+      maps[`other${index}`] = item;
+    });
+
+    Object.keys(maps).forEach((key) => {
+      let properties = {
+        ...maps[key],
+        rootpath
+      };
+
+      patterns[key] = util.createPattern(properties);
+    });
+
+    util.writeManifest(
+      Object.values(patterns).map((item) => item.target),
+      {
+        prefix: config.prefix
+      }
+    )
+    .then((manifest) => {
+      let list = [
+        patterns.css,
+        patterns.js,
+        patterns.html,
+        util.createPattern({...config.tpl})
+      ].map((item) => prefixRelpace(item, manifest));
+
+      return Promise.all(list);
+    })
+    .then(() => {
+      done();
+    })
+    .catch(done);
+  });
+
+  /**
    * svg图标生成svg symbols
    */
   gulp.task('symbols:gen', () => {
@@ -187,254 +432,6 @@ export default function(config, plugins, debug) {
       })
       .pipe(gulp.dest(docDest))
       .pipe(gulp.dest(dest));
-  });
-
-  /**
-   * 对CSS进行处理
-   * @todo debug模式下保留sourcemap, 非debug模式下会启动CSS Sprites功能。
-   */
-  gulp.task('css', () => {
-    let css = assets.css,
-      pattern = util.createPattern({
-        ...css,
-        rootpath
-      }),
-      processors = [],
-      regex = new RegExp('\\.(.+)\\.(?:' + css.sprite.extensions.join('|') + ')$');
-
-    if (debug) {
-      // support css sprites
-      processors.push(sprites({
-        stylesheetPath: pattern.destPath,
-        spritePath: path.join(rootpath.dest, assets.img.dest),
-        relativeTo: 'assets',
-        retina: true,
-        hooks: {
-          onUpdateRule: util.updateSpritesRule
-        },
-        filterBy(image) {
-          if (regex.test(image.url)) {
-            return Promise.resolve();
-          }
-
-          return Promise.reject();
-        },
-        groupBy(image) {
-          let match = image.url.match(regex);
-
-          image.groups = [];
-
-          if (match && match[1]) {
-            return Promise.resolve(match[1]);
-          }
-
-          return Promise.reject();
-        },
-        spritesmith: {
-          padding: 1
-        }
-      }));
-    }
-
-    processors.push(
-      willChange(),
-      autoprefixer(assets.css.autoprefixer)
-    );
-
-    return gulp.src(pattern.src)
-      // .pipe(plugins.changed(pattern.destPath))
-      .pipe(plugins.if(debug, plugins.sourcemaps.init()))
-      .pipe(plugins.postcss(processors))
-      .pipe(plugins.if(!debug, plugins.csso()))
-      .pipe(plugins.if(debug, plugins.sourcemaps.write()))
-      .pipe(gulp.dest(pattern.destPath))
-      .pipe(bs.stream());
-  });
-
-  /**
-   * 使用browserify打包JavaScript模块
-   */
-  gulp.task('js', (done) => {
-    bundler(done);
-  });
-
-  /**
-   * copy other列表中的静态资源
-   */
-  gulp.task('other', (done) => {
-    let tasks = assets.other.map((item) => {
-      let pattern = util.createPattern({
-        ...item,
-        rootpath
-      });
-
-      return new Promise((resolve, reject) => {
-        gulp.src(pattern.src)
-          .pipe(plugins.changed(pattern.destPath))
-          .pipe(gulp.dest(pattern.destPath))
-          .on('end', resolve)
-          .on('error', reject);
-      });
-    });
-
-    Promise.all(tasks)
-      .then(() => {
-        done();
-      })
-      .catch((err) => {
-        done(err);
-      });
-
-  });
-
-  /**
-   * 处理HTML中的inline资源及useref统计的资源
-   * @param  {Object} pattern
-   * @param  {Object} conf
-   * @return {Promise}
-   */
-  function processHTML(pattern, conf) {
-    return new Promise((resolve, reject) => {
-      let garbageMap = {},
-        rcwdDir = new RegExp(`^${process.cwd()}`),
-        rhtmlExt = new RegExp(`\.(?:${conf.extensions.join('|')})`),
-        searchPaths = {
-          src: rootpath.src,
-          dest: rootpath.dest
-        };
-
-      Object.keys(searchPaths).forEach((key) => {
-        let directories = path.normalize(searchPaths[key]).split(path.sep);
-        searchPaths[key] = directories.length > 1 ? directories[0] : './';
-      });
-
-      gulp.src(pattern.src)
-        .pipe(util.collectGarbageByUseref({prefix: rootpath.dest}))
-        .pipe(plugins.useref({
-          searchPath: [searchPaths.dest, searchPaths.src]
-        }))
-        .pipe(plugins.if((file) => rhtmlExt.test(file.path), gulp.dest(pattern.destPath)))
-        .pipe(plugins.if(!debug, plugins.if((file) => /\.css$/.test(file.path), plugins.csso())))
-        .pipe(plugins.if(!debug, plugins.if((file) => /\.js$/.test(file.path), plugins.uglify())))
-        .pipe(plugins.filter((file) => !rhtmlExt.test(file.path)))
-        .pipe(gulp.dest(searchPaths.dest))
-        .on('end', () => {
-          gulp.src(pattern.target)
-            .pipe(plugins.inlineSource({
-              rootpath: searchPaths.dest,
-              compress: !debug,
-              handlers: (source, context, next) => {
-                let filePath = source.filepath.replace(rcwdDir, ''),
-                  prefix = util.normalizeReferencePath(rootpath.dest);
-
-                if (!path.isAbsolute(prefix)) {
-                  prefix = `/${prefix}`;
-                }
-
-                if (filePath.startsWith(prefix)) {
-                  garbageMap[filePath] = filePath;
-                }
-
-                next();
-              }
-            }))
-            .pipe(gulp.dest(pattern.destPath))
-            .on('end', () => {
-              util.writeGarbage(garbageMap)
-              .then(resolve)
-              .catch(reject);
-            });
-        })
-        .on('error', (err) => {
-          reject(err);
-        });
-    });
-  }
-
-  /**
-   * 对静态HTML中对使用了useref语法的资源进行合并以及压缩
-   * 并且对添加了inline标识的资源进行内联
-   * @todo debug模式下不对css及js进行压缩
-   */
-  gulp.task('html', () => {
-    let pattern = util.createPattern({
-      ...assets.html,
-      rootpath
-    });
-
-    return processHTML(pattern, assets.html);
-  });
-
-  /**
-   * 对模板中对使用了useref语法的资源进行合并以及压缩
-   * 并且对添加了inline标识的资源进行内联
-   * @todo debug模式下不对css及js进行压缩
-   */
-  gulp.task('tpl', () => {
-    let pattern = util.createPattern({...config.tpl});
-
-    return processHTML(pattern, config.tpl);
-  });
-
-  /**
-   * 扫描所有文件，增加文件中引用路径的前缀
-   */
-  gulp.task('prefix', (done) => {
-    let patterns = {},
-      maps = {
-        svg: assets.svg,
-        img: assets.img,
-        css: assets.css,
-        js: assets.js,
-        html: assets.html
-      },
-      prefixRelpace = (pattern, manifest) => new Promise((resolve, reject) => {
-        gulp.src(pattern.target)
-          .pipe(util.fileReplace({manifest}))
-          .pipe(gulp.dest(pattern.destPath))
-          .on('end', () => {
-            resolve();
-          })
-          .on('error', (err) => {
-            reject(err);
-          });
-      });
-
-    assets.other.forEach((item, index) => {
-      maps[`other${index}`] = item;
-    });
-
-    Object.keys(maps).forEach((key) => {
-      let properties = {
-        ...maps[key],
-        rootpath
-      };
-
-      patterns[key] = util.createPattern(properties);
-    });
-
-    util.writeManifest(
-      Object.values(patterns).map((item) => item.target),
-      {
-        prefix: config.prefix
-      }
-    )
-    .then((manifest) => {
-      let list = [
-        patterns.css,
-        patterns.js,
-        patterns.html,
-        util.createPattern({...config.tpl})
-      ].map((item) => prefixRelpace(item, manifest));
-
-      return Promise.all(list);
-    })
-    .then(() => {
-      done();
-    })
-    .catch((err) => {
-      done(err);
-    });
   });
 
   /**

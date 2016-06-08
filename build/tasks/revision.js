@@ -107,7 +107,7 @@ export default function(config, plugins) {
         });
       }
 
-      return false;
+      return Promise.resolve();
     });
 
     Promise.all(tasks).then(() => {
