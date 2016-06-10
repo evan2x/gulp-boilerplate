@@ -1,4 +1,4 @@
-/*eslint no-console: 0 */
+/* eslint no-console: 0 */
 
 import {EventEmitter} from 'events';
 
@@ -11,7 +11,7 @@ class Person extends EventEmitter {
     this.age = prop.age;
   }
 
-  say(message){
+  say(message) {
     this.emit('say', `${this.name} say: ${message}`);
   }
 }
