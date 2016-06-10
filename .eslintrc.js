@@ -1,4 +1,5 @@
 
+const WARN = 1;
 const ERROR = 2;
 
 module.exports = {
@@ -118,7 +119,7 @@ module.exports = {
     'key-spacing': ERROR,
     'keyword-spacing': ERROR,
     'linebreak-style': [ERROR, "unix"],
-    'max-len': [1, 80, ERROR],
+    'max-len': [WARN, 80, ERROR],
     'max-params': [ERROR, 5],
     'new-cap': ERROR,
     'new-parens': ERROR,
