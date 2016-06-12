@@ -177,7 +177,7 @@ export default function(config, plugins, debug) {
     return new Promise((resolve, reject) => {
       let garbageMap = {},
         rcwdDir = new RegExp(`^${process.cwd()}`),
-        rhtmlExt = new RegExp(`\.(?:${conf.extensions.join('|')})`),
+        rhtmlExt = new RegExp(`\\.(?:${conf.extensions.join('|')})`),
         searchPaths = {...rootpath};
 
       // 提取rootpath的第一层目录
