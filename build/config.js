@@ -86,7 +86,7 @@ export default {
          * 从CSS中收集图片时的根路径
          * @type {String}
          */
-        basePath: './src',
+        basePath: './',
         extensions: ['png']
       },
       extensions: ['css']
