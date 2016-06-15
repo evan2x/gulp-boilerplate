@@ -81,14 +81,14 @@ export default function(config, plugins, debug) {
         rootpath
       }),
       processors = [],
-      regex = new RegExp('\\.(.+)\\.(?:' + css.sprite.extensions.join('|') + ')$');
+      regex = new RegExp('\\.(.+)\\.(?:' + css.sprites.extensions.join('|') + ')$');
 
     if (!debug) {
       // support css sprites
       processors.push(sprites({
         stylesheetPath: pattern.destPath,
         spritePath: path.join(rootpath.dest, assets.img.dest),
-        relativeTo: 'assets',
+        basePath: css.sprites.basePath,
         retina: true,
         hooks: {
           onUpdateRule: util.updateSpritesRule
