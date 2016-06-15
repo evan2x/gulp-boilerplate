@@ -1,6 +1,10 @@
 
 export default {
   /**
+   * 静态资源CDN域名
+   */
+  domain: '',
+  /**
    * 静态资源引用添加的前缀
    * @type {String}
    */
@@ -97,10 +101,16 @@ export default {
           {cleanupIDs: false}
         ]
       },
+      /**
+       * SVG跨域存在问题，所以通常来说不使用全局的domain
+       * @type {Boolean}
+       */
+      useDomain: false,
       extensions: ['svg']
     },
     /**
      * 图标配置，可生成SVG Symbols和iconfont
+     * @todo 注意图标的目录下有生成文档的模板，请不要修改模板目录及模板名称
      * @type {Object}
      */
     icon: {

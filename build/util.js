@@ -11,7 +11,8 @@ import useref from 'useref';
 import gutil from 'gulp-util';
 import config from './config';
 
-const rootpath = config.assets.rootpath;
+const assets = config.assets;
+const rootpath = assets.rootpath;
 const garbageManifest = path.join(process.cwd(), '.garbage-manifest.json');
 
 /**
@@ -134,28 +135,28 @@ export function trimSlash(p) {
  * 删除空目录
  * @param {String} rootdir 目标目录
  */
-export function removeEmptyDirectory(rootdir) {
+export function removeEmptyDir(rootdir) {
   if (!rootdir) {
     return;
   }
 
-  let collectDirectory = (directory, directories = []) => {
-    let files = fs.readdirSync(directory),
+  let collectDirs = (dir, dirs = []) => {
+    let files = fs.readdirSync(dir),
       count = 0,
-      dir = null;
+      file = null;
 
-    while ((dir = files[count++]) != null) {
-      dir = path.join(directory, dir);
-      if (fs.statSync(dir).isDirectory()) {
-        directories.push(dir);
-        directories.concat(collectDirectory(dir, directories));
+    while ((file = files[count++]) != null) {
+      file = path.join(dir, file);
+      if (fs.statSync(file).isDirectory()) {
+        dirs.push(file);
+        dirs.concat(collectDirs(file, dirs));
       }
     }
 
-    return directories;
+    return dirs;
   };
 
-  collectDirectory(rootdir)
+  collectDirs(rootdir)
     .sort((a, b) => trimSlash(b).split('/').length - trimSlash(a).split('/').length)
     .forEach((directory) => {
       if (!fs.readdirSync(directory).length) {
@@ -234,36 +235,16 @@ export function delGarbage() {
 }
 
 /**
- * 标准化文件资源的引用路径
- * @param  {String} filePath 资源路径
- * @return {String}
+ * web 路径处理
  */
-export function normalizeReferencePath(filePath) {
-  let resultPath = path.normalize(filePath).split(path.sep).join('/');
-  if (path.isAbsolute(filePath)) {
-    resultPath = `/${resultPath}`;
+export const webpath = Object.freeze({
+  normalize(p) {
+    return path.normalize(p).split(path.sep).join('/');
+  },
+  join(...args) {
+    return webpath.normalize(path.join.apply(null, args));
   }
-
-  return resultPath;
-}
-
-/**
- * 拼接两个引用路径
- * @param  {String} first
- * @param  {String} second
- * @return {String}
- */
-export function concatReferencePath(first, second) {
-  if (first.endsWith('/')) {
-    first = first.slice(0, -1);
-  }
-
-  if (second.startsWith('/')) {
-    second = second.slice(1);
-  }
-
-  return `${first}/${second}`;
-}
+});
 
 /**
  * 将匹配到的资源路径写入到manifest
@@ -272,25 +253,55 @@ export function concatReferencePath(first, second) {
  * @param  {Boolean} options.merge 是否将匹配到的资源合并到已有的manifest.json文件
  * @return {Promise}
  */
-export function writeManifest(patterns, options = {}) {
-  let regex = new RegExp(`^${normalizeReferencePath(rootpath.dest)}`, 'g'),
-    prefix = options.prefix || '';
+export function writeManifest(patterns, {domain = '', prefix = '', merge = false} = {}) {
+  let regex = {
+      dest: new RegExp(`^${webpath.normalize(rootpath.dest)}`, 'g'),
+      svg: new RegExp(`\.(?:${assets.svg.extensions.join('|')})$`)
+    },
+    svgsrc = assets.svg.src;
+
+  if (!Array.isArray(svgsrc)) {
+    svgsrc = [svgsrc];
+  }
+
+  let svgDirs = svgsrc.map((src) => webpath.join(rootpath.src, src));
 
   return new Promise((resolve, reject) => {
     let maps = {},
       files = patterns.reduce((arr, v) => [...arr, ...glob.sync(v)], []);
 
     files.forEach((v) => {
-      let filePath = concatReferencePath(
-          normalizeReferencePath(rootpath.src),
-          normalizeReferencePath(v).replace(regex, '')
-        );
+      let filePath = webpath.join(
+          rootpath.src,
+          webpath.normalize(v).replace(regex.dest, '')
+        ),
+        newFilePath = filePath,
+        newPrefix = prefix,
+        isSVG = regex.svg.test(filePath) && svgDirs.some((dir) => filePath.startsWith(dir));
 
-      maps[filePath] = concatReferencePath(prefix, filePath);
+      // 拼接前缀
+      if (newPrefix !== '') {
+        newFilePath = webpath.join(newPrefix, filePath);
+      }
+
+      // 拼接domain
+      if (domain !== '' && (!isSVG || (isSVG && assets.svg.useDomain))) {
+        if (domain.endsWith('/')) {
+          domain = domain.slice(0, -1);
+        }
+
+        if (newFilePath.startsWith('/')) {
+          newFilePath = newFilePath.slice(1, newFilePath.length);
+        }
+
+        newFilePath = `${domain}/${newFilePath}`;
+      }
+
+      maps[filePath] = newFilePath;
     });
 
     // 合并原有的manifest文件
-    if (options.merge && existsSync(config.manifest)) {
+    if (merge && existsSync(config.manifest)) {
       let manifest = {};
       try {
         manifest = JSON.parse(fs.readFileSync(config.manifest, 'utf8'));
@@ -317,9 +328,7 @@ export function writeManifest(patterns, options = {}) {
  * @param {Object} options.manifest
  * @return {Stream<Writable>}
  */
-export function fileReplace(options = {}) {
-  let manifest = options.manifest || {};
-
+export function fileReplace({manifest = {}} = {}) {
   return through.obj(function(file, enc, cb) {
     if (file.isNull()) {
       return cb();
@@ -348,11 +357,10 @@ export function fileReplace(options = {}) {
  * @param  {String} options.prefix 针对特定前缀的文件路径，如果为空则不记录任何资源
  * @return {Stream<Writable>}
  */
-export function collectGarbageByUseref(options = {}) {
-  let prefix = options.prefix || '';
-
+export function collectGarbageByUseref({prefix = ''} = {}) {
   if (prefix) {
-    prefix = normalizeReferencePath(prefix);
+    prefix = webpath.normalize(prefix);
+
     if (!path.isAbsolute(prefix)) {
       prefix = `/${prefix}`;
     }

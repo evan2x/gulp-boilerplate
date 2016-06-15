@@ -197,7 +197,7 @@ export default function(config, plugins, debug) {
             compress: !debug,
             handlers: (source, context, next) => {
               let filePath = source.filepath.replace(rcwdDir, ''),
-                prefix = util.normalizeReferencePath(rootpath.dest);
+                prefix = util.webpath.normalize(rootpath.dest);
 
               if (!path.isAbsolute(prefix)) {
                 prefix = `/${prefix}`;
@@ -261,9 +261,9 @@ export default function(config, plugins, debug) {
   });
 
   /**
-   * 替换image/css/js/html/template中的引用路径
+   * 替换css/js/html/template中的引用路径
    */
-  gulp.task('prefix', (done) => {
+  gulp.task('path:replace', (done) => {
     let patterns = {},
       maps = {
         svg: assets.svg,
@@ -296,6 +296,7 @@ export default function(config, plugins, debug) {
     util.writeManifest(
       Object.values(patterns).map((item) => item.target),
       {
+        domain: config.domain,
         prefix: config.prefix
       }
     )
@@ -351,7 +352,7 @@ export default function(config, plugins, debug) {
       .pipe(plugins.svgSymbols({
         templates: ['default-svg', tmpl],
         transformData(svg, defaultData, options) {
-          let filePath = util.concatReferencePath(dest, icon.symbols.name);
+          let filePath = util.webpath.join(dest, icon.symbols.name);
 
           if (!filePath.startsWith('/')) {
             filePath = `/${filePath}`;
@@ -403,7 +404,7 @@ export default function(config, plugins, debug) {
           glyphs
         };
 
-        options.fontPath = util.concatReferencePath(rootpath.src, icon.font.dest);
+        options.fontPath = util.webpath.join(rootpath.src, icon.font.dest);
 
         if (!options.fontPath.startsWith('/')) {
           options.fontPath = `/${options.fontPath}`;

@@ -153,7 +153,7 @@ export default function(config, plugins) {
   /**
    * 清理掉旧文件, 只删除dest目录中的旧资源
    */
-  gulp.task('clean:rev:garbage', (done) => {
+  gulp.task('garbage:rev:clean', (done) => {
     if (util.existsSync(config.manifest)) {
       let manifest = {},
         files = [];

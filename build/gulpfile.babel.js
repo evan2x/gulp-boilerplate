@@ -24,16 +24,16 @@ gulp.task('clean', () => del([
 /**
  * 删除manifest文件
  */
-gulp.task('clean:manifest', () => del([config.manifest]));
+gulp.task('manifest:clean', () => del([config.manifest]));
 
 /**
  * 删除垃圾资源
  * @todo 删除收集的垃圾资源表
  * @todo 清理静态资源目录下的空目录
  */
-gulp.task('clean:grabage', () => util.delGarbage()
+gulp.task('grabage:clean', () => util.delGarbage()
   .then(del)
-  .then(() => util.removeEmptyDirectory(config.assets.rootpath.dest))
+  .then(() => util.removeEmptyDir(config.assets.rootpath.dest))
 );
 
 /**
@@ -41,11 +41,11 @@ gulp.task('clean:grabage', () => util.delGarbage()
  */
 gulp.task('build', (done) => {
   runSequence(
-    'clean:manifest',
+    'manifest:clean',
     ['css', 'js', 'image', 'other', 'svg'],
     ['html', 'tpl'],
-    'prefix',
-    'clean:grabage',
+    'path:replace',
+    'grabage:clean',
     done
   );
 });
@@ -57,11 +57,11 @@ gulp.task('revision', (done) => {
   runSequence(
     'clean',
     'build',
-    'clean:manifest',
+    'manifest:clean',
     ['image:rev', 'svg:rev', 'other:rev'],
     'css:rev',
     'js:rev',
-    ['tpl:rev', 'html:rev', 'clean:rev:garbage'],
+    ['tpl:rev', 'html:rev', 'garbage:rev:clean'],
     done
   );
 });
