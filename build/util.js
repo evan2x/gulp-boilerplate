@@ -276,12 +276,15 @@ export function writeManifest(patterns, {domain = '', prefix = '', merge = false
           webpath.normalize(v).replace(regex.dest, '')
         ),
         newFilePath = filePath,
-        newPrefix = prefix,
         isSVG = regex.svg.test(filePath) && svgDirs.some((dir) => filePath.startsWith(dir));
 
+      if (!filePath.startsWith('/')) {
+        newFilePath = `/${filePath}`;
+      }
+
       // 拼接前缀
-      if (newPrefix !== '') {
-        newFilePath = webpath.join(newPrefix, filePath);
+      if (prefix !== '') {
+        newFilePath = webpath.join(prefix, filePath);
       }
 
       // 拼接domain
