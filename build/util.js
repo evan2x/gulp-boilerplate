@@ -294,7 +294,7 @@ export function writeManifest(patterns, {domain = '', prefix = '', merge = false
         }
 
         if (newFilePath.startsWith('/')) {
-          newFilePath = newFilePath.slice(1, newFilePath.length);
+          newFilePath = newFilePath.slice(1);
         }
 
         newFilePath = `${domain}/${newFilePath}`;
