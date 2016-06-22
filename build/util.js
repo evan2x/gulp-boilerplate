@@ -492,7 +492,7 @@ export const revisionConverter = Object.freeze({
     return filePath;
   },
   /**
-   * 转换伟文件名格式
+   * 转换为文件名格式
    * @param  {String} filePath
    * @return {String}
    * @example
