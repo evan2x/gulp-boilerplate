@@ -8,7 +8,7 @@
 }
 
 .<%= fontName %>:before {
-  font-family: "iconfont" !important;
+  font-family: "<%= fontName %>" !important;
   font-style: normal;
   font-weight: normal;
   text-transform: none;

@@ -329,7 +329,7 @@ export function writeManifest(patterns, {domain = '', prefix = '', merge = false
  * 根据生成的静态资源表替换文件中的路径
  * @param {Object} options  参数
  * @param {Object} options.manifest
- * @return {Stream<Writable>}
+ * @return {Stream.Readable}
  */
 export function fileReplace({manifest = {}} = {}) {
   return through.obj(function(file, enc, cb) {
@@ -358,7 +358,7 @@ export function fileReplace({manifest = {}} = {}) {
  * 使用useref来收集垃圾资源
  * @param  {Object} options 参数
  * @param  {String} options.prefix 针对特定前缀的文件路径，如果为空则不记录任何资源
- * @return {Stream<Writable>}
+ * @return {Stream.Readable}
  */
 export function collectGarbageByUseref({prefix = ''} = {}) {
   if (prefix) {
@@ -466,4 +466,87 @@ export function updateSpritesRule(rule, token, image) {
 
 		rule.insertAfter(backgroundPositionDecl, backgroundSizeDecl);
 	}
+}
+
+/**
+ * 版本号格式转换器
+ * @type {Object}
+ */
+export const revisionConverter = Object.freeze({
+  /**
+   * 转换为querystring格式
+   * @param  {String} filePath
+   * @return {String}
+   * @example
+   *   /path/to/name-1d746b2ce5.png -> /path/to/name.png?v=1d746b2ce5
+   */
+  toQuery(filePath) {
+    let match = filePath.match(/-([\da-zA-Z]+)(?:\.[\da-zA-Z]+)?$/),
+      hash = null;
+
+    if (Array.isArray(match) && (hash = match[1])) {
+      filePath = filePath.replace(`-${hash}`, '');
+      filePath = `${filePath}?v=${hash}`;
+    }
+
+    return filePath;
+  },
+  /**
+   * 转换伟文件名格式
+   * @param  {String} filePath
+   * @return {String}
+   * @example
+   *   /path/to/name.png?v=1d746b2ce5 -> /path/to/name-1d746b2ce5.png
+   */
+  toFilename(filePath) {
+    let match = filePath.match(/\?v=([\da-zA-Z]+)$/),
+      hash = null;
+
+    if (Array.isArray(match) && (hash = match[1])) {
+      let extIndex = filePath.lastIndexOf('.');
+
+      filePath = filePath.replace(`?v=${hash}`, '');
+
+      if (extIndex > -1) {
+        filePath = `${filePath.slice(0, extIndex)}-${hash}${filePath.slice(extIndex)}`;
+      } else {
+        filePath = `${filePath}-${hash}`;
+      }
+    }
+
+    return filePath;
+  }
+});
+
+/**
+ * gulp-rev收集的资源重写为querystring格式
+ * @return {Stream.Readable}
+ */
+export function revRewriteQuery() {
+  let regex = /-([\da-zA-Z]{10})(?:\.[\da-zA-Z]+)?$/,
+    manifest = {};
+
+  return through.obj(function(file, enc, cb) {
+    if (file.isNull()) {
+      return cb();
+    }
+
+    if (file.isStream()) {
+      this.emit('error', new gutil.PluginError('rev-query', 'Streaming not supported'));
+      return cb();
+    }
+
+    try {
+      let oldManifest = JSON.parse(file.contents.toString());
+      manifest = Object.assign(oldManifest, manifest);
+    } catch(e) {}
+
+    for (let [key, value] of Object.entries(manifest)) {
+      manifest[key] = revisionConverter.toQuery(value);
+    }
+
+    file.contents = new Buffer(JSON.stringify(manifest, null, '    '));
+    this.push(file);
+    cb();
+  });
 }

@@ -410,24 +410,29 @@ export default function(config, plugins, debug) {
           options.fontPath = `/${options.fontPath}`;
         }
 
+        if (!options.fontPath.endsWith('/')) {
+          options.fontPath = `${options.fontPath}/`;
+        }
+
         // 生成项目所需的CSS
         gulp.src(path.join(rootpath.src, icon.src, tmpl.css))
           .pipe(plugins.consolidate('lodash', options))
           .pipe(plugins.rename(path.basename(stylePath)))
           .pipe(gulp.dest(path.join(rootpath.src, path.dirname(stylePath))));
 
-        // 文档使用同级目录下的iconfont
-        options.fontPath = '';
+        let docOptions = Object.assign({}, options, {
+          fontPath: ''
+        });
 
         // 生成iconfont文档所需的css
         gulp.src(path.join(rootpath.src, icon.src, tmpl.css))
-          .pipe(plugins.consolidate('lodash', options))
+          .pipe(plugins.consolidate('lodash', docOptions))
           .pipe(plugins.rename('style.css'))
           .pipe(gulp.dest(docDest));
 
         // 生成iconfont文档页面
         gulp.src(path.join(rootpath.src, icon.src, tmpl.html))
-          .pipe(plugins.consolidate('lodash', options))
+          .pipe(plugins.consolidate('lodash', docOptions))
           .pipe(plugins.rename(path.basename(docPath)))
           .pipe(gulp.dest(docDest));
       })

@@ -29,6 +29,13 @@ export default {
    * @type {Object}
    */
   assets: {
+    /**
+     * 用于控制静态资源发布时，hash版本号添加的位置。通常用于控制静态资源是否为覆盖式发布
+     * true -> hash版本添加到文件名中 /path/to/name-[hash].[ext]
+     * false -> hash版本添加到querystring中  /path/to/name.[ext]?v=[hash]
+     * @type {Boolean}
+     */
+    overlay: true,
     rootpath: {
       src: './assets',
       dest: './dist/assets'

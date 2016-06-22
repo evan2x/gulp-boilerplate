@@ -26,6 +26,9 @@ export default function(config, plugins) {
         base: opts.dir,
         merge: true
       })
+      .pipe(function() {
+        return plugins.if(!assets.overlay, util.revRewriteQuery());
+      })
       .pipe(gulp.dest, opts.dir);
 
   /**
@@ -52,6 +55,28 @@ export default function(config, plugins) {
 
     return gulp.src(pattern.target, {base: basedir})
       .pipe(channel());
+  });
+
+  gulp.task('other:rev', () => {
+    let otherTasks = [];
+
+    assets.other.filter((item) => {
+      let pattern = util.createPattern({
+        ...item,
+        rootpath
+      });
+
+      if (item.useHash) {
+        otherTasks.push(new Promise((resolve, reject) => {
+          gulp.src(pattern.target, {base: basedir})
+            .pipe(channel())
+            .on('end', resolve)
+            .on('error', reject);
+        }));
+      }
+    });
+
+    return Promise.all(otherTasks);
   });
 
   /**
@@ -89,33 +114,6 @@ export default function(config, plugins) {
     });
 
     return resourceRevTask(pattern.target);
-  });
-
-  gulp.task('other:rev', (done) => {
-    let tasks = assets.other.filter((item) => {
-      let pattern = util.createPattern({
-        ...item,
-        rootpath
-      });
-
-      if (item.useHash) {
-        return new Promise((resolve, reject) => {
-          gulp.src(pattern.target, {base: basedir})
-            .pipe(channel())
-            .on('end', resolve)
-            .on('error', reject);
-        });
-      }
-
-      return Promise.resolve();
-    });
-
-    Promise.all(tasks).then(() => {
-      done();
-    })
-    .catch((err) => {
-      done(err);
-    });
   });
 
   /**
@@ -164,10 +162,14 @@ export default function(config, plugins) {
         done(err);
       }
 
-      for (let key in manifest) {
-        if (manifest.hasOwnProperty(key)) {
-          files.push(path.join(basedir, key));
+      for (let [key, value] of Object.entries(manifest)) {
+        let filePath = key;
+
+        if (!assets.overlay) {
+          filePath = util.revisionConverter.toFilename(value);
         }
+
+        files.push(path.join(basedir, filePath));
       }
 
       del(files).then(() => {
