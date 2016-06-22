@@ -182,7 +182,7 @@ export default function(assets, debug) {
         packager = watchify(packager);
         packager.on('update', bundle);
         packager.on('log', (msg) => {
-          gutil.log('Watching ' + chalk.cyan('\'browserify\'') + ': ' + chalk.green(msg));
+          gutil.log(`Watching ${chalk.cyan('\'browserify\'')}: ${chalk.green(msg)}`);
         });
 
         if (typeof cb === 'function') {

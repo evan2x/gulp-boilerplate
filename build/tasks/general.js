@@ -81,7 +81,7 @@ export default function(config, plugins, debug) {
         rootpath
       }),
       processors = [],
-      regex = new RegExp('\\.(.+)\\.(?:' + css.sprites.extensions.join('|') + ')$');
+      regex = new RegExp(`\\.(.+)\\.(?:${css.sprites.extensions.join('|')})$`);
 
     if (!debug) {
       // support css sprites
@@ -190,7 +190,6 @@ export default function(config, plugins, debug) {
        * 处理内嵌CSS/JS资源
        */
       let inlineSourceProcessor = () => {
-        let processer
         gulp.src(pattern.target)
           .pipe(plugins.inlineSource({
             rootpath: searchPaths.dest,
@@ -216,7 +215,7 @@ export default function(config, plugins, debug) {
             .then(resolve)
             .catch(reject);
           });
-      }
+      };
 
       gulp.src(pattern.src)
         .pipe(util.collectGarbageByUseref({prefix: rootpath.dest}))
@@ -334,7 +333,7 @@ export default function(config, plugins, debug) {
       html: plugins.filter((file) => /\.html$/.test(file.path), {
         restore: true
       })
-    }
+    };
 
     return gulp.src(src)
       .pipe(plugins.cheerio({
@@ -351,7 +350,7 @@ export default function(config, plugins, debug) {
       }))
       .pipe(plugins.svgSymbols({
         templates: ['default-svg', tmpl],
-        transformData(svg, defaultData, options) {
+        transformData(svg, defaultData) {
           let filePath = util.webpath.join(dest, icon.symbols.name);
 
           if (!filePath.startsWith('/')) {
@@ -363,8 +362,8 @@ export default function(config, plugins, debug) {
             className: defaultData.className,
             width: '48px',
             height: '48px',
-            filePath: filePath
-          }
+            filePath
+          };
         }
       }))
       .pipe(filter.svg)

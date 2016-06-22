@@ -26,9 +26,7 @@ export default function(config, plugins) {
         base: opts.dir,
         merge: true
       })
-      .pipe(function() {
-        return plugins.if(!assets.overlay, util.revRewriteQuery());
-      })
+      .pipe(() => plugins.if(!assets.overlay, util.revRewriteQuery()))
       .pipe(gulp.dest, opts.dir);
 
   /**
@@ -60,7 +58,7 @@ export default function(config, plugins) {
   gulp.task('other:rev', () => {
     let otherTasks = [];
 
-    assets.other.filter((item) => {
+    assets.other.forEach((item) => {
       let pattern = util.createPattern({
         ...item,
         rootpath

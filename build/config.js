@@ -35,7 +35,7 @@ export default {
      * false -> hash版本添加到querystring中  /path/to/name.[ext]?v=[hash]
      * @type {Boolean}
      */
-    overlay: true,
+    overlay: false,
     rootpath: {
       src: './assets',
       dest: './dist/assets'

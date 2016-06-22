@@ -430,11 +430,11 @@ export function collectGarbageByUseref({prefix = ''} = {}) {
  * @reference https://github.com/2createStudio/postcss-sprites/blob/master/src/index.js#L422
  */
 export function updateSpritesRule(rule, token, image) {
-  const { retina, ratio, coords, spriteWidth, spriteHeight } = image;
-	const posX = coords.x / ratio;
-	const posY = coords.y / ratio;
-	const sizeX = spriteWidth / ratio;
-	const sizeY = spriteHeight / ratio;
+  const {retina, ratio, coords, spriteWidth, spriteHeight} = image;
+  const posX = coords.x / ratio;
+  const posY = coords.y / ratio;
+  const sizeX = spriteWidth / ratio;
+  const sizeY = spriteHeight / ratio;
 
   let dist = rootpath.dest.replace(/^\.*\//, '');
   let spritePath = image.spritePath.replace(dist, '');
@@ -445,27 +445,27 @@ export function updateSpritesRule(rule, token, image) {
     spritePath = `/${spritePath}`;
   }
 
-	const backgroundImageDecl = postcss.decl({
-		prop: 'background-image',
-		value: `url(${spritePath})`
-	});
+  const backgroundImageDecl = postcss.decl({
+    prop: 'background-image',
+    value: `url(${spritePath})`
+  });
 
-	const backgroundPositionDecl = postcss.decl({
-		prop: 'background-position',
-		value: `${-1 * posX}px ${-1 * posY}px`
-	});
+  const backgroundPositionDecl = postcss.decl({
+    prop: 'background-position',
+    value: `${-1 * posX}px ${-1 * posY}px`
+  });
 
-	rule.insertAfter(token, backgroundImageDecl);
-	rule.insertAfter(backgroundImageDecl, backgroundPositionDecl);
+  rule.insertAfter(token, backgroundImageDecl);
+  rule.insertAfter(backgroundImageDecl, backgroundPositionDecl);
 
-	if (retina) {
-		const backgroundSizeDecl = postcss.decl({
-			prop: 'background-size',
-			value: `${sizeX}px ${sizeY}px`
-		});
+  if (retina) {
+    const backgroundSizeDecl = postcss.decl({
+      prop: 'background-size',
+      value: `${sizeX}px ${sizeY}px`
+    });
 
-		rule.insertAfter(backgroundPositionDecl, backgroundSizeDecl);
-	}
+    rule.insertAfter(backgroundPositionDecl, backgroundSizeDecl);
+  }
 }
 
 /**
@@ -523,8 +523,7 @@ export const revisionConverter = Object.freeze({
  * @return {Stream.Readable}
  */
 export function revRewriteQuery() {
-  let regex = /-([\da-zA-Z]{10})(?:\.[\da-zA-Z]+)?$/,
-    manifest = {};
+  let manifest = {};
 
   return through.obj(function(file, enc, cb) {
     if (file.isNull()) {
@@ -539,7 +538,7 @@ export function revRewriteQuery() {
     try {
       let oldManifest = JSON.parse(file.contents.toString());
       manifest = Object.assign(oldManifest, manifest);
-    } catch(e) {}
+    } catch (e) {}
 
     for (let [key, value] of Object.entries(manifest)) {
       manifest[key] = revisionConverter.toQuery(value);
