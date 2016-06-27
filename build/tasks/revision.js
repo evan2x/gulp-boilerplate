@@ -161,23 +161,14 @@ export default function(config, plugins) {
       }
 
       for (let [key, value] of Object.entries(manifest)) {
-        let filePath = key;
+        let oldFile = path.join(basedir, key),
+          newFile = path.join(basedir, util.revisionConverter.toFilename(value));
 
-        if (!assets.overlay) {
-          filePath = util.revisionConverter.toFilename(value);
-        }
-
-        files.push(path.join(basedir, filePath));
+        del.sync(oldFile);
+        fs.renameSync(newFile, oldFile);
       }
-
-      del(files).then(() => {
-        done();
-      })
-      .catch((err) => {
-        done(err);
-      });
-    } else {
-      done();
     }
+
+    done();
   });
 }
