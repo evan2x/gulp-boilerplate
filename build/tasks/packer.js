@@ -99,14 +99,21 @@ export default function(assets, debug) {
   }
 
   // 提取babel helpers file
-  let usedHelpers = [];
+  let usedHelpers = new Set();
   packager.on('transform', (tr) => {
     if (tr instanceof babelify) {
       tr.once('babelify', (result) => {
-        usedHelpers = usedHelpers.concat(result.metadata.usedHelpers);
-        usedHelpers = Array.from(usedHelpers);
+        let beforeSize = usedHelpers.size;
 
-        let babelHelpersCode = buildExternalHelpers(usedHelpers, 'umd'),
+        result.metadata.usedHelpers.forEach((method) => {
+          usedHelpers.add(method);
+        });
+
+        if (beforeSize === usedHelpers.size) {
+          return;
+        }
+
+        let babelHelpersCode = buildExternalHelpers(Array.from(usedHelpers), 'umd'),
           babelHelpersPath = path.join(destdir, assets.js.babelHelper);
 
         fs.writeFileSync(babelHelpersPath, babelHelpersCode, 'utf8');
