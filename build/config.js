@@ -60,7 +60,6 @@ export default {
        * @todo 不使用extensions
        * @type {String}
        */
-      babelHelper: 'babelHelpers.js',
       /**
        * 将modules中指定的模块打包到一起，并输出到output指定的文件中
        * @todo babel-polyfill会强制打包到output文件中

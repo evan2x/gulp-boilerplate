@@ -7,12 +7,12 @@ import buffer from 'vinyl-buffer';
 import browserify from 'browserify';
 import watchify from 'watchify';
 import babelify from 'babelify';
-import {buildExternalHelpers} from 'babel-core';
 import mkdirp from 'mkdirp';
 import chalk from 'chalk';
 import glob from 'glob';
 import gutil from 'gulp-util';
 import loadPlugins from 'gulp-load-plugins';
+import * as util from '../util';
 
 const plugins = loadPlugins();
 
@@ -50,7 +50,7 @@ export default function(assets, debug) {
      * 第三方模块
      * @type {Array}
      */
-    vendorModules = ['babel-polyfill', ...assets.js.vendor.modules],
+    vendorModules = assets.js.vendor.modules,
     /**
      * 创建browserify打包器
      * @type {Object}
@@ -66,10 +66,7 @@ export default function(assets, debug) {
      * 提取需要删除的部分路径
      * @type {String}
      */
-    delpaths = srcdir
-      .map((v) => path.join(assets.rootpath.src, v))
-      .join('|')
-      .replace(/\\/g, '\\\\'),
+    delpaths = srcdir.map((v) => util.webpath.join(assets.rootpath.src, v)).join('|'),
     /**
      * 生成一个需要删除路径的正则
      * @type {RegExp}
@@ -97,29 +94,6 @@ export default function(assets, debug) {
   for (let i = 0; i < vendorModules.length; i++) {
     packager.exclude(vendorModules[i]);
   }
-
-  // 提取babel helpers file
-  let usedHelpers = new Set();
-  packager.on('transform', (tr) => {
-    if (tr instanceof babelify) {
-      tr.once('babelify', (result) => {
-        let beforeSize = usedHelpers.size;
-
-        result.metadata.usedHelpers.forEach((method) => {
-          usedHelpers.add(method);
-        });
-
-        if (beforeSize === usedHelpers.size) {
-          return;
-        }
-
-        let babelHelpersCode = buildExternalHelpers(Array.from(usedHelpers), 'umd'),
-          babelHelpersPath = path.join(destdir, assets.js.babelHelper);
-
-        fs.writeFileSync(babelHelpersPath, babelHelpersCode, 'utf8');
-      });
-    }
-  });
 
   let bundle = () => {
     outputdir.forEach((dir) => mkdirp.sync(dir));
