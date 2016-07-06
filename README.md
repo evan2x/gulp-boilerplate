@@ -63,7 +63,7 @@ npm run [script name]
 ### 为了更好的平衡浏览器缓存与模块合并，以下为我们建议的JS组织方式：
 
 1. 第三方模块统一打包到一个JS下，默认是 `vendor.js`，需要打包的第三方模块及最终输出文件名称可以在 `build/config.js` 中自己配置。
-2. 业务公用模块打包到一个JS下，默认是 `common.js`，注意该处将 `babelHelpers.js` 合并到 `common.js` 中是因为 `babelHelpers.js` 在打包的过程中只打包需要用到的 `babel-helpers`，同样的可以在 `build/config.js`中配置输出文件名。
+2. 业务公用模块打包到一个JS下，默认是 `common.js`。
 3. 当前页面的业务代码打包到一个JS下，默认是 `main.js`，当前页面的入口模块。
 
 **注意：由于打包第三方模块是在 `watchify` 启动时打包的，所以如果您在 `build/config.js` 中添加了第三方模块，需要重新 `watch`**
@@ -80,11 +80,9 @@ npm run [script name]
 <body>
   <h1>Hello World!</h1>
   <!-- build:js /assets/js/vendor.js -->
-  <script src="/node_modules/babel-polyfill/dist/polyfill.js"></script>
   <script src="/dist/assets/js/vendor.js"></script>
   <!-- endbuild -->
   <!-- build:js /assets/js/common.js -->
-  <script src="/dist/assets/js/babelHelpers.js"></script>
   <script src="/dist/assets/js/common.js"></script>
   <!-- endbuild -->
   <!-- build:js /assets/js/main.js -->
@@ -189,7 +187,7 @@ npm install --save-dev babel-plugin-transform-es3-member-expression-literals bab
   "plugins": [
     "transform-es3-member-expression-literals",
     "transform-es3-property-literals",
-    "external-helpers"
+    "transform-runtime"
   ]
 }
 ```
