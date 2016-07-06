@@ -2,11 +2,11 @@
 
 import {EventEmitter} from 'events';
 
-class Person extends EventEmitter {
+class Consumer extends EventEmitter {
 
   constructor(prop = {}) {
     super();
-    
+
     this.name = prop.name;
     this.age = prop.age;
   }
@@ -16,7 +16,7 @@ class Person extends EventEmitter {
   }
 }
 
-let evan = new Person({
+let evan = new Consumer({
   name: 'evan',
   age: 22
 });
