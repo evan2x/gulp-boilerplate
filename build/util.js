@@ -343,6 +343,34 @@ export function fileReplace({manifest = {}} = {}) {
 }
 
 /**
+ * 将一个Buffer或者字符串添加到读取的文件内容之前
+ * @param {String|Buffer} data
+ * @return {Stream.Readable}
+ */
+export function addBeforeSource(data) {
+  if (Buffer.isBuffer(data)) {
+    data = data.toString();
+  }
+
+  return through.obj(function(file, enc, cb) {
+    if (file.isNull()) {
+      return cb();
+    }
+
+    if (file.isStream()) {
+      this.emit('error', new gutil.PluginError('add-source', 'Streaming not supported'));
+      return cb();
+    }
+
+    let contents = file.contents.toString();
+
+    file.contents = new Buffer(`${data}\n${contents}`);
+    this.push(file);
+    cb();
+  });
+}
+
+/**
  * 使用useref来收集垃圾资源
  * @param  {Object} options 参数
  * @param  {String} options.prefix 针对特定前缀的文件路径，如果为空则不记录任何资源

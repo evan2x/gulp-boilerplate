@@ -7,6 +7,7 @@ import buffer from 'vinyl-buffer';
 import browserify from 'browserify';
 import watchify from 'watchify';
 import babelify from 'babelify';
+import {buildExternalHelpers} from 'babel-core';
 import mkdirp from 'mkdirp';
 import chalk from 'chalk';
 import glob from 'glob';
@@ -95,6 +96,28 @@ export default function(assets, debug) {
     packager.exclude(vendorModules[i]);
   }
 
+  // 提取babel helpers file
+  let usedHelpers = new Set(),
+    babelHelpersCode = null;
+
+  packager.on('transform', (tr) => {
+    if (tr instanceof babelify) {
+      tr.once('babelify', (result) => {
+        let beforeSize = usedHelpers.size;
+
+        result.metadata.usedHelpers.forEach((method) => {
+          usedHelpers.add(method);
+        });
+
+        if (beforeSize === usedHelpers.size) {
+          return;
+        }
+
+        babelHelpersCode = buildExternalHelpers(Array.from(usedHelpers), 'global');
+      });
+    }
+  });
+
   let bundle = () => {
     outputdir.forEach((dir) => mkdirp.sync(dir));
 
@@ -108,25 +131,28 @@ export default function(assets, debug) {
       })
       .pipe(source(assets.js.commonChunk))
       .pipe(buffer())
-      .pipe(plugins.if(!debug, plugins.uglify().once('error', function() {
-        this.emit('end');
-      })))
       .pipe(gulp.dest(destdir))
       .once('end', () => {
-        if (debug) {
-          done();
-        } else {
-          gulp.src(outputs, {
-            base: './'
-          })
-          .pipe(plugins.uglify().once('error', function() {
+        gulp.src(path.join(destdir, assets.js.commonChunk), {base: './'})
+          .pipe(util.addBeforeSource(babelHelpersCode))
+          .pipe(plugins.if(!debug, plugins.uglify().once('error', function() {
             this.emit('end');
-          }))
+          })))
           .pipe(gulp.dest('./'))
           .once('end', () => {
-            done();
+            if (debug) {
+              done();
+            } else {
+              gulp.src(outputs, {base: './'})
+              .pipe(plugins.uglify().once('error', function() {
+                this.emit('end');
+              }))
+              .pipe(gulp.dest('./'))
+              .once('end', () => {
+                done();
+              });
+            }
           });
-        }
       });
   };
 
