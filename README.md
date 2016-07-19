@@ -80,6 +80,7 @@ npm run [script name]
 <body>
   <h1>Hello World!</h1>
   <!-- build:js /assets/js/vendor.js -->
+  <script src="/node_modules/babel-polyfill/browser.js"></script>
   <script src="/dist/assets/js/vendor.js"></script>
   <!-- endbuild -->
   <!-- build:js /assets/js/common.js -->
@@ -166,28 +167,4 @@ import * as util from '../../common/util';
 
 // 引入工具模块
 import * as util from 'common/util';
-```
-
-### 针对低端浏览器(IE8)的支持
-
-安装两个Babel插件
-
-```shell
-npm install --save-dev babel-plugin-transform-es3-member-expression-literals babel-plugin-transform-es3-property-literals
-```
-
-配置 `.babelrc`
-
-```json
-{
-  "presets": [
-    "es2015",
-    "stage-2"
-  ],
-  "plugins": [
-    "transform-es3-member-expression-literals",
-    "transform-es3-property-literals",
-    "transform-runtime"
-  ]
-}
 ```
