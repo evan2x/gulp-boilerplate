@@ -220,7 +220,7 @@ export default function(config, plugins, debug) {
       gulp.src(pattern.src)
         .pipe(util.collectGarbageByUseref({prefix: rootpath.dest}))
         .pipe(plugins.useref({
-          searchPath: [searchPaths.dest, searchPaths.src]
+          searchPath: [searchPaths.dest, searchPaths.src, './']
         }))
         .pipe(plugins.if((file) => rhtmlExt.test(file.path), gulp.dest(pattern.destPath)))
         .pipe(plugins.if((file) => !debug && /\.css$/.test(file.path), plugins.csso()))
