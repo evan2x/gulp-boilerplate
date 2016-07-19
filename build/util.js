@@ -235,18 +235,6 @@ export function delGarbage() {
 }
 
 /**
- * web 路径处理
- */
-export const webpath = Object.freeze({
-  normalize(p) {
-    return path.normalize(p).split(path.sep).join('/');
-  },
-  join(...args) {
-    return webpath.normalize(path.join.apply(null, args));
-  }
-});
-
-/**
  * 将匹配到的资源路径写入到manifest
  * @param  {String}  patterns   file globbing格式
  * @param  {Object} options
@@ -255,7 +243,7 @@ export const webpath = Object.freeze({
  */
 export function writeManifest(patterns, {domain = '', prefix = '', merge = false} = {}) {
   let regex = {
-      dest: new RegExp(`^${webpath.normalize(rootpath.dest)}`, 'g'),
+      dest: new RegExp(`^${path.posix.normalize(rootpath.dest)}`, 'g'),
       svg: new RegExp(`\.(?:${assets.svg.extensions.join('|')})$`)
     },
     svgsrc = assets.svg.src;
@@ -264,16 +252,16 @@ export function writeManifest(patterns, {domain = '', prefix = '', merge = false
     svgsrc = [svgsrc];
   }
 
-  let svgDirs = svgsrc.map((src) => webpath.join(rootpath.src, src));
+  let svgDirs = svgsrc.map((src) => path.posix.join(rootpath.src, src));
 
   return new Promise((resolve, reject) => {
     let maps = {},
       files = patterns.reduce((arr, v) => [...arr, ...glob.sync(v)], []);
 
     files.forEach((v) => {
-      let filePath = webpath.join(
+      let filePath = path.posix.join(
           rootpath.src,
-          webpath.normalize(v).replace(regex.dest, '')
+          path.posix.normalize(v).replace(regex.dest, '')
         ),
         newFilePath = filePath,
         isSVG = regex.svg.test(filePath) && svgDirs.some((dir) => filePath.startsWith(dir));
@@ -284,7 +272,7 @@ export function writeManifest(patterns, {domain = '', prefix = '', merge = false
 
       // 拼接前缀
       if (prefix !== '') {
-        newFilePath = webpath.join(prefix, filePath);
+        newFilePath = path.posix.join(prefix, filePath);
       }
 
       // 拼接domain
@@ -362,7 +350,7 @@ export function fileReplace({manifest = {}} = {}) {
  */
 export function collectGarbageByUseref({prefix = ''} = {}) {
   if (prefix) {
-    prefix = webpath.normalize(prefix);
+    prefix = path.posix.normalize(prefix);
 
     if (!path.isAbsolute(prefix)) {
       prefix = `/${prefix}`;

@@ -66,7 +66,7 @@ export default function(assets, debug) {
      * 提取需要删除的部分路径
      * @type {String}
      */
-    delpaths = srcdir.map((v) => util.webpath.join(assets.rootpath.src, v)).join('|'),
+    delpaths = srcdir.map((v) => path.posix.join(assets.rootpath.src, v)).join('|'),
     /**
      * 生成一个需要删除路径的正则
      * @type {RegExp}

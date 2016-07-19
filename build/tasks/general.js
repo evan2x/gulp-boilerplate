@@ -81,7 +81,7 @@ export default function(config, plugins, debug) {
         rootpath
       }),
       processors = [],
-      regex = new RegExp(`\\.(.+)\\.(?:${css.sprites.extensions.join('|')})$`);
+      matcher = new RegExp(`\\.(.+)\\.(?:${css.sprites.extensions.join('|')})$`);
 
     if (!debug) {
       // support css sprites
@@ -94,14 +94,14 @@ export default function(config, plugins, debug) {
           onUpdateRule: util.updateSpritesRule
         },
         filterBy(image) {
-          if (regex.test(image.url)) {
+          if (matcher.test(image.url)) {
             return Promise.resolve();
           }
 
           return Promise.reject();
         },
         groupBy(image) {
-          let match = image.url.match(regex);
+          let match = image.url.match(matcher);
 
           image.groups = [];
 
@@ -196,7 +196,7 @@ export default function(config, plugins, debug) {
             compress: !debug,
             handlers: (source, context, next) => {
               let filePath = source.filepath.replace(rcwdDir, ''),
-                prefix = util.webpath.normalize(rootpath.dest);
+                prefix = path.posix.normalize(rootpath.dest);
 
               if (!path.isAbsolute(prefix)) {
                 prefix = `/${prefix}`;
@@ -351,7 +351,7 @@ export default function(config, plugins, debug) {
       .pipe(plugins.svgSymbols({
         templates: ['default-svg', tmpl],
         transformData(svg, defaultData) {
-          let filePath = util.webpath.join(dest, icon.symbols.name);
+          let filePath = path.posix.join(dest, icon.symbols.name);
 
           if (!filePath.startsWith('/')) {
             filePath = `/${filePath}`;
@@ -403,7 +403,7 @@ export default function(config, plugins, debug) {
           glyphs
         };
 
-        options.fontPath = util.webpath.join(rootpath.src, icon.font.dest);
+        options.fontPath = path.posix.join(rootpath.src, icon.font.dest);
 
         if (!options.fontPath.startsWith('/')) {
           options.fontPath = `/${options.fontPath}`;
