@@ -98,7 +98,7 @@ export default function(assets, debug) {
 
   // 提取babel helpers file
   let usedHelpers = new Set(),
-    babelHelpersCode = null;
+    babelHelpersCode = '';
 
   packager.on('transform', (tr) => {
     if (tr instanceof babelify) {
