@@ -324,7 +324,7 @@ export default function(config, plugins, debug) {
       dest = path.join(rootpath.src, icon.symbols.dest),
       docPath = icon.symbols.related.doc,
       docDest = path.join(rootpath.src, path.dirname(docPath)),
-      tmpl = path.join(rootpath.src, icon.src, 'templates/svg-symbols.html');
+      tmpl = path.resolve(__dirname, '../templates/svg-symbols.html');
 
     let filter = {
       svg: plugins.filter((file) => /\.svg$/.test(file.path), {
@@ -383,8 +383,8 @@ export default function(config, plugins, debug) {
       src = path.join(rootpath.src, icon.src, '**/*.svg'),
       dest = path.join(rootpath.src, icon.font.dest),
       tmpl = {
-        css: 'templates/iconfont.css',
-        html: 'templates/iconfont.html'
+        css: path.resolve(__dirname, '../templates/iconfont.css'),
+        html: path.resolve(__dirname, '../templates/iconfont.html')
       },
       stylePath = icon.font.related.style,
       docPath = icon.font.related.doc,
@@ -414,7 +414,7 @@ export default function(config, plugins, debug) {
         }
 
         // 生成项目所需的CSS
-        gulp.src(path.join(rootpath.src, icon.src, tmpl.css))
+        gulp.src(tmpl.css)
           .pipe(plugins.consolidate('lodash', options))
           .pipe(plugins.rename(path.basename(stylePath)))
           .pipe(gulp.dest(path.join(rootpath.src, path.dirname(stylePath))));
@@ -424,13 +424,13 @@ export default function(config, plugins, debug) {
         });
 
         // 生成iconfont文档所需的css
-        gulp.src(path.join(rootpath.src, icon.src, tmpl.css))
+        gulp.src(tmpl.css)
           .pipe(plugins.consolidate('lodash', docOptions))
           .pipe(plugins.rename('style.css'))
           .pipe(gulp.dest(docDest));
 
         // 生成iconfont文档页面
-        gulp.src(path.join(rootpath.src, icon.src, tmpl.html))
+        gulp.src(tmpl.html)
           .pipe(plugins.consolidate('lodash', docOptions))
           .pipe(plugins.rename(path.basename(docPath)))
           .pipe(gulp.dest(docDest));
