@@ -7,7 +7,7 @@ import buffer from 'vinyl-buffer';
 import browserify from 'browserify';
 import watchify from 'watchify';
 import babelify from 'babelify';
-import {buildExternalHelpers} from 'babel-core';
+import * as babel from 'babel-core';
 import mkdirp from 'mkdirp';
 import chalk from 'chalk';
 import glob from 'glob';
@@ -113,7 +113,14 @@ export default function(assets, debug) {
           return;
         }
 
-        babelHelpersCode = buildExternalHelpers(Array.from(usedHelpers), 'global');
+        let ret = babel.transform(babel.buildExternalHelpers(Array.from(usedHelpers), 'global'), {
+          plugins: [
+            'transform-es3-member-expression-literals',
+            'transform-es3-property-literals'
+          ]
+        });
+
+        babelHelpersCode = ret.code;
       });
     }
   });
