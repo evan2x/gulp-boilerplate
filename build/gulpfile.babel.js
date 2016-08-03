@@ -41,6 +41,7 @@ gulp.task('grabage:clean', () => util.delGarbage()
  */
 gulp.task('build', (done) => {
   runSequence(
+    'clean',
     'manifest:clean',
     ['css', 'js', 'image', 'other', 'svg'],
     ['html', 'tpl'],
@@ -55,7 +56,6 @@ gulp.task('build', (done) => {
  */
 gulp.task('revision', (done) => {
   runSequence(
-    'clean',
     'build',
     'manifest:clean',
     ['image:rev', 'svg:rev', 'other:rev'],
