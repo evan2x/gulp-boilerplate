@@ -497,7 +497,7 @@ export const revisionConverter = Object.freeze({
    *   /path/to/name-1d746b2ce5.png -> /path/to/name.png?v=1d746b2ce5
    */
   toQuery(filePath) {
-    let match = filePath.match(/-([\da-zA-Z]+)(?:\.[\da-zA-Z]+)?$/),
+    let match = filePath.match(/-([\da-zA-Z]+)(?:\.[\s\S]+)?(?:\.[\da-zA-Z]+)*$/),
       hash = null;
 
     if (Array.isArray(match) && (hash = match[1])) {
@@ -519,12 +519,12 @@ export const revisionConverter = Object.freeze({
       hash = null;
 
     if (Array.isArray(match) && (hash = match[1])) {
-      let extIndex = filePath.lastIndexOf('.');
+      let dotIndex = filePath.indexOf('.');
 
       filePath = filePath.replace(`?v=${hash}`, '');
 
-      if (extIndex > -1) {
-        filePath = `${filePath.slice(0, extIndex)}-${hash}${filePath.slice(extIndex)}`;
+      if (dotIndex > -1) {
+        filePath = `${filePath.slice(0, dotIndex)}-${hash}${filePath.slice(dotIndex)}`;
       } else {
         filePath = `${filePath}-${hash}`;
       }

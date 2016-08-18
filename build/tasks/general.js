@@ -125,7 +125,9 @@ export default function(config, plugins, debug) {
     return gulp.src(pattern.src)
       .pipe(plugins.changed(pattern.destPath))
       .pipe(plugins.if(debug, plugins.sourcemaps.init()))
-      .pipe(plugins.postcss(processors))
+      .pipe(plugins.postcss(processors).on('error', function(e) {
+        console.log(chalk.red(`\nPostCSS Error:\n${e.message}`));
+      }))
       .pipe(plugins.if(!debug, plugins.csso()))
       .pipe(plugins.if(debug, plugins.sourcemaps.write()))
       .pipe(gulp.dest(pattern.destPath))
