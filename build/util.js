@@ -1,6 +1,7 @@
 
 import path from 'path';
 import fs from 'fs';
+import glob2base from 'glob2base';
 import chokidar from 'chokidar';
 import postcss from 'postcss';
 import through from 'through2';
@@ -14,6 +15,172 @@ import config from './config';
 const assets = config.assets;
 const rootpath = assets.rootpath;
 const garbageManifest = path.join(process.cwd(), '.garbage-manifest.json');
+
+export const grabage = new Set();
+
+/**
+ * 处理gulp.src所需要的globs
+ * @param {String} base
+ * @param {Array|String} globs
+ * @return {Array|String}
+ */
+export function processGlobs(base, globs) {
+  if (globs == null) {
+    return '';
+  }
+
+  if (Array.isArray(globs)) {
+    return globs.map(item => path.join(base, item));
+  } else {
+    return path.join(base, globs);
+  }
+}
+
+/**
+ * 替换globs base
+ * @param {Array|String} globs
+ * @param {String} base
+ * @return {Array|String}
+ */
+export function globRebase(globs, base) {
+  if (globs == null) {
+    return '';
+  }
+
+  let rebase = (globPath) => {
+    return path.normalize(globPath.replace(glob2base(globPath), base));
+  }
+
+  if (Array.isArray(globs)) {
+    globs.map(item => {
+      return rebase(item);
+    });
+  } else {
+    return rebase(globs);
+  }
+}
+
+/**
+ * 使用useref标记清除资源
+ * @param {Object} options
+ * @param {String} options.directory
+ */
+export function userefMarkSweep({directory = ''} = {}) {
+  if (directory) {
+    directory = path.posix.normalize(directory);
+
+    // if (!path.isAbsolute(directory)) {
+    //   directory = `/${directory}`;
+    // }
+  }
+
+  return through.obj(function(file, enc, cb) {
+    if (file.isNull()) {
+      return cb();
+    }
+
+    if (file.isStream()) {
+      this.emit('error', new gutil.PluginError('mark-sweep-resources', 'Streaming not supported'));
+      return cb();
+    }
+
+    if (directory) {
+      let result = useref(file.contents.toString())[1];
+
+      const markSweep = resources => {
+        Object.keys(resources).forEach(key => {
+          let replacedFiles = resources[key].assets;
+
+          if (replacedFiles && Array.isArray(replacedFiles)) {
+            replacedFiles.forEach(filePath => {
+              // filePath = filePath.replace(/^(?:\.\/|\.\.\/)+/, '');
+              if (filePath.startsWith(directory) && !filePath.endsWith(key)) {
+                grabage.add(filePath);
+              }
+            });
+          }
+        });
+      }
+
+      if (result.css) {
+        markSweep(result.css);
+      }
+
+      if (result.js) {
+        markSweep(result.js);
+      }
+    }
+
+    this.push(file);
+    cb();
+  });
+}
+
+/**
+ * 根据生成的静态资源表替换文件中的路径
+ * @param {Object} manifest
+ * @return {Stream.Readable}
+ */
+export function replaceByManifest(manifest) {
+  return through.obj(function(file, enc, cb) {
+    if (file.isNull()) {
+      return cb();
+    }
+
+    if (file.isStream()) {
+      this.emit('error', new gutil.PluginError('replace', 'Streaming not supported'));
+      return cb();
+    }
+
+    let contents = file.contents.toString();
+
+    for (let [key, value] of manifest.entries()) {
+      contents = contents.replace(new RegExp(`${trimSlash(key)}`, 'g'), trimSlash(value));
+    }
+
+    file.contents = new Buffer(contents);
+    this.push(file);
+    cb();
+  });
+}
+
+/**
+ * 去除字符串首尾的斜杠
+ * @param {String} str
+ * @return {String}
+ */
+export function trimSlash(str) {
+  return trimSlashLeft(str).trimSlashRight(str);
+}
+
+/**
+ * 去除字符串中左边的 “/” 字符
+ * @param {String} str
+ * @return {String}
+ */
+export function trimSlashLeft(str) {
+  if (!str) return '';
+
+  return str.replace(/^\/+/, '');
+}
+
+/**
+ * 去除字符串中右边的 “/” 字符
+ * @param {String} str
+ * @return {String}
+ */
+export function trimSlashRight(str) {
+  if (!str) return '';
+
+  for (let count = str.length; count >= 0; count--) {
+    if (str.charCodeAt(count - 1) !== 47) {
+      str = str.slice(0, count);
+      break;
+    }
+  }
+
+  return str;
+}
 
 /**
  * [1,2,3] -> '{1,2,3}'
@@ -56,14 +223,14 @@ export function existsSync(filePath) {
  * @param  {Array|String} task
  * @return {Watcher}
  */
-export function watch(pattern, options = {}, task) {
+export function watch(globs, options = {}, task) {
   if (typeof options === 'string' || Array.isArray(options)) {
     task = options;
     options = {};
   }
 
   options.ignoreInitial = !!options.ignoreInitial;
-  let watcher = chokidar.watch(pattern, options);
+  let watcher = chokidar.watch(globs, options);
 
   if (Array.isArray(task) || typeof task === 'string') {
     let fn = () => gulp.start(task);
@@ -108,27 +275,6 @@ export function createPattern(options = {}) {
     target: createMatchPattern(prefixPath.dest, options.dest),
     destPath: path.join(prefixPath.dest, options.dest)
   };
-}
-
-/**
- * 去除首尾的斜杠
- * @param {String} p
- * @return {String}
- */
-export function trimSlash(p) {
-  if (!p) {
-    return '';
-  }
-
-  if (p.startsWith('/')) {
-    p = p.slice(1);
-  }
-
-  if (p.endsWith('/')) {
-    p = p.slice(0, -1);
-  }
-
-  return p;
 }
 
 /**
