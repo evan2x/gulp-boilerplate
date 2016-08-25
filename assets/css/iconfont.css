@@ -17,7 +17,6 @@
   -moz-osx-font-smoothing: grayscale; /* 修复锯齿问题 */
 }
 
-
 .icon-backtop:before {
   content: "\ea01";
 }

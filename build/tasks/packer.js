@@ -56,7 +56,7 @@ export default function(assets, debug) {
      * 创建browserify打包器
      * @type {Object}
      */
-    packager = browserify({
+    bundler = browserify({
       cache: {},
       packageCache: {},
       entries,
@@ -89,18 +89,18 @@ export default function(assets, debug) {
       return arr;
     }, []);
 
-  packager.plugin('factor-bundle', {outputs});
+  bundler.plugin('factor-bundle', {outputs});
 
   // 排除第三方模块
   for (let i = 0; i < vendorModules.length; i++) {
-    packager.exclude(vendorModules[i]);
+    bundler.exclude(vendorModules[i]);
   }
 
   // 提取babel helpers file
   let usedHelpers = new Set(),
     babelHelpersCode = '';
 
-  packager.on('transform', (tr) => {
+  bundler.on('transform', (tr) => {
     if (tr instanceof babelify) {
       tr.once('babelify', (result) => {
         let beforeSize = usedHelpers.size;
@@ -128,7 +128,7 @@ export default function(assets, debug) {
   let bundle = () => {
     outputdir.forEach((dir) => mkdirp.sync(dir));
 
-    return packager
+    return bundler
       .bundle()
       .once('error', function(e) {
         // print browserify or babelify error
@@ -172,13 +172,13 @@ export default function(assets, debug) {
     }
 
     return new Promise((resolve, reject) => {
-      let vendorPackager = browserify();
+      let vendorBundler = browserify();
 
       for (let i = 0; i < vendorModules.length; i++) {
-        vendorPackager.require(vendorModules[i]);
+        vendorBundler.require(vendorModules[i]);
       }
 
-      vendorPackager
+      vendorBundler
         .bundle()
         .pipe(source(assets.js.vendor.output))
         .pipe(gulp.dest(destdir))
@@ -193,9 +193,9 @@ export default function(assets, debug) {
         done = mode;
       } else if (mode === 'watch') {
         isWatch = true;
-        packager = watchify(packager);
-        packager.on('update', bundle);
-        packager.on('log', (msg) => {
+        bundler = watchify(bundler);
+        bundler.on('update', bundle);
+        bundler.on('log', (msg) => {
           gutil.log(`Watching ${chalk.cyan('\'browserify\'')}: ${chalk.green(msg)}`);
         });
 

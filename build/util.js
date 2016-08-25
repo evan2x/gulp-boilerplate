@@ -6,7 +6,7 @@ import chokidar from 'chokidar';
 import postcss from 'postcss';
 import through from 'through2';
 import gulp from 'gulp';
-import glob from 'glob';
+import glob, { Glob } from 'glob';
 import del from 'del';
 import useref from 'useref';
 import gutil from 'gulp-util';
@@ -16,7 +16,13 @@ const assets = config.assets;
 const rootpath = assets.rootpath;
 const garbageManifest = path.join(process.cwd(), '.garbage-manifest.json');
 
-export const grabage = new Set();
+class GrabageSet extends Set {
+  clean() {
+
+  }
+}
+
+export const grabage = new GrabageSet();
 
 /**
  * 处理gulp.src所需要的globs
@@ -48,7 +54,7 @@ export function globRebase(globs, base) {
   }
 
   let rebase = (globPath) => {
-    return path.normalize(globPath.replace(glob2base(globPath), base));
+    return path.normalize(globPath.replace(glob2base(new Glob(globPath)), base));
   }
 
   if (Array.isArray(globs)) {
@@ -183,6 +189,119 @@ export function trimSlashRight(str) {
 }
 
 /**
+ * 版本号格式转换器
+ * @type {Object}
+ */
+export const versionFormatter = Object.freeze({
+  /**
+   * 转换为querystring格式
+   * @param  {String} filePath
+   * @return {String}
+   * @example
+   *   /path/to/name-1d746b2ce5.png -> /path/to/name.png?v=1d746b2ce5
+   */
+  toQuery(filePath) {
+    let match = filePath.match(/-([\da-zA-Z]+)(?:\.[\s\S]+)?(?:\.[\da-zA-Z]+)*$/),
+      hash = null;
+
+    if (Array.isArray(match) && (hash = match[1])) {
+      filePath = filePath.replace(`-${hash}`, '');
+      filePath = `${filePath}?v=${hash}`;
+    }
+
+    return filePath;
+  },
+  /**
+   * 转换为文件名格式
+   * @param  {String} filePath
+   * @return {String}
+   * @example
+   *   /path/to/name.png?v=1d746b2ce5 -> /path/to/name-1d746b2ce5.png
+   */
+  toFilename(filePath) {
+    let match = filePath.match(/\?v=([\da-zA-Z]+)$/),
+      hash = null;
+
+    if (Array.isArray(match) && (hash = match[1])) {
+      let dotIndex = filePath.indexOf('.');
+
+      filePath = filePath.replace(`?v=${hash}`, '');
+
+      if (dotIndex > -1) {
+        filePath = `${filePath.slice(0, dotIndex)}-${hash}${filePath.slice(dotIndex)}`;
+      } else {
+        filePath = `${filePath}-${hash}`;
+      }
+    }
+
+    return filePath;
+  }
+});
+
+/**
+ * 使用chokidar实现watch，弃用vinyl-fs(gulp)的watch
+ * @param  {Glob} glob
+ * @param  {Object} options
+ * @param  {Array|String} task
+ * @return {Watcher}
+ * @see https://www.npmjs.com/package/chokidar
+ */
+export function watch(globs, options = {}, task) {
+  if (typeof options === 'string' || Array.isArray(options)) {
+    task = options;
+    options = {};
+  }
+
+  options.ignoreInitial = !!options.ignoreInitial;
+  let watcher = chokidar.watch(globs, options);
+
+  if (Array.isArray(task) || typeof task === 'string') {
+    let fn = () => gulp.start(task);
+
+    watcher
+      .on('add', fn)
+      .on('unlink', fn)
+      .on('change', fn);
+  }
+
+  return watcher;
+}
+
+/**
+ * 删除空目录
+ * @param {String} basedir 目标目录
+ */
+export function rmEmptyDir(basedir) {
+  if (!basedir) return;
+
+  let collect = (dir, dirs = []) => {
+    let files = fs.readdirSync(dir),
+      count = 0,
+      file = null;
+
+    while ((file = files[count++]) != null) {
+      file = path.join(dir, file);
+      if (fs.statSync(file).isDirectory()) {
+        dirs.push(file);
+        dirs.concat(collect(file, dirs));
+      }
+    }
+
+    return dirs;
+  };
+
+  collect(basedir)
+    .sort((a, b) => trimSlash(b).split('/').length - trimSlash(a).split('/').length)
+    .forEach((directory) => {
+      if (!fs.readdirSync(directory).length) {
+        fs.rmdirSync(directory);
+      }
+    });
+}
+
+// ------------old-------------
+
+/**
  * [1,2,3] -> '{1,2,3}'
  * @param  {Array<String>} arr
  * @return {String}
@@ -213,35 +332,6 @@ export function existsSync(filePath) {
   } catch (e) {
     return false;
   }
-}
-
-/**
- * 使用chokidar实现watch，弃用vinyl-fs(gulp)的watch
- * @see https://www.npmjs.com/package/chokidar
- * @param  {Glob} glob
- * @param  {Object} options
- * @param  {Array|String} task
- * @return {Watcher}
- */
-export function watch(globs, options = {}, task) {
-  if (typeof options === 'string' || Array.isArray(options)) {
-    task = options;
-    options = {};
-  }
-
-  options.ignoreInitial = !!options.ignoreInitial;
-  let watcher = chokidar.watch(globs, options);
-
-  if (Array.isArray(task) || typeof task === 'string') {
-    let fn = () => gulp.start(task);
-
-    watcher
-      .on('add', fn)
-      .on('unlink', fn)
-      .on('change', fn);
-  }
-
-  return watcher;
 }
 
 /**
@@ -629,6 +719,8 @@ export function updateSpritesRule(rule, token, image) {
     rule.insertAfter(backgroundPositionDecl, backgroundSizeDecl);
   }
 }
+
+
 
 /**
  * 版本号格式转换器

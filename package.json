@@ -90,7 +90,9 @@
     "watchify": "^3.7.0"
   },
   "dependencies": {
-    "babel-polyfill": "^6.13.0"
+    "babel-polyfill": "^6.13.0",
+    "glob2base": "0.0.12",
+    "minimatch": "^3.0.3"
   },
   "license": "MIT"
 }

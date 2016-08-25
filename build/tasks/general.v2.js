@@ -1,15 +1,21 @@
 
 import path from 'path';
 import gulp from 'gulp';
+import minimist from 'minimist';
 import minimatch from 'minimatch';
 import pngquant from 'imagemin-pngquant';
 import browserSync from 'browser-sync';
+import autoprefixer from 'autoprefixer';
+import sprites from 'postcss-sprites';
+import willChange from 'postcss-will-change';
 
-import util, { grabage } from '../util';
+import * as util from '../util';
 import config from '../config.v2';
+import packager from './packager.v2';
 
 const bs = browserSync.create();
 const argv = minimist(process.argv.slice(2));
+const cwd = process.cwd();
 
 export default function(plugins, debug) {
   const {
@@ -17,8 +23,10 @@ export default function(plugins, debug) {
     assets: { base, output }
   } = config;
 
+  const bundler = packager(plugins, debug);
+
   const processTMPL = (globs, destPath) => {
-    let rcwd = new RegExp(`^${process.cwd()}`),
+    let rcwd = new RegExp(`^${cwd}`),
       searchPaths = {
         src: base,
         dest: output
@@ -47,7 +55,7 @@ export default function(plugins, debug) {
 
             // 如果内嵌资源是以输出目录开头的话，则加入回收资源清单
             if (filePath.startsWith(outputPrefix)) {
-              grabage.add(filePath);
+              util.grabage.add(filePath);
             }
 
             next();
@@ -191,7 +199,7 @@ export default function(plugins, debug) {
    * 使用browserify打包JavaScript模块
    */
   gulp.task('js', () => {
-    // bundler(done);
+    return bundler();
   });
 
   /**
@@ -261,8 +269,7 @@ export default function(plugins, debug) {
    */
   gulp.task('watch', () => {
     util.watch(assets.css.src, ['css']);
-
-    // bundler('watch');
+    bundler({watch: true});
   });
 
   /**

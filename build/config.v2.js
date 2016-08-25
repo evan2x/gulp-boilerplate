@@ -4,22 +4,22 @@ import { Glob } from 'glob';
 import glob2base from 'glob2base';
 
 /**
- * 资源根目录，相对于process.cwd()
+ * 资源根目录
  * @type {String}
  */
-const base = '/assets';
+const base = './assets';
 
 /**
- * 资源输出目录，相对于process.cwd()
+ * 资源输出目录
  * @type {String}
  */
-const output = '/dist';
+const output = './dist';
 
 /**
- * 文档输出目录，相对于process.cwd()
+ * 文档输出目录
  * @type {String}
  */
-const docs = '/docs';
+const docs = './docs';
 
 let config = {
   /**
@@ -53,9 +53,9 @@ let config = {
    */
   assets: {
     base,
-    output,
+    output: path.join(output, 'assets'),
     /**
-     * 静态资源清单文件输出路径
+     * gulp-rev静态资源清单文件输出路径
      * @type {String}
      */
     manifest: './rev-manifest.json',
@@ -110,7 +110,7 @@ let config = {
      * @type {Object}
      */
     css: {
-      src: 'css/**/*.js',
+      src: 'css/**/*.css',
       dest: 'css/',
       /**
        * autoprefixer配置项
