@@ -91,7 +91,7 @@ let config = {
          * 需要打包的模块
          * @type {Array}
          */
-        modules: [],
+        modules: ['babel-polyfill'],
         /**
          * vendor包的输出文件
          * @type {String}

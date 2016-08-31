@@ -20,49 +20,38 @@ const cwd = process.cwd();
 export default function(plugins, debug) {
   const {
     assets,
-    assets: { base, output }
+    assets: {
+      base,
+      output,
+      svg: {
+        compress
+      }
+    }
   } = config;
 
+  /**
+   * 匹配CSS Sprites 图片的分组
+   * @type {RegExp}
+   */
+  const rgroup = /\.(.+)\.(?:[a-zA-Z0-9]+)$/;
+
+  /**
+   * JS模块打包器
+   * @type {Object}
+   */
   const bundler = packager(plugins, debug);
 
-  const processTMPL = (globs, destPath) => {
+  /**
+   * 处理模板
+   * @param {Array|String} globs
+   * @param {String} destPath
+   */
+  const processTmpl = (globs, destPath) => {
     let rcwd = new RegExp(`^${cwd}`),
       searchPaths = {
         src: base,
         dest: output
       };
-
-    // 提取searchPaths的第一层目录
-    Object.keys(searchPaths).forEach(key => {
-      let dirs = path.normalize(searchPaths[key]).split(path.sep);
-      searchPaths[key] = dirs.length > 1 ? dirs[0] : './';
-    });
-
-    const processInlineSource = () => {
-      let destGlobs = util.processGlobs(output, util.globRebase(globs, destPath));
-
-      gulp.src(pattern.target)
-        .pipe(plugins.inlineSource({
-          rootpath: searchPaths.dest,
-          compress: !debug,
-          handlers: (source, context, next) => {
-            let filePath = source.filepath.replace(rcwd, ''),
-              outputPrefix = path.posix.normalize(output);
-
-            // if (!path.isAbsolute(outputPrefix)) {
-            //   outputPrefix = `/${outputPrefix}`;
-            // }
-
-            // 如果内嵌资源是以输出目录开头的话，则加入回收资源清单
-            if (filePath.startsWith(outputPrefix)) {
-              util.grabage.add(filePath);
-            }
-
-            next();
-          }
-        }))
-        .pipe(gulp.dest(destPath));
-    }
 
     const matchTmpl = (filePath) => {
       if (Array.isArray(globs)) {
@@ -72,21 +61,59 @@ export default function(plugins, debug) {
       }
     }
 
-    gulp.src(globs)
-      // 根据useref标记清除资源
-      .pipe(util.userefMarkSweep({
-        directory: output
-      }))
-      .pipe(plugins.useref({
-        searchPath: [searchPaths.dest, searchPaths.src, './']
-      }))
-      .pipe(plugins.if(file => matchTmpl(file.path), gulp.dest(destPath)))
-      .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
-      .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify()))
-      .pipe(plugins.filter(file => !matchTmpl(file.path)))
-      .pipe(gulp.dest(searchPaths.dest))
-      .on('end', processInlineSource)
-      .on('error', reject);
+    // 提取searchPaths的第一层目录
+    Object.keys(searchPaths).forEach(key => {
+      let dirs = path.normalize(searchPaths[key]).split(path.sep);
+      searchPaths[key] = dirs.length > 1 ? dirs[0] : './';
+    });
+
+    return new Promise((resolve, reject) => {
+      const processInlineSource = () => {
+        let destGlobs = util.processGlobs(config.tmpl.dest, globs);
+
+        gulp.src(destGlobs)
+          .pipe(plugins.inlineSource({
+            rootpath: searchPaths.dest,
+            compress: !debug,
+            handlers: (source, context, next) => {
+              let filePath = source.filepath.replace(rcwd, ''),
+                outputPrefix = path.posix.normalize(output);
+
+              console.log(outputPrefix);
+
+              // if (!path.isAbsolute(outputPrefix)) {
+              //   outputPrefix = `/${outputPrefix}`;
+              // }
+
+              // 如果内嵌资源是以输出目录开头的话，则加入回收资源清单
+              if (filePath.startsWith(outputPrefix)) {
+                util.grabage.add(filePath);
+              }
+
+              next();
+            }
+          }))
+          .pipe(gulp.dest(destPath))
+          .once('end', resolve)
+          .once('error', reject);
+      }
+
+      gulp.src(globs)
+        // 根据useref标记清除资源
+        .pipe(util.userefMarkSweep({
+          directory: output
+        }))
+        .pipe(plugins.useref({
+          searchPath: [searchPaths.src, searchPaths.dest, './']
+        }))
+        .pipe(plugins.if(file => matchTmpl(file.path), gulp.dest(destPath)))
+        .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
+        .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify()))
+        .pipe(plugins.filter(file => !matchTmpl(file.path)))
+        .pipe(gulp.dest(searchPaths.dest))
+        .on('end', processInlineSource)
+        .on('error', reject);
+    });
   }
 
   /**
@@ -112,6 +139,7 @@ export default function(plugins, debug) {
 
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
+      .pipe(plugins.if(!debug, plugins.filter(file => !rgroup.test(path.basename(file.path)))))
       .pipe(plugins.if(!debug, plugins.imagemin({
         progressive: true,
         use: [pngquant()]
@@ -141,8 +169,7 @@ export default function(plugins, debug) {
     let processors = [],
       globs = util.processGlobs(base, assets.css.src),
       destPath = path.join(output, assets.css.dest),
-      spritePath = path.join(output, assets.img.dest),
-      matcher = new RegExp(`\\.(.+)\\.(?:[a-zA-Z0-9]+)$`);
+      spritePath = path.join(output, assets.img.dest);
 
     if (!debug) {
       // support css sprites
@@ -155,14 +182,14 @@ export default function(plugins, debug) {
           onUpdateRule: util.updateSpritesRule
         },
         filterBy(image) {
-          if (matcher.test(image.url)) {
+          if (rgroup.test(image.url)) {
             return Promise.resolve();
           }
 
           return Promise.reject();
         },
         groupBy(image) {
-          let match = image.url.match(matcher);
+          let match = image.url.match(rgroup);
 
           image.groups = [];
 
@@ -227,8 +254,8 @@ export default function(plugins, debug) {
    * 并且对添加了inline标识资源进行内联
    * @todo debug模式下不对css及js进行压缩
    */
-  gulp.task('tmpl', () => processTMPL(
-    util.processGlobs(base, config.tmpl.src),
+  gulp.task('tmpl', () => processTmpl(
+    config.tmpl.src,
     config.tmpl.dest
   ));
 
@@ -268,7 +295,13 @@ export default function(plugins, debug) {
    * watch CSS/JS
    */
   gulp.task('watch', () => {
-    util.watch(assets.css.src, ['css']);
+    // watch
+    util.watch(
+      util.processGlobs(base, assets.css.src),
+      ['css']
+    );
+
+    // watch js
     bundler({watch: true});
   });
 

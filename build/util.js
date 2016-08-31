@@ -299,6 +299,34 @@ export function rmEmptyDir(basedir) {
     });
 }
 
+/**
+ * 将一个Buffer或者字符串添加到读取的文件内容之前
+ * @param {String|Buffer} data
+ * @return {Stream.Readable}
+ */
+export function insertBeforeCode(code) {
+  if (Buffer.isBuffer(code)) {
+    code = code.toString();
+  }
+
+  return through.obj(function(file, enc, cb) {
+    if (file.isNull()) {
+      return cb();
+    }
+
+    if (file.isStream()) {
+      this.emit('error', new gutil.PluginError('insert-code', 'Streaming not supported'));
+      return cb();
+    }
+
+    let contents = file.contents.toString();
+
+    file.contents = new Buffer(`${code}\n${contents}`);
+    this.push(file);
+    cb();
+  });
+}
+
 // ------------old-------------
 
 /**

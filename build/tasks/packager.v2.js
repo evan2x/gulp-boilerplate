@@ -91,7 +91,9 @@ export default function(plugins, debug) {
       let baseList = entryGlobs.map(item => glob2base(new Glob(item)));
 
       return filePaths.map(filePath => {
-        baseList.forEach(baseItem => filePath.replace(baseItem, ''));
+        baseList.forEach(baseItem => {
+          filePath = filePath.replace(baseItem, '');
+        });
         return filePath;
       });
     },
@@ -110,7 +112,9 @@ export default function(plugins, debug) {
    * factor-bundle plugin
    * @see https://github.com/substack/factor-bundle#api-plugin-example
    */
-  packager.plugin('factor-bundle', {outputChunks});
+  packager.plugin('factor-bundle', {
+    output: outputChunks
+  });
 
   // 排除第三方模块
   for (let i = 0; i < vendorModules.length; i++) {
@@ -179,25 +183,31 @@ export default function(plugins, debug) {
       packager
         .bundle()
         .once('error', function(err) {
-          // print browserify or babelify error
-          console.log(chalk.red(`\nBrowserify or Babelify error:\n${err.message}`));
+          console.log(chalk.red(`\Packager error:\n${err.message}`));
           this.emit(watch ? 'end' : 'error');
         })
         .pipe(source(commonChunk))
         .pipe(buffer())
         .pipe(gulp.dest(destPath))
         .once('end', () => {
-          if (debug) {
-            resolve();
-          } else {
-            gulp.src(outputChunks, {base: './'})
-              .pipe(plugins.uglify().once('error', function(err) {
-                this.emit(watch ? 'end' : 'error', err);
-              }))
-              .pipe(gulp.dest('./'))
-              .once('end', resolve)
-              .once('error', reject);
-          }
+          gulp.src(path.join(destPath, commonChunk))
+            .pipe(util.insertBeforeCode(babelHelpersCode))
+            .pipe(plugins.if(!debug, plugins.uglify()))
+            .pipe(gulp.dest(destPath))
+            .once('end', () => {
+              if (debug) {
+                resolve();
+              } else {
+                gulp.src(outputChunks, {base: './'})
+                  .pipe(plugins.uglify().once('error', function(err) {
+                    this.emit(watch ? 'end' : 'error', err);
+                  }))
+                  .pipe(gulp.dest('./'))
+                  .once('end', resolve)
+                  .once('error', reject);
+              }
+            })
+            .once('error', reject);
         })
         .once('error', reject);
     });
@@ -210,10 +220,6 @@ export default function(plugins, debug) {
         packager.on('update', bundle);
         packager.on('log', (msg) => {
           gutil.log(`Watching ${chalk.cyan('\'browserify\'')}: ${chalk.green(msg)}`);
-        });
-
-        util.watch(path.join(base, src)).on('add', filePath => {
-          packager.add(filePath);
         });
       }
 
