@@ -28,3 +28,15 @@
 .icon-calculator:before {
   content: "\ea03";
 }
+
+.cerf {
+  background-image: url(/assets/img/cerf.game@2x.png);
+}
+
+.bear {
+  background-image: url(/assets/img/bear.game@2x.png);
+}
+
+.yak {
+  background-image: url(/assets/img/yak.game@2x.png);
+}
