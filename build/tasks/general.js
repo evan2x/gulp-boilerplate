@@ -208,7 +208,7 @@ export default function(plugins, debug) {
       destPath = path.join(output, assets.css.dest),
       spritePath = path.join(output, assets.img.dest);
 
-    if (debug) {
+    if (!debug) {
       // support css sprites
       processors.push(sprites({
         stylesheetPath: destPath,
