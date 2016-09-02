@@ -35,7 +35,7 @@ module.exports = {
     'no-unreachable': ERROR,
     'use-isnan': ERROR,
     'valid-typeof': ERROR,
-    
+
     'accessor-pairs': ERROR,
     'array-callback-return': ERROR,
     'block-scoped-var': ERROR,
@@ -86,9 +86,9 @@ module.exports = {
     'radix': [ERROR, 'as-needed'],
     'wrap-iife': [ERROR, 'any'],
     'yoda': ERROR,
-    
+
     'strict': [ERROR, 'global'],
-    
+
     'no-catch-shadow': ERROR,
     'no-delete-var': ERROR,
     'no-label-var': ERROR,
@@ -99,12 +99,12 @@ module.exports = {
     'no-undefined': ERROR,
     'no-unused-vars': ERROR,
     'no-use-before-define': ERROR,
-    
+
     'callback-return': ERROR,
     'handle-callback-err': ERROR,
     'no-new-require': ERROR,
     'no-path-concat': ERROR,
-    
+
     'array-bracket-spacing': ERROR,
     'block-spacing': [ERROR, 'never'],
     'brace-style': [ERROR, '1tbs', {allowSingleLine: true }],
@@ -134,7 +134,6 @@ module.exports = {
     'no-trailing-spaces': [ERROR, {skipBlankLines: true }],
     'no-unneeded-ternary': ERROR,
     'no-whitespace-before-property': ERROR,
-    'object-curly-spacing': ERROR,
     'one-var-declaration-per-line': [ERROR, 'initializations'],
     'operator-linebreak': ERROR,
     'quote-props': [ERROR, 'as-needed', {keywords: true}],
@@ -147,7 +146,7 @@ module.exports = {
     'space-infix-ops': ERROR,
     'space-unary-ops': ERROR,
     'spaced-comment': ERROR,
-    
+
     'arrow-body-style': ERROR,
     'arrow-parens': ERROR,
     'arrow-spacing': ERROR,
