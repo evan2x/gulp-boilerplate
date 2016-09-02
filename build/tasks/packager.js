@@ -14,7 +14,7 @@ import glob, { Glob } from 'glob';
 import glob2base from 'glob2base';
 
 import * as util from '../util';
-import config from '../config.v2';
+import config from '../config';
 
 export default function(plugins, debug) {
   const {

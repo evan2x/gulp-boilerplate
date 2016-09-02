@@ -5,10 +5,10 @@ import runSequence from 'run-sequence';
 import loadPlugins from 'gulp-load-plugins';
 
 import general from './tasks/general';
-import revision from './tasks/revision.v2';
+import revision from './tasks/revision';
 import misc from './tasks/misc';
 import * as util from './util';
-import config from './config.v2';
+import config from './config';
 
 const plugins = loadPlugins();
 const grabage = util.grabage;

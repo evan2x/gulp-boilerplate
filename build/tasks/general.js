@@ -11,7 +11,7 @@ import sprites from 'postcss-sprites';
 import willChange from 'postcss-will-change';
 
 import * as util from '../util';
-import config from '../config.v2';
+import config from '../config';
 import packager from './packager';
 
 const bs = browserSync.create();
@@ -208,7 +208,7 @@ export default function(plugins, debug) {
       destPath = path.join(output, assets.css.dest),
       spritePath = path.join(output, assets.img.dest);
 
-    if (!debug) {
+    if (debug) {
       // support css sprites
       processors.push(sprites({
         stylesheetPath: destPath,
