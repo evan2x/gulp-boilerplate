@@ -80,6 +80,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "postcss": "^5.1.2",
+    "postcss-cssnext": "^2.7.0",
     "postcss-sprites": "^3.3.0",
     "postcss-will-change": "^1.1.0",
     "run-sequence": "^1.2.2",
