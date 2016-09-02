@@ -23,10 +23,10 @@ export default function(plugins) {
       tmpl = path.resolve(__dirname, '../templates/svg-symbols.html');
 
     const filter = {
-      svg: plugins.filter(file => /\.svg$/.test(file.path), {
+      svg: plugins.filter((file) => /\.svg$/.test(file.path), {
         restore: true
       }),
-      html: plugins.filter(file => /\.html$/.test(file.path), {
+      html: plugins.filter((file) => /\.html$/.test(file.path), {
         restore: true
       })
     };
@@ -64,7 +64,7 @@ export default function(plugins) {
       }))
       .pipe(filter.svg)
       .pipe(plugins.rename(name))
-      .pipe(gulp.dest(dest))
+      .pipe(gulp.dest(destPath))
       .pipe(filter.svg.restore)
       .pipe(filter.html)
       .pipe(plugins.rename('demo.html'))
@@ -78,6 +78,7 @@ export default function(plugins) {
     const {
       src,
       font: {
+        name,
         formats,
         dest: destPath,
         style: stylePath,
@@ -99,13 +100,12 @@ export default function(plugins) {
         timestamp: Math.round(Date.now() / 1000)
       }))
       .on('glyphs', (glyphs) => {
-        let options = {
-          className: 'icon',
-          fontName: name,
-          glyphs
-        };
-
-        let fontPath = destPath;
+        let fontPath = destPath,
+          data = {
+            className: 'icon',
+            fontName: name,
+            glyphs
+          };
 
         if (!fontPath.startsWith('/')) {
           fontPath = `/${fontPath}`;
@@ -115,29 +115,29 @@ export default function(plugins) {
           fontPath = `${fontPath}/`;
         }
 
-        options.fontPath = fontPath;
+        data.fontPath = fontPath;
 
         // 生成项目所需的CSS
         gulp.src(tmpl.css)
-          .pipe(plugins.consolidate('lodash', options))
+          .pipe(plugins.consolidate('lodash', data))
           .pipe(plugins.rename(path.basename(stylePath)))
           .pipe(gulp.dest(path.dirname(stylePath)));
 
-        // 生成文档
-        let docOptions = {
-          ...options,
+        // 文档参数
+        let docData = {
+          ...data,
           fontPath: ''
         };
 
         // 生成iconfont文档所需的css
         gulp.src(tmpl.css)
-          .pipe(plugins.consolidate('lodash', docOptions))
+          .pipe(plugins.consolidate('lodash', docData))
           .pipe(plugins.rename('style.css'))
           .pipe(gulp.dest(docDestPath));
 
         // 生成iconfont文档页面
         gulp.src(tmpl.html)
-          .pipe(plugins.consolidate('lodash', docOptions))
+          .pipe(plugins.consolidate('lodash', docData))
           .pipe(plugins.rename(path.basename(docPath)))
           .pipe(gulp.dest(docDestPath));
       })

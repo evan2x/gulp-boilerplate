@@ -10,15 +10,17 @@ import glob, { Glob } from 'glob';
 import del from 'del';
 import useref from 'useref';
 import gutil from 'gulp-util';
+
 import config from './config';
 
 const assets = config.assets;
 const rootpath = assets.rootpath;
 const garbageManifest = path.join(process.cwd(), '.garbage-manifest.json');
+const noop = function() {};
 
 class GrabageSet extends Set {
   clean() {
-
+    del.sync(Array.from(this));
   }
 }
 
@@ -54,7 +56,13 @@ export function globRebase(globs, base) {
   }
 
   let rebase = (globPath) => {
-    return path.normalize(globPath.replace(glob2base(new Glob(globPath)), base));
+    let originalBase = glob2base(new Glob(globPath));
+
+    if (originalBase == './') {
+      return path.join(base, globPath);
+    } else {
+      return path.normalize(globPath.replace(originalBase, base));
+    }
   }
 
   if (Array.isArray(globs)) {
@@ -70,14 +78,16 @@ export function globRebase(globs, base) {
  * 使用useref标记清除资源
  * @param {Object} options
  * @param {String} options.directory
+ * @param {String} options.outputResult
+ * @return {Stream.Readable}
  */
-export function userefMarkSweep({directory = ''} = {}) {
-  if (directory) {
-    directory = path.posix.normalize(directory);
+export function userefMarkSweep({
+  directory = '',
+  outputResult = noop
+} = {}) {
 
-    // if (!path.isAbsolute(directory)) {
-    //   directory = `/${directory}`;
-    // }
+  if (typeof directory === 'string' && directory.length > 0) {
+    directory = trimSlashLeft(directory);
   }
 
   return through.obj(function(file, enc, cb) {
@@ -90,32 +100,36 @@ export function userefMarkSweep({directory = ''} = {}) {
       return cb();
     }
 
-    if (directory) {
-      let result = useref(file.contents.toString())[1];
+    let result = useref(file.contents.toString())[1];
 
-      const markSweep = resources => {
-        Object.keys(resources).forEach(key => {
-          let replacedFiles = resources[key].assets;
+    const markSweep = (resources) => {
+      Object.keys(resources).forEach((key) => {
+        let replacedFiles = resources[key].assets;
 
-          if (replacedFiles && Array.isArray(replacedFiles)) {
-            replacedFiles.forEach(filePath => {
-              // filePath = filePath.replace(/^(?:\.\/|\.\.\/)+/, '');
-              if (filePath.startsWith(directory) && !filePath.endsWith(key)) {
-                grabage.add(filePath);
-              }
-            });
-          }
-        });
-      }
+        if (replacedFiles && Array.isArray(replacedFiles)) {
+          replacedFiles.forEach((filePath) => {
+            filePath = trimSlashLeft(filePath);
 
-      if (result.css) {
-        markSweep(result.css);
-      }
-
-      if (result.js) {
-        markSweep(result.js);
-      }
+            if (
+              filePath.startsWith(directory) &&
+              !filePath.endsWith(key)
+            ) {
+              grabage.add(filePath);
+            }
+          });
+        }
+      });
     }
+
+    if (result.css) {
+      markSweep(result.css);
+    }
+
+    if (result.js) {
+      markSweep(result.js);
+    }
+
+    outputResult(result);
 
     this.push(file);
     cb();
@@ -140,7 +154,7 @@ export function replaceByManifest(manifest) {
 
     let contents = file.contents.toString();
 
-    for (let [key, value] of manifest.entries()) {
+    for (let [key, value] of Object.entries(manifest)) {
       contents = contents.replace(new RegExp(`${trimSlash(key)}`, 'g'), trimSlash(value));
     }
 
@@ -156,7 +170,7 @@ export function replaceByManifest(manifest) {
  * @return {String}
  */
 export function trimSlash(str) {
-  return trimSlashLeft(str).trimSlashRight(str);
+  return trimSlashRight(trimSlashLeft(str));
 }
 
 /**
@@ -271,10 +285,10 @@ export function watch(globs, options = {}, task) {
  * 删除空目录
  * @param {String} basedir 目标目录
  */
-export function rmEmptyDir(basedir) {
+export function delEmptyDir(basedir) {
   if (!basedir) return;
 
-  let collect = (dir, dirs = []) => {
+  let collectEmptyDir = (dir, dirs = []) => {
     let files = fs.readdirSync(dir),
       count = 0,
       file = null;
@@ -283,14 +297,14 @@ export function rmEmptyDir(basedir) {
       file = path.join(dir, file);
       if (fs.statSync(file).isDirectory()) {
         dirs.push(file);
-        dirs.concat(collect(file, dirs));
+        dirs.concat(collectEmptyDir(file, dirs));
       }
     }
 
     return dirs;
   };
 
-  collect(basedir)
+  collectEmptyDir(basedir)
     .sort((a, b) => trimSlash(b).split('/').length - trimSlash(a).split('/').length)
     .forEach((directory) => {
       if (!fs.readdirSync(directory).length) {
@@ -325,6 +339,86 @@ export function insertBeforeCode(code) {
     this.push(file);
     cb();
   });
+}
+
+
+/**
+ * 从globs中提取后缀
+ * @param {Array|String} globs
+ * @return {Array}
+ */
+export function extractExtsForGlobs(globs) {
+  if (!Array.isArray(globs)) {
+    globs = [globs];
+  }
+
+  let ext = globs.reduce((arr, item) => {
+    let ext = item.slice(
+      item.lastIndexOf('.') + 1,
+      globs.length
+    ).replace(/^{+|}+$/g, '').split(',');
+
+    return [
+      ...arr,
+      ...ext
+    ];
+  }, []);
+
+  return Array.from(new Set(ext));
+}
+
+/**
+ * 检测是否为正则表达式
+ * @param {Any} v
+ * @return {Boolean}
+ */
+function isRegExp(v) {
+  return Object.prototype.toString.call(v) === '[object RegExp]';
+}
+
+/**
+ * 将匹配到的资源路径写入到manifest
+ * @param  {Array}  globsList
+ * @param  {Object} options
+ * @return {Object}
+ */
+export function createReplacementManifest(globsList, {
+  domain = '',
+  domainIgnore = null,
+  prefix = '',
+  prefixIgnore = null,
+  inputDirectory = '',
+  outputDirectory = ''
+} = {}) {
+  const manifest = {},
+    filePaths = globsList.reduce((arr, v) => {
+      let files = glob.sync(v).map(filePath => {
+        return path.posix.normalize(filePath.replace(outputDirectory, inputDirectory));
+      });
+
+      return [
+        ...arr,
+        ...files
+      ]
+    }, []);
+
+  for (let i = 0, filePath; filePath = filePaths[i++];) {
+    let newFilePath = filePath;
+
+    if (prefix && (!isRegExp(prefixIgnore) || !prefixIgnore.test(newFilePath))) {
+      newFilePath = path.posix.join(prefix, newFilePath);
+    }
+
+    if (domain && (!isRegExp(domainIgnore) || !domainIgnore.test(newFilePath))) {
+      newFilePath = path.posix.join(domain, newFilePath);
+    }
+
+    if (newFilePath !== filePath) {
+      manifest[filePath] = newFilePath;
+    }
+  }
+
+  return manifest;
 }
 
 // ------------old-------------

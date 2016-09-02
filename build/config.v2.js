@@ -52,8 +52,8 @@ let config = {
    * @type {Object}
    */
   assets: {
-    base,
-    output: path.join(output, 'assets'),
+    base: path.posix.normalize(base),
+    output: path.posix.join(output, 'assets'),
     /**
      * gulp-rev静态资源清单文件输出路径
      * @type {String}
@@ -63,7 +63,7 @@ let config = {
      * 版本号格式
      * @type {String} filename 或者 query
      */
-    versionFormat: 'query', // filename or query
+    versionFormat: 'query',
     /**
      * JS参数配置
      * @type {Object}
@@ -91,7 +91,7 @@ let config = {
          * 需要打包的模块
          * @type {Array}
          */
-        modules: ['babel-polyfill'],
+        modules: [],
         /**
          * vendor包的输出文件
          * @type {String}
@@ -113,11 +113,11 @@ let config = {
       src: 'css/**/*.css',
       dest: 'css/',
       /**
-       * autoprefixer配置项
+       * cssnext 配置项
        * @type {Object}
-       * @see https://github.com/postcss/autoprefixer#options
+       * @see http://cssnext.io/usage
        */
-      autoprefixer: {
+      cssnext: {
         browsers: ['last 2 versions', '> 1% in CN', 'Firefox ESR', 'Opera 12.1', 'Safari >= 5', 'ie >= 8']
       }
     },
@@ -167,23 +167,23 @@ let config = {
       }
     ]
   }
-}
+};
 
 /**
  * 模板配置项
  * @type {Object}
  */
 config.tmpl = {
-  src: `{views,${path.join(base, 'html')}}/**/*.{html,vm}`,
+  src: `{views,${path.posix.join(base, 'html')}}/**/*.{html,vm}`,
   dest: output
-}
+};
 
 /**
  * 图标配置项
  * @type {Object}
  */
 config.icon = {
-  src: path.join(base, 'icon'),
+  src: path.posix.join(base, 'icon'),
   /**
    * SVG Symbols配置项
    * @type {Object}
@@ -193,7 +193,7 @@ config.icon = {
      * 指定生成的SVG Symbols输出位置
      * @type {String}
      */
-    dest: path.join(base, 'svg'),
+    dest: path.posix.join(base, 'svg'),
     /**
      * 输出文件名
      * @type {String}
@@ -203,7 +203,7 @@ config.icon = {
      * 使用文档输出位置
      * @type {String}
      */
-    doc: path.join(docs, 'svg-symbols/demo.html')
+    doc: path.posix.join(docs, 'svg-symbols/demo.html')
   },
   /**
    * iconfont配置项
@@ -214,7 +214,7 @@ config.icon = {
      * 指定iconfont输出位置
      * @type {String}
      */
-    dest: path.join(base, 'font'),
+    dest: path.posix.join(base, 'font'),
     /**
      * iconfont输出文件名
      * @type {String}
@@ -225,13 +225,13 @@ config.icon = {
      * 样式文件输出位置
      * @type {String}
      */
-    style: path.join(base, glob2base(new Glob(config.assets.css.src)), 'iconfont.css'),
+    style: path.posix.join(base, glob2base(new Glob(config.assets.css.src)), 'iconfont.css'),
     /**
      * 使用文档输出位置
      * @type {String}
      */
-    doc: path.join(docs, 'iconfont/demo.html')
+    doc: path.posix.join(docs, 'iconfont/demo.html')
   }
-}
+};
 
 export default config;

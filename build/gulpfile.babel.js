@@ -4,13 +4,14 @@ import del from 'del';
 import runSequence from 'run-sequence';
 import loadPlugins from 'gulp-load-plugins';
 
-import general from './tasks/general.v2';
+import general from './tasks/general';
 import revision from './tasks/revision.v2';
-import misc from './tasks/misc.v2';
-import util, { grabage } from './util';
+import misc from './tasks/misc';
+import * as util from './util';
 import config from './config.v2';
 
 const plugins = loadPlugins();
+const grabage = util.grabage;
 
 general(plugins, process.env.NODE_ENV !== 'production');
 revision(plugins);
@@ -32,10 +33,11 @@ gulp.task('manifest:clean', () => del([config.assets.manifest]));
 /**
  * 删除收集的垃圾资源并清理静态资源目录下的空目录
  */
-gulp.task('grabage:clean', () => grabage.clean()
-  .then(del)
-  .then(() => util.rmEmptyDir(config.assets.output))
-);
+gulp.task('grabage:clean', () => {
+  // return;
+	grabage.clean();
+  util.delEmptyDir(config.assets.output);
+});
 
 /**
  * 构建项目
@@ -44,9 +46,9 @@ gulp.task('build', (done) => {
   runSequence(
     'clean',
     'manifest:clean',
-    ['css', 'js', 'image', 'other', 'svg'],
+    ['css', 'js', 'image', 'svg', 'other'],
     'tmpl',
-    'path:replace',
+    'refs:replace',
     'grabage:clean',
     done
   );

@@ -88,10 +88,10 @@ export default function(plugins, debug) {
      * @return {Array}
      */
     removeBase = (filePaths) => {
-      let baseList = entryGlobs.map(item => glob2base(new Glob(item)));
+      let baseList = entryGlobs.map((item) => glob2base(new Glob(item)));
 
-      return filePaths.map(filePath => {
-        baseList.forEach(baseItem => {
+      return filePaths.map((filePath) => {
+        baseList.forEach((baseItem) => {
           filePath = filePath.replace(baseItem, '');
         });
         return filePath;

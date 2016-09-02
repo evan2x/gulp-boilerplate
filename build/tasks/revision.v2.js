@@ -53,30 +53,6 @@ export default function(plugins) {
       );
     },
     /**
-     * 从globs中提取后缀
-     * @param {Array|String} globs
-     * @return {Array}
-     */
-    extractExtsForGlobs = globs => {
-      if (!Array.isArray(globs)) {
-        globs = [globs];
-      }
-
-      let ext = globs.reduce((arr, item) => {
-        let ext = item.slice(
-          item.lastIndexOf('.') + 1,
-          globs.length
-        ).replace(/^{+|}+$/g, '').split(',');
-
-        return [
-          ...arr,
-          ...ext
-        ];
-      }, []);
-
-      return Array.from(new Set(ext));
-    },
-    /**
      * CSS/JS资源中的引用路径替换
      * @param {Array|String} globs
      */
@@ -95,7 +71,7 @@ export default function(plugins) {
      */
     tmplRevTask = globs => {
       let manifest = gulp.src(config.manifest);
-        exts = extractExtsForGlobs(globs);
+        exts = util.extractExtsForGlobs(globs);
 
       return gulp.src(globs, {base: './'})
         .pipe(plugins.revReplace({
