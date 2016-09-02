@@ -245,7 +245,6 @@ export default function(plugins, debug) {
     processors.push(
       willChange(),
       cssnext(assets.css.cssnext)
-      // autoprefixer(assets.css.autoprefixer)
     );
 
     return gulp.src(globs)

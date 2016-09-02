@@ -34,7 +34,6 @@ gulp.task('manifest:clean', () => del([config.assets.manifest]));
  * 删除收集的垃圾资源并清理静态资源目录下的空目录
  */
 gulp.task('grabage:clean', () => {
-  // return;
 	grabage.clean();
   util.delEmptyDir(config.assets.output);
 });

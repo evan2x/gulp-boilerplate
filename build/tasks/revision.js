@@ -152,8 +152,6 @@ export default function(plugins) {
         done(err);
       }
 
-      // console.log(manifest);
-
       for (let [key, value] of Object.entries(manifest)) {
         let oldFile = path.join(outputBase, key),
           newFile = path.join(outputBase, util.versionTransformer.toFilename(value));
