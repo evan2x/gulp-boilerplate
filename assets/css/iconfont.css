@@ -17,6 +17,7 @@
   -moz-osx-font-smoothing: grayscale; /* 修复锯齿问题 */
 }
 
+
 .icon-backtop:before {
   content: "\ea01";
 }
@@ -27,16 +28,4 @@
 
 .icon-calculator:before {
   content: "\ea03";
-}
-
-.cerf {
-  background-image: url(/assets/img/cerf.game@2x.png);
-}
-
-.bear {
-  background-image: url(/assets/img/bear.game@2x.png);
-}
-
-.yak {
-  background-image: url(/assets/img/yak.game@2x.png);
 }
