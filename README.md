@@ -125,6 +125,11 @@ picture1.home.png
 picture2.home.png
 picture3.home.png
 
+// 提供给Retina屏幕现实的图片中 `[group]` 必须以 `@2x` 结尾
+picture1.home@2x.png
+picture2.home@2x.png
+picture3.home@2x.png
+
 // output
 sprite.common.png
 sprite.home.png
