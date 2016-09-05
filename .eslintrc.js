@@ -121,7 +121,6 @@ module.exports = {
     'eol-last': ERROR,
     'func-call-spacing': [ERROR, 'never'],
     'indent': [ERROR, ERROR, {SwitchCase: 1}],
-    'jsx-quotes': ERROR,
     'key-spacing': ERROR,
     'keyword-spacing': ERROR,
     'linebreak-style': [ERROR, "unix"],
