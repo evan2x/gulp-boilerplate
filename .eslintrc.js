@@ -137,7 +137,7 @@ module.exports = {
     'no-negated-condition': ERROR,
     'no-new-object': ERROR,
     'no-trailing-spaces': [ERROR, {skipBlankLines: true }],
-    // 'no-underscore-dangle': [ERROR, {allowAfterThis: true, allowAfterSuper: true}],
+    'no-underscore-dangle': [ERROR, {allowAfterThis: true, allowAfterSuper: true}],
     'no-unneeded-ternary': ERROR,
     'no-whitespace-before-property': ERROR,
     'object-curly-spacing': ERROR,
