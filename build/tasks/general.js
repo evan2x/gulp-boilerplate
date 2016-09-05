@@ -82,6 +82,7 @@ export default function(plugins, debug) {
     // 提取searchPaths的第一层目录
     Object.keys(searchPaths).forEach((key) => {
       let dirs = path.normalize(searchPaths[key]).split(path.sep);
+
       searchPaths[key] = dirs.length > 1 ? dirs[0] : './';
     });
 

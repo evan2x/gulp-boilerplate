@@ -1,6 +1,6 @@
 
 import path from 'path';
-import { Glob } from 'glob';
+import {Glob} from 'glob';
 import glob2base from 'glob2base';
 
 /**

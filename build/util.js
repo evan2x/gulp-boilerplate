@@ -6,7 +6,7 @@ import chokidar from 'chokidar';
 import postcss from 'postcss';
 import through from 'through2';
 import gulp from 'gulp';
-import glob, { Glob } from 'glob';
+import glob, {Glob} from 'glob';
 import del from 'del';
 import useref from 'useref';
 import gutil from 'gulp-util';
@@ -462,30 +462,33 @@ export function updateSpritesRule(rule, token, image) {
  * gulp-rev收集的资源重写为querystring格式
  * @return {Stream.Readable}
  */
-export function revRewriteQuery() {
+export const revRewriteQuery = (() => {
   let manifest = {};
 
-  return through.obj(function(file, enc, cb) {
-    if (file.isNull()) {
-      return cb();
-    }
+  return function() {
+    return through.obj(function(file, enc, cb) {
+      if (file.isNull()) {
+        return cb();
+      }
 
-    if (file.isStream()) {
-      this.emit('error', new gutil.PluginError('rev-query', 'Streaming not supported'));
-      return cb();
-    }
+      if (file.isStream()) {
+        this.emit('error', new gutil.PluginError('rev-query', 'Streaming not supported'));
+        return cb();
+      }
 
-    try {
-      let oldManifest = JSON.parse(file.contents.toString());
-      manifest = Object.assign(oldManifest, manifest);
-    } catch (e) {}
+      try {
+        let oldManifest = JSON.parse(file.contents.toString());
 
-    for (let [key, value] of Object.entries(manifest)) {
-      manifest[key] = versionTransformer.toQuery(value);
-    }
+        manifest = Object.assign(oldManifest, manifest);
+      } catch (e) {}
 
-    file.contents = new Buffer(JSON.stringify(manifest, null, '    '));
-    this.push(file);
-    cb();
-  });
-}
+      for (let [key, value] of Object.entries(manifest)) {
+        manifest[key] = versionTransformer.toQuery(value);
+      }
+
+      file.contents = new Buffer(JSON.stringify(manifest, null, '    '));
+      this.push(file);
+      cb();
+    });
+  };
+})();

@@ -10,7 +10,7 @@ import mkdirp from 'mkdirp';
 import chalk from 'chalk';
 import gulp from 'gulp';
 import gutil from 'gulp-util';
-import glob, { Glob } from 'glob';
+import glob, {Glob} from 'glob';
 import glob2base from 'glob2base';
 
 import * as util from '../util';
@@ -42,6 +42,7 @@ export default function(plugins, debug) {
    */
   let entries = entryGlobs.reduce((arr, item) => {
       let files = glob.sync(path.join(glob2base(new Glob(item)), '**', entry));
+
       return [
         ...arr,
         ...files
@@ -103,8 +104,10 @@ export default function(plugins, debug) {
      */
     outputChunks = removeBase(entries).reduce((arr, item) => {
       let filePath = path.join(destPath, item);
+
       outputChunksDirectories.add(path.resolve(path.dirname(filePath)));
       arr.push(filePath);
+
       return arr;
     }, []);
 
