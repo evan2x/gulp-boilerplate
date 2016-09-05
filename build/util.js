@@ -11,7 +11,7 @@ import del from 'del';
 import useref from 'useref';
 import gutil from 'gulp-util';
 
-const noop = function() {};
+const noop = function() {}; // eslint-disable-line no-empty-function
 const rqueryVersion = /\?v=([\da-zA-Z]+)$/;
 const rfilenameVersion = /-([\da-zA-Z]{10})(?:\.\S*)*$/;
 
@@ -22,6 +22,44 @@ class GrabageSet extends Set {
 }
 
 export const grabage = new GrabageSet();
+
+/**
+ * 去除字符串中左边的 “/” 字符
+ * @param {String} str
+ * @return {String}
+ */
+export function trimSlashLeft(str) {
+  if (!str) return '';
+
+  return str.replace(/^\/+/, '');
+}
+
+/**
+ * 去除字符串中右边的 “/” 字符
+ * @param {String} str
+ * @return {String}
+ */
+export function trimSlashRight(str) {
+  if (!str) return '';
+
+  for (let count = str.length; count >= 0; count--) {
+    if (str.charCodeAt(count - 1) !== 47) {
+      str = str.slice(0, count);
+      break;
+    }
+  }
+
+  return str;
+}
+
+/**
+ * 去除字符串首尾的斜杠
+ * @param {String} str
+ * @return {String}
+ */
+export function trimSlash(str) {
+  return trimSlashRight(trimSlashLeft(str));
+}
 
 /**
  * 处理gulp.src所需要的globs
@@ -35,10 +73,10 @@ export function processGlobs(base, globs) {
   }
 
   if (Array.isArray(globs)) {
-    return globs.map(item => path.join(base, item));
-  } else {
-    return path.join(base, globs);
+    return globs.map((item) => path.join(base, item));
   }
+
+  return path.join(base, globs);
 }
 
 /**
@@ -55,17 +93,15 @@ export function globRebase(globs, base) {
   let rebase = (globPath) => {
     let originalBase = glob2base(new Glob(globPath));
 
-    if (originalBase == './') {
+    if (originalBase === './') {
       return path.join(base, globPath);
-    } else {
-      return path.normalize(globPath.replace(originalBase, base));
     }
-  }
+
+    return path.normalize(globPath.replace(originalBase, base));
+  };
 
   if (Array.isArray(globs)) {
-    globs.map(item => {
-      return rebase(item);
-    });
+    globs.map((item) => rebase(item));
   } else {
     return rebase(globs);
   }
@@ -116,7 +152,7 @@ export function userefMarkSweep({
           });
         }
       });
-    }
+    };
 
     if (result.css) {
       markSweep(result.css);
@@ -159,44 +195,6 @@ export function replaceByManifest(manifest) {
     this.push(file);
     cb();
   });
-}
-
-/**
- * 去除字符串首尾的斜杠
- * @param {String} str
- * @return {String}
- */
-export function trimSlash(str) {
-  return trimSlashRight(trimSlashLeft(str));
-}
-
-/**
- * 去除字符串中左边的 “/” 字符
- * @param {String} str
- * @return {String}
- */
-export function trimSlashLeft(str) {
-  if (!str) return '';
-
-  return str.replace(/^\/+/, '');
-}
-
-/**
- * 去除字符串中右边的 “/” 字符
- * @param {String} str
- * @return {String}
- */
-export function trimSlashRight(str) {
-  if (!str) return '';
-
-  for (let count = str.length; count >= 0; count--) {
-    if (str.charCodeAt(count - 1) !== 47) {
-      str = str.slice(0, count);
-      break;
-    }
-  }
-
-  return str;
 }
 
 /**
@@ -352,19 +350,19 @@ export function extractExtsForGlobs(globs) {
     globs = [globs];
   }
 
-  let ext = globs.reduce((arr, item) => {
-    let ext = item.slice(
+  let exts = globs.reduce((arr, item) => {
+    let extList = item.slice(
       item.lastIndexOf('.') + 1,
       item.length
     ).replace(/^{+|}+$/g, '').split(',');
 
     return [
       ...arr,
-      ...ext
+      ...extList
     ];
   }, []);
 
-  return Array.from(new Set(ext));
+  return Array.from(new Set(exts));
 }
 
 /**
@@ -392,14 +390,14 @@ export function createReplacementManifest(globsList, {
 } = {}) {
   const manifest = {},
     filePaths = globsList.reduce((arr, v) => {
-      let files = glob.sync(v).map(filePath => {
-        return path.posix.normalize(filePath.replace(outputDirectory, inputDirectory));
-      });
+      let files = glob.sync(v).map((filePath) => path.posix.normalize(
+        filePath.replace(outputDirectory, inputDirectory)
+      ));
 
       return [
         ...arr,
         ...files
-      ]
+      ];
     }, []);
 
   for (let i = 0, filePath; filePath = filePaths[i++];) {

@@ -13,7 +13,7 @@ export default function(plugins) {
     assets: {
       output,
       versionFormat,
-      manifest,
+      manifest: manifestFilePath,
       img,
       css,
       js,
@@ -35,29 +35,27 @@ export default function(plugins) {
       .pipe(plugins.rev)
       .pipe(gulp.dest, outputBase)
       .pipe(plugins.rev.manifest, {
-        base: path.dirname(manifest),
+        base: path.dirname(manifestFilePath),
         merge: true
       })
       .pipe(() => plugins.if(versionFormat === 'query', util.revRewriteQuery()))
-      .pipe(gulp.dest, path.dirname(manifest)),
+      .pipe(gulp.dest, path.dirname(manifestFilePath)),
     /**
      * 获取需要revision的globs
      * @param {Array|String} src
      * @param {String} dest
      * @return {Array|String}
      */
-    getRevGlobs = (src, dest) => {
-      return util.processGlobs(
-        output,
-        util.globRebase(src, dest)
-      );
-    },
+    getRevGlobs = (src, dest) => util.processGlobs(
+      output,
+      util.globRebase(src, dest)
+    ),
     /**
      * CSS/JS资源中的引用路径替换
      * @param {Array|String} globs
      */
-    assetsRevTask = globs => {
-      let manifest = gulp.src(config.assets.manifest);
+    assetsRevTask = (globs) => {
+      let manifest = gulp.src(manifestFilePath);
 
       return gulp.src(globs, {base: outputBase})
         .pipe(plugins.revReplace({
@@ -111,23 +109,19 @@ export default function(plugins) {
   /**
    * css resource revision
    */
-  gulp.task('css:rev', () => {
-    return assetsRevTask(getRevGlobs(css.src, css.dest));
-  });
+  gulp.task('css:rev', () => assetsRevTask(getRevGlobs(css.src, css.dest)));
 
   /**
    * js resource revision
    */
-  gulp.task('js:rev', () => {
-    return assetsRevTask(getRevGlobs(js.src, js.dest));
-  });
+  gulp.task('js:rev', () => assetsRevTask(getRevGlobs(js.src, js.dest)));
 
   /**
    * template revision
    */
   gulp.task('tmpl:rev', () => {
     let globs = util.globRebase(tmpl.src, tmpl.dest),
-      manifest = gulp.src(config.assets.manifest),
+      manifest = gulp.src(manifestFilePath),
       exts = util.extractExtsForGlobs(globs).map((item) => `.${item}`);
 
     return gulp.src(globs, {base: './'})
@@ -142,12 +136,11 @@ export default function(plugins) {
    * 根据rev-manifest.json清理掉旧文件, 只删除dest目录中的旧资源
    */
   gulp.task('rev:garbage:clean', (done) => {
-    if (fs.existsSync(config.assets.manifest)) {
-      let manifest = {},
-        files = [];
+    if (fs.existsSync(manifestFilePath)) {
+      let manifest = {};
 
       try {
-        manifest = JSON.parse(fs.readFileSync(config.assets.manifest, 'utf8'));
+        manifest = JSON.parse(fs.readFileSync(manifestFilePath, 'utf8'));
       } catch (err) {
         done(err);
       }
