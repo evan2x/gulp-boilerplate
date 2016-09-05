@@ -11,7 +11,8 @@
     "symbols:gen": "npm run build symbols:gen",
     "iconfont:gen": "npm run build iconfont:gen",
     "revision": "npm run build revision",
-    "serve": "npm run build serve --"
+    "serve": "npm run build serve --",
+    "lint": "npm run build lint"
   },
   "repository": {
     "type": "git",
