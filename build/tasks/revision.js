@@ -122,7 +122,7 @@ export default function(plugins) {
   gulp.task('tmpl:rev', () => {
     let globs = util.globRebase(tmpl.src, tmpl.dest),
       manifest = gulp.src(manifestFilePath),
-      exts = util.extractExtsForGlobs(globs).map((item) => `.${item}`);
+      exts = util.extractExtsForGlobs(globs).map(item => `.${item}`);
 
     return gulp.src(globs, {base: './'})
       .pipe(plugins.revReplace({

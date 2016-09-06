@@ -73,7 +73,7 @@ export default function(plugins, debug) {
 
     const matchTmpl = (filePath) => {
       if (Array.isArray(globs)) {
-        return globs.some((item) => minimatch(filePath, item));
+        return globs.some(item => minimatch(filePath, item));
       }
 
       return minimatch(filePath, globs);
@@ -145,10 +145,10 @@ export default function(plugins, debug) {
         .pipe(plugins.useref({
           searchPath: [searchPaths.src, searchPaths.dest, './']
         }))
-        .pipe(plugins.if((file) => matchTmpl(file.path), gulp.dest(destPath)))
-        .pipe(plugins.if((file) => !debug && /\.css$/.test(file.path), plugins.csso()))
-        .pipe(plugins.if((file) => !debug && /\.js$/.test(file.path), plugins.uglify()))
-        .pipe(plugins.filter((file) => !matchTmpl(file.path)))
+        .pipe(plugins.if(file => matchTmpl(file.path), gulp.dest(destPath)))
+        .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
+        .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify()))
+        .pipe(plugins.filter(file => !matchTmpl(file.path)))
         .pipe(gulp.dest(searchPaths.dest))
         .on('end', inlineSourceProcessor)
         .on('error', reject);
@@ -177,7 +177,7 @@ export default function(plugins, debug) {
 
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
-      .pipe(plugins.if(!debug, plugins.filter((file) => !rgroup.test(path.basename(file.path)))))
+      .pipe(plugins.if(!debug, plugins.filter(file => !rgroup.test(path.basename(file.path)))))
       .pipe(plugins.if(!debug, plugins.imagemin({
         progressive: true,
         use: [pngquant()]
@@ -332,7 +332,7 @@ export default function(plugins, debug) {
       outputDirectory: output
     });
 
-    const replacePrefix = (globs) => new Promise((resolve, reject) => {
+    const replacePrefix = globs => new Promise((resolve, reject) => {
       gulp.src(globs, {base: './'})
         .pipe(util.replaceByManifest(resourceManifest))
         .pipe(gulp.dest('./'))
@@ -344,7 +344,7 @@ export default function(plugins, debug) {
       globsMap.css,
       globsMap.js,
       util.globRebase(config.tmpl.src, config.tmpl.dest)
-    ].map((globs) => replacePrefix(globs, resourceManifest)));
+    ].map(globs => replacePrefix(globs, resourceManifest)));
   });
 
   /**

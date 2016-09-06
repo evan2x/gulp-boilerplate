@@ -22,10 +22,10 @@ export default function(plugins) {
       tmpl = path.resolve(__dirname, '../templates/svg-symbols.html');
 
     const filter = {
-      svg: plugins.filter((file) => /\.svg$/.test(file.path), {
+      svg: plugins.filter(file => /\.svg$/.test(file.path), {
         restore: true
       }),
-      html: plugins.filter((file) => /\.html$/.test(file.path), {
+      html: plugins.filter(file => /\.html$/.test(file.path), {
         restore: true
       })
     };

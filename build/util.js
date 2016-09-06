@@ -73,7 +73,7 @@ export function processGlobs(base, globs) {
   }
 
   if (Array.isArray(globs)) {
-    return globs.map((item) => path.join(base, item));
+    return globs.map(item => path.join(base, item));
   }
 
   return path.join(base, globs);
@@ -101,7 +101,7 @@ export function globRebase(globs, base) {
   };
 
   if (Array.isArray(globs)) {
-    globs.map((item) => rebase(item));
+    globs.map(item => rebase(item));
   } else {
     return rebase(globs);
   }
@@ -390,7 +390,7 @@ export function createReplacementManifest(globsList, {
 } = {}) {
   const manifest = {},
     filePaths = globsList.reduce((arr, v) => {
-      let files = glob.sync(v).map((filePath) => path.posix.normalize(
+      let files = glob.sync(v).map(filePath => path.posix.normalize(
         filePath.replace(outputDirectory, inputDirectory)
       ));
 
