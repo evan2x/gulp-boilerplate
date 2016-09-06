@@ -158,7 +158,7 @@ module.exports = {
     'unicode-bom': ERROR,
 
     'arrow-body-style': ERROR,
-    'arrow-parens': ERROR,
+    'arrow-parens': [ERROR, 'as-needed', {requireForBlockBody: true}],
     'arrow-spacing': ERROR,
     'constructor-super': ERROR,
     'generator-star-spacing': ERROR,
