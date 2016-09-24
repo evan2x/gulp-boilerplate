@@ -14,8 +14,8 @@ npm run build
 npm run revision
 
 # watch css/js
-# 使用babel将ES2015(ES6)语法转译为ES5
-# 使用PostCSS处理CSS
+# babel转译ESNext/Stage-2
+# PostCSS处理CSS
 npm run watch
 
 # browser-sync service
