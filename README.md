@@ -14,7 +14,7 @@ npm run build
 npm run revision
 
 # watch css/js
-# babel转译ESNext/Stage-2
+# babel转译ES2017/Stage-2
 # PostCSS处理CSS
 npm run watch
 
