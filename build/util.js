@@ -101,7 +101,7 @@ export function globRebase(globs, base) {
   };
 
   if (Array.isArray(globs)) {
-    globs.map(item => rebase(item));
+    return globs.map(item => rebase(item));
   } else {
     return rebase(globs);
   }
