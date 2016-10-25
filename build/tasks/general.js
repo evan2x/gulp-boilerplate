@@ -251,9 +251,10 @@ export default function(plugins, debug) {
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
       .pipe(plugins.if(debug, plugins.sourcemaps.init()))
-      .pipe(plugins.postcss(processors).on('error', (e) => {
-        console.log(chalk.red(`\nPostCSS Error:\n${e.message}`));
-      }))
+      .pipe(plugins.postcss(processors).on('error', plugins.notify.onError({
+        title: 'PostCSS error',
+        message: '<%= error.message %>'
+      })))
       .pipe(plugins.if(!debug, plugins.csso()))
       .pipe(plugins.if(debug, plugins.sourcemaps.write()))
       .pipe(gulp.dest(destPath))

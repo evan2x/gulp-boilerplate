@@ -185,10 +185,7 @@ export default function(plugins, debug) {
     return new Promise((resolve, reject) => {
       packager
         .bundle()
-        .once('error', function(err) {
-          console.log(chalk.red(`\Packager error:\n${err.message}`));
-          this.emit(watch ? 'end' : 'error');
-        })
+        .once('error', reject)
         .pipe(source(commonChunk))
         .pipe(buffer())
         .pipe(gulp.dest(destPath))
@@ -212,20 +209,39 @@ export default function(plugins, debug) {
             })
             .once('error', reject);
         })
-        .once('error', reject);
     });
   };
+
+  /**
+   * 处理打包出现的错误
+   * @type {Function}
+   */
+  const errorHandler = plugins.notify.onError({
+    title: 'Packager error',
+    message: function(err) {
+      let message = err.message;
+
+      if (err.codeFrame) {
+        message += `\n\n${err.codeFrame}\n`;
+      }
+
+      return message;
+    }
+  });
 
   return ({watch = false} = {}) => vendorBundle()
     .then(() => {
       if (watch) {
         packager = watchify(packager);
-        packager.on('update', bundle);
+        packager.on('update', () => {
+          bundle().catch(errorHandler);
+        });
         packager.on('log', (msg) => {
           gutil.log(`Watching ${chalk.cyan('\'browserify\'')}: ${chalk.green(msg)}`);
         });
       }
 
       return bundle({watch});
-    });
+    })
+    .catch(errorHandler);
 }
