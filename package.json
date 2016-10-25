@@ -93,7 +93,8 @@
     "watchify": "^3.7.0"
   },
   "dependencies": {
-    "babel-polyfill": "^6.13.0"
+    "babel-polyfill": "^6.13.0",
+    "gulp-notify": "^2.2.0"
   },
   "license": "MIT"
 }
