@@ -125,7 +125,7 @@ export default function(plugins, debug) {
         // 使用useref标记清除资源
         .pipe(util.userefMarkSweep({
           directory: output,
-          outputResult(result) {
+          outputResult({css = {}, js = {}}) {
             let resources = [
               ...Object.keys(result.css),
               ...Object.keys(result.js)
