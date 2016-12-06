@@ -127,8 +127,8 @@ export default function(plugins, debug) {
           directory: output,
           outputResult({css = {}, js = {}}) {
             let resources = [
-              ...Object.keys(result.css),
-              ...Object.keys(result.js)
+              ...Object.keys(css),
+              ...Object.keys(js)
             ];
 
             // 记录useref统计到的资源出现次数
