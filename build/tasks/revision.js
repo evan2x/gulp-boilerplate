@@ -22,7 +22,6 @@ export default function(plugins) {
     },
     tmpl
   } = config;
-
   /**
    * 输出目录的第一层目录
    * @type {String}
@@ -150,7 +149,10 @@ export default function(plugins) {
           newFile = path.join(outputBase, util.versionTransformer.toFilename(value));
 
         del.sync(oldFile);
-        fs.renameSync(newFile, oldFile);
+
+        if(versionFormat === 'query'){
+          fs.renameSync(newFile, oldFile);
+        }
       }
     }
 
