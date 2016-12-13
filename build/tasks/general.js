@@ -206,10 +206,16 @@ export default function(plugins, debug) {
   gulp.task('css', () => {
     let processors = [],
       globs = util.processGlobs(base, assets.css.src),
-      destPath = path.join(output, assets.css.dest),
-      spritePath = path.join(output, assets.img.dest);
+      destPath = path.join(output, assets.css.dest);
 
     if (!debug) {
+      let spritePath = path.join(output, assets.img.dest),
+      referencePath = path.join(base, assets.img.dest);
+
+      if (!referencePath.startsWith('/')) {
+        referencePath = `/${referencePath}`;
+      }
+
       // support css sprites
       processors.push(sprites({
         stylesheetPath: destPath,
@@ -217,7 +223,7 @@ export default function(plugins, debug) {
         basePath: './',
         retina: true,
         hooks: {
-          onUpdateRule: util.updateSpritesRule
+          onUpdateRule: util.createRuleUpdater(referencePath)
         },
         filterBy(image) {
           if (rgroup.test(image.url)) {

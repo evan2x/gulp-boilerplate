@@ -423,38 +423,40 @@ export function createReplacementManifest(globsList, {
  * postcss-sprites 插件更新CSS规则
  * @reference https://github.com/2createStudio/postcss-sprites/blob/master/src/index.js#L422
  */
-export function updateSpritesRule(rule, token, image) {
-  const {retina, ratio, coords, spriteWidth, spriteHeight} = image;
-  const posX = coords.x / ratio;
-  const posY = coords.y / ratio;
-  const sizeX = spriteWidth / ratio;
-  const sizeY = spriteHeight / ratio;
+export function createRuleUpdater(spritePath) {
+  return function(rule, token, image) {
+    const {retina, ratio, coords, spriteWidth, spriteHeight} = image;
+    const posX = coords.x / ratio;
+    const posY = coords.y / ratio;
+    const sizeX = spriteWidth / ratio;
+    const sizeY = spriteHeight / ratio;
 
-  let spriteUrl = path.posix.join(
-    path.posix.dirname(image.url),
-    path.posix.basename(image.spriteUrl)
-  );
+    let spriteUrl = path.posix.join(
+      spritePath,
+      path.posix.basename(image.spriteUrl)
+    );
 
-  const backgroundImageDecl = postcss.decl({
-    prop: 'background-image',
-    value: `url(${spriteUrl})`
-  });
-
-  const backgroundPositionDecl = postcss.decl({
-    prop: 'background-position',
-    value: `${-1 * posX}px ${-1 * posY}px`
-  });
-
-  rule.insertAfter(token, backgroundImageDecl);
-  rule.insertAfter(backgroundImageDecl, backgroundPositionDecl);
-
-  if (retina) {
-    const backgroundSizeDecl = postcss.decl({
-      prop: 'background-size',
-      value: `${sizeX}px ${sizeY}px`
+    const backgroundImageDecl = postcss.decl({
+      prop: 'background-image',
+      value: `url(${spriteUrl})`
     });
 
-    rule.insertAfter(backgroundPositionDecl, backgroundSizeDecl);
+    const backgroundPositionDecl = postcss.decl({
+      prop: 'background-position',
+      value: `${-1 * posX}px ${-1 * posY}px`
+    });
+
+    rule.insertAfter(token, backgroundImageDecl);
+    rule.insertAfter(backgroundImageDecl, backgroundPositionDecl);
+
+    if (retina) {
+      const backgroundSizeDecl = postcss.decl({
+        prop: 'background-size',
+        value: `${sizeX}px ${sizeY}px`
+      });
+
+      rule.insertAfter(backgroundPositionDecl, backgroundSizeDecl);
+    }
   }
 }
 
