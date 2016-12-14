@@ -143,7 +143,7 @@ export default function(plugins, debug) {
           }
         }))
         .pipe(plugins.useref({
-          searchPath: [searchPaths.src, searchPaths.dest, './']
+          searchPath: [searchPaths.dest, searchPaths.src, './']
         }))
         .pipe(plugins.if(file => matchTmpl(file.path), gulp.dest(destPath)))
         .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
