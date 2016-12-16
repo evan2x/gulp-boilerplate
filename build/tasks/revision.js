@@ -17,6 +17,7 @@ export default function(plugins) {
       img,
       css,
       js,
+      html,
       svg,
       other
     },
@@ -61,6 +62,22 @@ export default function(plugins) {
           manifest
         }))
         .pipe(channel());
+    },
+    /**
+     * 静态html及模版中的引用路径替换
+     * @param {Array|String} globs
+     */
+    tmplRevTask = (src, dest) => {
+      let globs = util.globRebase(src, dest),
+        manifest = gulp.src(manifestFilePath),
+        exts = util.extractExtsForGlobs(globs).map(item => `.${item}`);
+
+      return gulp.src(globs, {base: './'})
+        .pipe(plugins.revReplace({
+          manifest,
+          replaceInExtensions: exts
+        }))
+        .pipe(gulp.dest('./'));
     };
 
   /**
@@ -116,20 +133,14 @@ export default function(plugins) {
   gulp.task('js:rev', () => assetsRevTask(getRevGlobs(js.src, js.dest)));
 
   /**
+   * html revision
+   */
+  gulp.task('html:rev', () => tmplRevTask(html.src, html.dest));
+
+  /**
    * template revision
    */
-  gulp.task('tmpl:rev', () => {
-    let globs = util.globRebase(tmpl.src, tmpl.dest),
-      manifest = gulp.src(manifestFilePath),
-      exts = util.extractExtsForGlobs(globs).map(item => `.${item}`);
-
-    return gulp.src(globs, {base: './'})
-      .pipe(plugins.revReplace({
-        manifest,
-        replaceInExtensions: exts
-      }))
-      .pipe(gulp.dest('./'));
-  });
+  gulp.task('tmpl:rev', () => tmplRevTask(tmpl.src, tmpl.dest));
 
   /**
    * 根据rev-manifest.json清理掉旧文件, 只删除dest目录中的旧资源

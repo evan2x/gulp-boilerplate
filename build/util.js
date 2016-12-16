@@ -97,6 +97,10 @@ export function globRebase(globs, base) {
       return path.join(base, globPath);
     }
 
+    if (!base.endsWith(path.sep)) {
+      base = `${base}${path.sep}`;
+    }
+
     return path.normalize(globPath.replace(originalBase, base));
   };
 

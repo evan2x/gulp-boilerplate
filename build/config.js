@@ -130,6 +130,14 @@ let config = {
       dest: 'img/'
     },
     /**
+     * 静态HTML文件
+     * @type {Object}
+     */
+    html: {
+      src: 'html/**/*.html',
+      dest: 'html/'
+    },
+    /**
      * SVG文件配置项
      * @type {Object}
      */
@@ -166,16 +174,15 @@ let config = {
         useHash: true
       }
     ]
+  },
+  /**
+   * 模板配置项
+   * @type {Object}
+   */
+  tmpl: {
+    src: `./views/**/*.{vm,ftl,html}`,
+    dest: `${output}/views/`
   }
-};
-
-/**
- * 模板配置项
- * @type {Object}
- */
-config.tmpl = {
-  src: `{views,${path.posix.join(base, 'html')}}/**/*.{html,vm}`,
-  dest: output
 };
 
 /**

@@ -9,6 +9,7 @@ import browserSync from 'browser-sync';
 import cssnext from 'postcss-cssnext';
 import sprites from 'postcss-sprites';
 import willChange from 'postcss-will-change';
+import through2 from 'through2';
 
 import * as util from '../util';
 import config from '../config';
@@ -44,6 +45,15 @@ export default function(plugins, debug) {
   const bundler = packager(plugins, debug);
 
   /**
+   * 统计资源出现次数的记录表
+   * @type {Object}
+   */
+  let tables = {
+    useref: {},
+    inline: {}
+  }
+
+  /**
    * 处理模板
    * @param {Array|String} globs
    * @param {String} destPath
@@ -53,7 +63,7 @@ export default function(plugins, debug) {
       /**
        * 输出目录的Globs
        */
-      destGlobs = util.globRebase(globs, config.tmpl.dest),
+      destGlobs = util.globRebase(globs, destPath),
       /**
        * inline-source及useref搜索路径
        * @type {Object}
@@ -63,21 +73,18 @@ export default function(plugins, debug) {
         dest: output
       },
       /**
-       * 统计资源出现次数的记录表
-       * @type {Object}
+       * 模版匹配器
+       * @param  {String} filePath 匹配文件路径
        */
-      tables = {
-        useref: {},
-        inline: {}
+      tmplMatcher = (filePath) => {
+        filePath = filePath.replace(new RegExp(`^${cwd}(?:${path.sep})?`), '');
+
+        if (Array.isArray(globs)) {
+          return globs.some(item => minimatch(filePath, path.normalize(item)));
+        }
+
+        return minimatch(filePath, path.normalize(globs));
       };
-
-    const matchTmpl = (filePath) => {
-      if (Array.isArray(globs)) {
-        return globs.some(item => minimatch(filePath, item));
-      }
-
-      return minimatch(filePath, globs);
-    };
 
     // 提取searchPaths的第一层目录
     Object.keys(searchPaths).forEach((key) => {
@@ -87,6 +94,7 @@ export default function(plugins, debug) {
     });
 
     return new Promise((resolve, reject) => {
+
       const inlineSourceProcessor = () => {
         gulp.src(destGlobs)
           .pipe(plugins.inlineSource({
@@ -145,13 +153,13 @@ export default function(plugins, debug) {
         .pipe(plugins.useref({
           searchPath: [searchPaths.dest, searchPaths.src, './']
         }))
-        .pipe(plugins.if(file => matchTmpl(file.path), gulp.dest(destPath)))
+        .pipe(plugins.if(file => tmplMatcher(file.path), gulp.dest(destPath)))
         .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
         .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify()))
-        .pipe(plugins.filter(file => !matchTmpl(file.path)))
+        .pipe(plugins.filter(file => /\.(?:css|js)$/.test(file.path)))
         .pipe(gulp.dest(searchPaths.dest))
         .on('end', inlineSourceProcessor)
-        .on('error', reject);
+        .once('error', reject);
     });
   };
 
@@ -253,7 +261,6 @@ export default function(plugins, debug) {
       willChange(),
       cssnext(assets.css.cssnext)
     );
-
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
       .pipe(plugins.if(debug, plugins.sourcemaps.init()))
@@ -297,10 +304,19 @@ export default function(plugins, debug) {
    * 并且对添加了inline标识资源进行内联
    * @todo debug模式下不对css及js进行压缩
    */
-  gulp.task('tmpl', () => processTmpl(
-    config.tmpl.src,
-    config.tmpl.dest
-  ));
+  gulp.task('html', () => {
+    let globs = util.processGlobs(base, assets.html.src),
+      destPath = path.join(output, assets.html.dest);
+
+    return processTmpl(globs, destPath);
+  });
+
+  /**
+   * 对模板使用useref语法进行资源进行合并以及压缩
+   * 并且对添加了inline标识资源进行内联
+   * @todo debug模式下不对css及js进行压缩
+   */
+  gulp.task('tmpl', () => processTmpl(config.tmpl.src, config.tmpl.dest));
 
   /**
    * 替换输出目录下的 模板/CSS/JS 中的引用路径
