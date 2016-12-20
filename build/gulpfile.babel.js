@@ -9,6 +9,7 @@ import minimist from 'minimist';
 import chalk from 'chalk';
 import gutil from 'gulp-util';
 import tildify from 'tildify';
+import * as _ from 'lodash';
 
 import general from './tasks/general';
 import revision from './tasks/revision';
@@ -21,13 +22,20 @@ const argv = minimist(process.argv.slice(2));
 // 当指定buildfile的时候，合并指定的build.config.js配置文件到config中
 if (argv.buildfile != null) {
   if (fs.existsSync(argv.buildfile)) {
-    let buildfile = argv.buildfile;
+    let buildfile = argv.buildfile,
+      customizer = (v1, v2) => {
+        if (Array.isArray(v1)) {
+          return v1.concat(v2);
+        }
+      };
+
     if (!path.isAbsolute(buildfile)) {
       buildfile = path.join(process.cwd(), buildfile);
     }
 
+    _.mergeWith(config, require(buildfile), customizer);
+
     gutil.log('Using buildfile %s', chalk.magenta(tildify(buildfile)));
-    Object.assign(config, require(buildfile));
   } else {
     gutil.log(chalk.red('No build-config found'));
     process.exit(1);

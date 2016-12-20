@@ -9,7 +9,6 @@ import browserSync from 'browser-sync';
 import cssnext from 'postcss-cssnext';
 import sprites from 'postcss-sprites';
 import willChange from 'postcss-will-change';
-import through2 from 'through2';
 
 import * as util from '../util';
 import config from '../config';
