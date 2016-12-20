@@ -9,6 +9,7 @@ import minimist from 'minimist';
 import chalk from 'chalk';
 import gutil from 'gulp-util';
 import tildify from 'tildify';
+import minimist from 'minimist';
 
 import general from './tasks/general';
 import revision from './tasks/revision';
@@ -18,7 +19,7 @@ import config from './config';
 
 const plugins = loadPlugins();
 const grabage = util.grabage;
-const argv = require('minimist')(process.argv.slice(2))
+const argv = minimist(process.argv.slice(2))
 
 general(plugins, process.env.NODE_ENV !== 'production');
 revision(plugins);
