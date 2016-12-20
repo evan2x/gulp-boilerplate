@@ -1,6 +1,6 @@
 {
   "name": "gulp-boilerplate",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "gulp boilerplate",
   "engines": {
     "node": ">=4.0.0"
@@ -32,11 +32,11 @@
   },
   "homepage": "https://github.com/evan2x/gulp-boilerplate#readme",
   "devDependencies": {
-    "babel-core": "^6.20.0",
+    "babel-core": "^6.21.0",
     "babel-plugin-external-helpers": "^6.18.0",
     "babel-plugin-transform-es2015-destructuring": "^6.19.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
-    "babel-plugin-transform-es2015-parameters": "^6.18.0",
+    "babel-plugin-transform-es2015-parameters": "^6.21.0",
     "babel-plugin-transform-es2015-spread": "^6.8.0",
     "babel-plugin-transform-es3-member-expression-literals": "^6.8.0",
     "babel-plugin-transform-es3-property-literals": "^6.8.0",
@@ -84,7 +84,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "postcss-cssnext": "^2.9.0",
-    "postcss-sprites": "^3.3.0",
+    "postcss-sprites": "^4.1.1",
     "postcss-will-change": "^1.1.0",
     "run-sequence": "^1.2.2",
     "through2": "^2.0.3",
@@ -92,7 +92,7 @@
     "useref": "^1.2.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.7.0"
+    "watchify": "^3.8.0"
   },
   "dependencies": {
     "babel-polyfill": "^6.20.0"
