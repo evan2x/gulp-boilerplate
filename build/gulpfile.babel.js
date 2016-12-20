@@ -1,8 +1,14 @@
 
+import path from 'path';
+import fs from 'fs';
 import gulp from 'gulp';
 import del from 'del';
 import runSequence from 'run-sequence';
 import loadPlugins from 'gulp-load-plugins';
+import minimist from 'minimist';
+import chalk from 'chalk';
+import gutil from 'gulp-util';
+import tildify from 'tildify';
 
 import general from './tasks/general';
 import revision from './tasks/revision';
@@ -12,10 +18,27 @@ import config from './config';
 
 const plugins = loadPlugins();
 const grabage = util.grabage;
+const argv = require('minimist')(process.argv.slice(2))
 
 general(plugins, process.env.NODE_ENV !== 'production');
 revision(plugins);
 misc(plugins);
+
+// 当指定buildfile的时候，合并指定的build.config.js配置文件到config中
+if (argv.buildfile != null) {
+  if (fs.existsSync(argv.buildfile)) {
+    let buildfile = argv.buildfile;
+    if (!path.isAbsolute(buildfile)) {
+      buildfile = path.join(process.cwd(), buildfile);
+    }
+
+    gutil.log('Using buildfile %s', chalk.magenta(tildify(buildfile)));
+    Object.assign(config, require(buildfile));
+  } else {
+    gutil.log(chalk.red('No build-config found'));
+    process.exit(1);
+  }
+}
 
 /**
  * 清理构建后的资源

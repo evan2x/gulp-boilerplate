@@ -6,7 +6,7 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "build": "gulp --gulpfile build/gulpfile.babel.js --cwd=./",
+    "build": "gulp --gulpfile build/gulpfile.babel.js --cwd=./ --color --buildfile=build.config.js",
     "watch": "npm run build watch",
     "symbols:gen": "npm run build symbols:gen",
     "iconfont:gen": "npm run build iconfont:gen",
@@ -88,6 +88,7 @@
     "postcss-will-change": "^1.1.0",
     "run-sequence": "^1.2.2",
     "through2": "^2.0.3",
+    "tildify": "^1.2.0",
     "useref": "^1.2.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",

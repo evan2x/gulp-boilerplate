@@ -83,7 +83,7 @@ let config = {
        */
       commonChunk: 'common.js',
       /**
-       * 打包第三方包
+       * 打包第三方模块
        * @type {Object}
        */
       vendor: {
