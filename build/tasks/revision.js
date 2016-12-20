@@ -127,7 +127,6 @@ export default function(plugins) {
       manifest = gulp.src(manifestFilePath),
       exts = util.extractExtsForGlobs(globs).map(item => `.${item}`);
 
-    console.log(globs);
     return gulp.src(globs, {base: './'})
       .pipe(plugins.revReplace({
         manifest,
