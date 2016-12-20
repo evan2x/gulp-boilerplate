@@ -46,7 +46,7 @@ gulp.task('build', (done) => {
     'clean',
     'manifest:clean',
     ['css', 'js', 'image', 'svg', 'other'],
-    ['html', 'tmpl'],
+    'tmpl',
     'refs:replace',
     'grabage:clean',
     done
@@ -63,7 +63,7 @@ gulp.task('revision', (done) => {
     ['image:rev', 'svg:rev', 'other:rev'],
     'css:rev',
     'js:rev',
-    ['html:rev', 'tmpl:rev', 'rev:garbage:clean'],
+    ['tmpl:rev', 'rev:garbage:clean'],
     done
   );
 });

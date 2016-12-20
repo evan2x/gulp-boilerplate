@@ -192,21 +192,23 @@ export default function(plugins, debug) {
         .once('end', () => {
           gulp.src(path.join(destPath, commonChunk))
             .pipe(util.insertBeforeCode(babelHelpersCode))
-            .pipe(plugins.if(!debug, plugins.uglify()))
+            // .pipe(plugins.if(!debug, plugins.uglify()))
             .pipe(gulp.dest(destPath))
-            .once('end', () => {
-              if (debug) {
-                resolve();
-              } else {
-                gulp.src(outputChunks, {base: './'})
-                  .pipe(plugins.uglify().once('error', function(err) {
-                    this.emit(watch ? 'end' : 'error', err);
-                  }))
-                  .pipe(gulp.dest('./'))
-                  .once('end', resolve)
-                  .once('error', reject);
-              }
-            })
+            .once('end', resolve)
+            .once('error', reject)
+            // .once('end', () => {
+            //   if (debug) {
+            //     resolve();
+            //   } else {
+            //     gulp.src(outputChunks, {base: './'})
+            //       .pipe(plugins.uglify().once('error', function(err) {
+            //         this.emit(watch ? 'end' : 'error', err);
+            //       }))
+            //       .pipe(gulp.dest('./'))
+            //       .once('end', resolve)
+            //       .once('error', reject);
+            //   }
+            // })
             .once('error', reject);
         })
     });

@@ -80,6 +80,31 @@ export function processGlobs(base, globs) {
 }
 
 /**
+ * 拼接多个Globs
+ * @param  {String|Array} 
+ * @return {String|Array}
+ */
+export function concatGlobs(...args) {
+  if (args.length < 2) {
+    return args[0];
+  }
+
+  let ret = [];
+
+  for (let i = 0; i < args.length; i++) {
+    if (!args[i]) continue;
+
+    if (Array.isArray(args[i])) {
+      ret = ret.concat(args[i]);
+    } else {
+      ret.push(args[i]);
+    }
+  }
+
+  return ret;
+}
+
+/**
  * 替换globs base
  * @param {Array|String} globs
  * @param {String} base

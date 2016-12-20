@@ -45,125 +45,6 @@ export default function(plugins, debug) {
   const bundler = packager(plugins, debug);
 
   /**
-   * 统计资源出现次数的记录表
-   * @type {Object}
-   */
-  let tables = {
-    useref: {},
-    inline: {}
-  }
-
-  /**
-   * 处理模板
-   * @param {Array|String} globs
-   * @param {String} destPath
-   */
-  const processTmpl = (globs, destPath) => {
-    let rcwd = new RegExp(`^${cwd}`),
-      /**
-       * 输出目录的Globs
-       */
-      destGlobs = util.globRebase(globs, destPath),
-      /**
-       * inline-source及useref搜索路径
-       * @type {Object}
-       */
-      searchPaths = {
-        src: base,
-        dest: output
-      },
-      /**
-       * 模版匹配器
-       * @param  {String} filePath 匹配文件路径
-       */
-      tmplMatcher = (filePath) => {
-        filePath = filePath.replace(new RegExp(`^${cwd}(?:${path.sep})?`), '');
-
-        if (Array.isArray(globs)) {
-          return globs.some(item => minimatch(filePath, path.normalize(item)));
-        }
-
-        return minimatch(filePath, path.normalize(globs));
-      };
-
-    // 提取searchPaths的第一层目录
-    Object.keys(searchPaths).forEach((key) => {
-      let dirs = path.normalize(searchPaths[key]).split(path.sep);
-
-      searchPaths[key] = dirs.length > 1 ? dirs[0] : './';
-    });
-
-    return new Promise((resolve, reject) => {
-
-      const inlineSourceProcessor = () => {
-        gulp.src(destGlobs)
-          .pipe(plugins.inlineSource({
-            rootpath: searchPaths.dest,
-            compress: !debug,
-            handlers: (source, context, next) => {
-              let filePath = util.trimSlashLeft(source.filepath.replace(rcwd, '')),
-                outputPrefix = util.trimSlashLeft(path.posix.normalize(output));
-
-              // 如果内嵌资源是以输出目录开头则将该资源出现的次数记录下来
-              if (filePath.startsWith(outputPrefix)) {
-                if (tables.inline[filePath]) {
-                  tables.inline[filePath] += 1;
-                } else {
-                  tables.inline[filePath] = 1;
-                }
-              }
-
-              next();
-            }
-          }))
-          .pipe(gulp.dest(destPath))
-          .once('end', () => {
-            // 记录可以回收的资源
-            Object.keys(tables.inline).forEach((key) => {
-              if (tables.inline[key] === tables.useref[key]) {
-                grabage.add(key);
-              }
-            });
-            resolve();
-          })
-          .once('error', reject);
-      };
-
-      gulp.src(globs)
-        // 使用useref标记清除资源
-        .pipe(util.userefMarkSweep({
-          directory: output,
-          outputResult({css = {}, js = {}}) {
-            let resources = [
-              ...Object.keys(css),
-              ...Object.keys(js)
-            ];
-
-            // 记录useref统计到的资源出现次数
-            for (let i = 0, item; item = resources[i++];) {
-              item = util.trimSlashLeft(item.replace(base, output));
-              if (tables.useref[item]) {
-                tables.useref[item] += 1;
-              } else {
-                tables.useref[item] = 1;
-              }
-            }
-          }
-        }))
-        .pipe(plugins.useref({
-          searchPath: [searchPaths.dest, searchPaths.src, './']
-        }))
-        .pipe(plugins.if(file => tmplMatcher(file.path), gulp.dest(destPath)))
-        .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
-        .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify()))
-        .pipe(plugins.filter(file => /\.(?:css|js)$/.test(file.path)))
-        .pipe(gulp.dest(searchPaths.dest))
-        .on('end', inlineSourceProcessor)
-        .once('error', reject);
-    });
-  };
-
-  /**
    * 使用eslint对JavaScript代码进行检查
    */
   gulp.task('lint', () => {
@@ -217,8 +98,8 @@ export default function(plugins, debug) {
       destPath = path.join(output, assets.css.dest);
 
     if (!debug) {
-      let spritePath = path.join(output, assets.img.dest),
-      referencePath = path.join(base, assets.img.dest);
+      let spritePath = path.posix.join(output, assets.img.dest),
+      referencePath = path.posix.join(base, assets.img.dest);
 
       if (!referencePath.startsWith('/')) {
         referencePath = `/${referencePath}`;
@@ -261,6 +142,7 @@ export default function(plugins, debug) {
       willChange(),
       cssnext(assets.css.cssnext)
     );
+
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
       .pipe(plugins.if(debug, plugins.sourcemaps.init()))
@@ -286,8 +168,8 @@ export default function(plugins, debug) {
     let globs, destPath;
 
     return Promise.all(assets.other.map((item) => {
-      globs = util.processGlobs(base, item.src);
-      destPath = path.join(output, item.dest);
+      let globs = util.processGlobs(base, item.src),
+        destPath = path.join(output, item.dest);
 
       return new Promise((resolve, reject) => {
         gulp.src(globs)
@@ -300,23 +182,147 @@ export default function(plugins, debug) {
   });
 
   /**
-   * 对模板使用useref语法进行资源进行合并以及压缩
+   * 对模板及静态html使用useref语法进行资源进行合并以及压缩
    * 并且对添加了inline标识资源进行内联
    * @todo debug模式下不对css及js进行压缩
    */
-  gulp.task('html', () => {
-    let globs = util.processGlobs(base, assets.html.src),
-      destPath = path.join(output, assets.html.dest);
+  gulp.task('tmpl', () => {
+    let tmplGlobs = config.tmpl.src,
+      tmplDest = config.tmpl.dest,
+      tmplDestGlobs = util.globRebase(tmplGlobs, tmplDest),
+      htmlGlobs = util.processGlobs(base, assets.html.src),
+      htmlDest = path.join(output, assets.html.dest),
+      htmlDestGlobs = util.globRebase(htmlGlobs, htmlDest),
+      globs = util.concatGlobs(tmplGlobs, htmlGlobs),
+      destGlobs = util.concatGlobs(tmplDestGlobs, htmlDestGlobs),
+      /**
+       * inline-source及useref搜索路径
+       * @type {Object}
+       */
+      searchPaths = {
+        src: base,
+        dest: output
+      },
+      /**
+       * 统计资源出现次数的记录表
+       * @type {Object}
+       */
+      markers = {
+        useref: {},
+        inline: {}
+      },
+      /**
+       * 检查文件路径是否与globs匹配
+       * @param  {String} filePath 文件路径
+       * @param  {String|Array} globs
+       * @return {Boolean}
+       */
+      globsMatch = (filePath, globs) => {
+        if (!Array.isArray(globs)) {
+          globs = [globs];
+        }
 
-    return processTmpl(globs, destPath);
+        return globs.some(item => minimatch(filePath, path.normalize(path.join(cwd, item))));
+      },
+      /**
+       * 收集内嵌资源处理程序
+       * @param  {Object}   source
+       * @param  {Object}   context
+       * @param  {Function} next
+       * @see https://github.com/popeindustries/inline-source#custom-handlers
+       */
+      collectInlineHandler = (source, context, next) => {
+        let filePath = source.filepath,
+          outputPrefix = path.join(cwd, output);
+
+        // 如果内嵌资源是以输出目录开头则将该资源出现的次数记录下来
+        if (filePath.startsWith(outputPrefix)) {
+          if (markers.inline[filePath]) {
+            markers.inline[filePath] += 1;
+          } else {
+            markers.inline[filePath] = 1;
+          }
+        }
+
+        next();
+      },
+      /**
+       * 收集useref资源处理程序
+       * @param  {Object} result
+       * @param  {Object} result.css
+       * @param  {Object} result.js
+       */
+      collectUserefHandler = ({css = {}, js = {}}) => {
+        let resources = [
+          ...Object.keys(css),
+          ...Object.keys(js)
+        ];
+
+        // 记录useref统计到的资源出现次数
+        for (let i = 0, item; item = resources[i++];) {
+          item = path.join(cwd, item.replace(base, output));
+          if (markers.useref[item]) {
+            markers.useref[item] += 1;
+          } else {
+            markers.useref[item] = 1;
+          }
+        }
+      }
+
+    // 提取searchPaths的第一层目录
+    Object.keys(searchPaths).forEach((key) => {
+      let dirs = path.normalize(searchPaths[key]).split(path.sep);
+
+      searchPaths[key] = dirs.length > 1 ? dirs[0] : './';
+    });
+
+    return new Promise((resolve, reject) => {
+      gulp.src(globs)
+        // 使用useref标记清除资源
+        .pipe(util.userefMarkSweep({
+          directory: output,
+          outputResult: collectUserefHandler
+        }))
+        .pipe(plugins.useref({
+          searchPath: [searchPaths.dest, searchPaths.src, './']
+        }))
+        .pipe(plugins.if(file => globsMatch(file.path, tmplGlobs), gulp.dest(tmplDest)))
+        .pipe(plugins.if(file => globsMatch(file.path, htmlGlobs), gulp.dest(htmlDest)))
+        .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
+        .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify({
+          compress: {screw_ie8: false}
+        })))
+        .pipe(plugins.filter(file => /\.(?:css|js)$/.test(file.path)))
+        .pipe(gulp.dest(searchPaths.dest))
+        .once('end', () => {
+          /**
+           * 资源内嵌的处理
+           * @todo 必须在useref之后处理，否则引用dist目录时，静态资源可能没有生成导致引用错误。
+           */
+          gulp.src(destGlobs)
+            .pipe(plugins.inlineSource({
+              rootpath: searchPaths.dest,
+              compress: false,
+              handlers: [collectInlineHandler]
+            }))
+            .pipe(plugins.if(file => globsMatch(file.path, htmlDestGlobs), gulp.dest(htmlDest)))
+            .pipe(plugins.filter(file => globsMatch(file.path, tmplDestGlobs)))
+            .pipe(gulp.dest(tmplDest))
+            .once('end', () => {
+              // 记录可以回收的资源
+              Object.keys(markers.inline).forEach((key) => {
+                if (markers.inline[key] === markers.useref[key]) {
+                  grabage.add(key);
+                }
+              });
+
+              resolve();
+            })
+            .once('error', reject);
+        })
+        .once('error', reject)
+    });
   });
-
-  /**
-   * 对模板使用useref语法进行资源进行合并以及压缩
-   * 并且对添加了inline标识资源进行内联
-   * @todo debug模式下不对css及js进行压缩
-   */
-  gulp.task('tmpl', () => processTmpl(config.tmpl.src, config.tmpl.dest));
 
   /**
    * 替换输出目录下的 模板/CSS/JS 中的引用路径
