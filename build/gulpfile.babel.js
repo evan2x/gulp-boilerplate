@@ -9,7 +9,6 @@ import minimist from 'minimist';
 import chalk from 'chalk';
 import gutil from 'gulp-util';
 import tildify from 'tildify';
-import minimist from 'minimist';
 
 import general from './tasks/general';
 import revision from './tasks/revision';
@@ -17,13 +16,7 @@ import misc from './tasks/misc';
 import * as util from './util';
 import config from './config';
 
-const plugins = loadPlugins();
-const grabage = util.grabage;
-const argv = minimist(process.argv.slice(2))
-
-general(plugins, process.env.NODE_ENV !== 'production');
-revision(plugins);
-misc(plugins);
+const argv = minimist(process.argv.slice(2));
 
 // 当指定buildfile的时候，合并指定的build.config.js配置文件到config中
 if (argv.buildfile != null) {
@@ -40,6 +33,13 @@ if (argv.buildfile != null) {
     process.exit(1);
   }
 }
+
+const plugins = loadPlugins();
+const grabage = util.grabage;
+
+general(plugins, process.env.NODE_ENV !== 'production');
+revision(plugins);
+misc(plugins);
 
 /**
  * 清理构建后的资源
