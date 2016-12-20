@@ -9,6 +9,7 @@ class Consumer extends EventEmitter {
 
     this.name = prop.name;
     this.age = prop.age;
+    this.delete = false;
   }
 
   say(message) {
