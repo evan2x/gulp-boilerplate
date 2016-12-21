@@ -1,5 +1,6 @@
 
 import path from 'path';
+import fs from 'fs';
 import source from 'vinyl-source-stream';
 import buffer from 'vinyl-buffer';
 import browserify from 'browserify';
@@ -153,12 +154,17 @@ export default function(plugins, debug) {
   /**
    * 打包第三方模块
    */
-  const vendorBundle = () => {
+  const vendorBundle = () => new Promise((resolve, reject) => {
     if (!Array.isArray(vendorModules) || vendorModules.length === 0) {
-      return Promise.resolve();
-    }
-
-    return new Promise((resolve, reject) => {
+      mkdirp.sync(destPath);
+      fs.writeFile(path.join(destPath, vendor.chunkName), '', (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    } else {
       let vendorPackager = browserify();
 
       for (let i = 0; i < vendorModules.length; i++) {
@@ -171,8 +177,8 @@ export default function(plugins, debug) {
         .pipe(gulp.dest(destPath))
         .on('end', resolve)
         .on('error', reject);
-    });
-  };
+    }
+  });
 
   /**
    * 打包业务模块
@@ -192,23 +198,9 @@ export default function(plugins, debug) {
         .once('end', () => {
           gulp.src(path.join(destPath, commonChunk))
             .pipe(util.insertBeforeCode(babelHelpersCode))
-            // .pipe(plugins.if(!debug, plugins.uglify()))
             .pipe(gulp.dest(destPath))
             .once('end', resolve)
             .once('error', reject)
-            // .once('end', () => {
-            //   if (debug) {
-            //     resolve();
-            //   } else {
-            //     gulp.src(outputChunks, {base: './'})
-            //       .pipe(plugins.uglify().once('error', function(err) {
-            //         this.emit(watch ? 'end' : 'error', err);
-            //       }))
-            //       .pipe(gulp.dest('./'))
-            //       .once('end', resolve)
-            //       .once('error', reject);
-            //   }
-            // })
             .once('error', reject);
         })
     });
@@ -218,7 +210,7 @@ export default function(plugins, debug) {
    * 处理打包出现的错误
    * @type {Function}
    */
-  const errorHandler = plugins.notify.onError({
+  const notifyError = plugins.notify.onError({
     title: 'Packager error',
     message: function(err) {
       let message = err.message;
@@ -236,7 +228,7 @@ export default function(plugins, debug) {
       if (watch) {
         packager = watchify(packager);
         packager.on('update', () => {
-          bundle().catch(errorHandler);
+          bundle().catch(notifyError);
         });
         packager.on('log', (msg) => {
           gutil.log(`Watching ${chalk.cyan('\'browserify\'')}: ${chalk.green(msg)}`);
@@ -245,5 +237,8 @@ export default function(plugins, debug) {
 
       return bundle({watch});
     })
-    .catch(errorHandler);
+    .catch((err) => {
+      notifyError(err);
+      return Promise.reject(err);
+    });
 }

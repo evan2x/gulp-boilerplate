@@ -81,7 +81,7 @@ export function processGlobs(base, globs) {
 
 /**
  * 拼接多个Globs
- * @param  {String|Array} 
+ * @param  {String|Array}
  * @return {String|Array}
  */
 export function concatGlobs(...args) {

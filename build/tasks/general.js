@@ -224,6 +224,22 @@ export default function(plugins, debug) {
         return globs.some(item => minimatch(filePath, path.normalize(path.join(cwd, item))));
       },
       /**
+       * 生成一个匹配base路径的正则表达式
+       * @todo 用于useref中统计引用资源的匹配路径替换
+       * @param {String}
+       * @return
+       */
+      matchBaseRegExp = (basePath) => {
+        let basePaths = path.posix.normalize(basePath).split(path.posix.sep),
+          ret = [];
+
+        basePaths.forEach((item, index) => {
+          ret.push(basePaths.slice(index).join(path.posix.sep));
+        });
+
+        return new RegExp(`^\\/?${ret.join('|')}`);
+      },
+      /**
        * 收集内嵌资源处理程序
        * @param  {Object}   source
        * @param  {Object}   context
@@ -259,7 +275,7 @@ export default function(plugins, debug) {
 
         // 记录useref统计到的资源出现次数
         for (let i = 0, item; item = resources[i++];) {
-          item = path.join(cwd, item.replace(base, output));
+          item = path.join(cwd, item.replace(matchBaseRegExp(base), path.posix.normalize(output)));
           if (markers.useref[item]) {
             markers.useref[item] += 1;
           } else {

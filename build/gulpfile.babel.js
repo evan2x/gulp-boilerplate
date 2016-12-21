@@ -21,9 +21,14 @@ const argv = minimist(process.argv.slice(2));
 
 // 当指定buildfile的时候，合并指定的build.config.js配置文件到config中
 if (argv.buildfile != null) {
-  if (fs.existsSync(argv.buildfile)) {
-    let buildfile = argv.buildfile,
-      customizer = (v1, v2) => {
+  let buildfile = argv.buildfile;
+
+  if (!path.isAbsolute(buildfile)) {
+    buildfile = path.join(process.cwd(), buildfile);
+  }
+
+  if (fs.existsSync(buildfile)) {
+    let customizer = (v1, v2) => {
         if (Array.isArray(v1)) {
           return v1.concat(v2);
         }
