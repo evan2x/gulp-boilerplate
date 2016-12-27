@@ -80,6 +80,7 @@
     "imagemin-pngquant": "~4.0.0",
     "lazypipe": "^1.0.1",
     "lodash": "^4.17.2",
+    "lodash.mergewith": "^4.6.0",
     "minimatch": "^3.0.3",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",

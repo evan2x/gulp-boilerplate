@@ -9,7 +9,7 @@ import minimist from 'minimist';
 import chalk from 'chalk';
 import gutil from 'gulp-util';
 import tildify from 'tildify';
-import * as _ from 'lodash';
+import mergeWith from 'lodash.mergewith';
 
 import general from './tasks/general';
 import revision from './tasks/revision';
@@ -38,7 +38,7 @@ if (argv.buildfile != null) {
       buildfile = path.join(process.cwd(), buildfile);
     }
 
-    _.mergeWith(config, require(buildfile), customizer);
+    mergeWith(config, require(buildfile), customizer);
 
     gutil.log('Using buildfile %s', chalk.magenta(tildify(buildfile)));
   } else {
@@ -49,6 +49,7 @@ if (argv.buildfile != null) {
 
 const plugins = loadPlugins();
 const grabage = util.grabage;
+const taskRun = runSequence.use(gulp);
 
 general(plugins, process.env.NODE_ENV !== 'production');
 revision(plugins);
@@ -79,7 +80,7 @@ gulp.task('grabage:clean', () => {
  * 构建项目
  */
 gulp.task('build', (done) => {
-  runSequence(
+  runTask(
     'clean',
     'manifest:clean',
     ['css', 'js', 'image', 'svg', 'other'],
@@ -94,7 +95,7 @@ gulp.task('build', (done) => {
  * 构建带资源版本号的项目
  */
 gulp.task('revision', (done) => {
-  runSequence(
+  runTask(
     'build',
     'manifest:clean',
     ['image:rev', 'svg:rev', 'other:rev'],
