@@ -99,6 +99,11 @@ let config = {
         chunkName: 'vendor.js'
       },
       /**
+       * 可省略文件拓展名
+       * @type {Array}
+       */
+      extensions: [],
+      /**
        * 查找模块目录，该选项避免了 ../../../ 这种引用模块的方式
        * @todo node_modules会强制作为模块的第一个搜索目录
        * @type {Array}

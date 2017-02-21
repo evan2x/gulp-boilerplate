@@ -82,6 +82,7 @@ export default function(plugins, debug) {
       packageCache: {},
       entries,
       debug,
+      extensions,
       paths: ['node_modules', ...modulesDirectories]
     }).transform(babelify),
     /**
