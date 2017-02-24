@@ -1,3 +1,4 @@
+/* eslint global-require: "off" */
 
 import path from 'path';
 import fs from 'fs';
@@ -9,7 +10,7 @@ import minimist from 'minimist';
 import chalk from 'chalk';
 import gutil from 'gulp-util';
 import tildify from 'tildify';
-import mergeWith from 'lodash.mergewith';
+import * as _ from 'lodash';
 
 import general from './tasks/general';
 import revision from './tasks/revision';
@@ -23,22 +24,22 @@ const argv = minimist(process.argv.slice(2));
 if (argv.buildfile != null) {
   let buildfile = argv.buildfile;
 
+  const customizer = (v1, v2) => {
+    if (Array.isArray(v1)) {
+      return v1.concat(v2);
+    }
+  };
+
   if (!path.isAbsolute(buildfile)) {
     buildfile = path.join(process.cwd(), buildfile);
   }
 
   if (fs.existsSync(buildfile)) {
-    let customizer = (v1, v2) => {
-        if (Array.isArray(v1)) {
-          return v1.concat(v2);
-        }
-      };
-
     if (!path.isAbsolute(buildfile)) {
       buildfile = path.join(process.cwd(), buildfile);
     }
 
-    mergeWith(config, require(buildfile), customizer);
+    _.mergeWith(config, require(buildfile), customizer);
 
     gutil.log('Using buildfile %s', chalk.magenta(tildify(buildfile)));
   } else {
@@ -49,11 +50,11 @@ if (argv.buildfile != null) {
 
 const plugins = loadPlugins();
 const grabage = util.grabage;
-const taskRun = runSequence.use(gulp);
+const runTask = runSequence.use(gulp);
 
-general(plugins, process.env.NODE_ENV !== 'production');
-revision(plugins);
-misc(plugins);
+general(plugins, argv, process.env.NODE_ENV !== 'production');
+revision(plugins, argv);
+misc(plugins, argv);
 
 /**
  * 清理构建后的资源

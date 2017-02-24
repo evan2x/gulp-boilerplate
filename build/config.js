@@ -1,6 +1,5 @@
-
 import path from 'path';
-import {Glob} from 'glob';
+import { Glob } from 'glob';
 import glob2base from 'glob2base';
 
 /**
@@ -21,7 +20,7 @@ const output = './dist';
  */
 const docs = './docs';
 
-let config = {
+const config = {
   /**
    * 资源CDN域名
    * @type {String}
@@ -77,11 +76,17 @@ let config = {
        */
       entry: 'main.js',
       /**
-       * 提取公共模块为`common.js`
+       * 提取公共模块为 common.js
        * @todo 不使用extensions
        * @type {String}
        */
       commonChunk: 'common.js',
+      /**
+       * 提取模块转译过程中babel用到的辅助方法到 babelHelpers.js 中
+       * @todo 不使用extensions
+       * @type {String}
+       */
+      babelHelpers: 'babelHelpers.js',
       /**
        * 打包第三方模块
        * @type {Object}
@@ -156,9 +161,9 @@ let config = {
        */
       compress: {
         plugins: [
-          {removeHiddenElems: false},
-          {removeUselessDefs: false},
-          {cleanupIDs: false}
+          { removeHiddenElems: false },
+          { removeUselessDefs: false },
+          { cleanupIDs: false }
         ]
       },
       /**
@@ -185,7 +190,7 @@ let config = {
    * @type {Object}
    */
   tmpl: {
-    src: `./views/**/*.{vm,ftl,html}`,
+    src: './views/**/*.{vm,ftl,html}',
     dest: `${output}/views/`
   }
 };

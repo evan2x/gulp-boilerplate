@@ -4,7 +4,7 @@ import gulp from 'gulp';
 
 import config from '../config';
 
-export default function(plugins) {
+export default function (plugins) {
   /**
    * svg图标生成svg symbols
    */
@@ -18,8 +18,8 @@ export default function(plugins) {
       }
     } = config.icon;
 
-    let globs = path.join(src, '**/*.svg'),
-      tmpl = path.resolve(__dirname, '../templates/svg-symbols.html');
+    let globs = path.join(src, '**/*.svg');
+    let tmpl = path.resolve(__dirname, '../templates/svg-symbols.html');
 
     const filter = {
       svg: plugins.filter(file => /\.svg$/.test(file.path), {
@@ -85,12 +85,12 @@ export default function(plugins) {
       }
     } = config.icon;
 
-    let globs = path.join(src, '**/*.svg'),
-      docDestPath = path.dirname(docPath),
-      tmpl = {
-        css: path.resolve(__dirname, '../templates/iconfont.css'),
-        html: path.resolve(__dirname, '../templates/iconfont.html')
-      };
+    let globs = path.join(src, '**/*.svg');
+    let docDestPath = path.dirname(docPath);
+    let tmpl = {
+      css: path.resolve(__dirname, '../templates/iconfont.css'),
+      html: path.resolve(__dirname, '../templates/iconfont.html')
+    };
 
     return gulp.src(globs)
       .pipe(plugins.iconfont({
@@ -99,12 +99,12 @@ export default function(plugins) {
         timestamp: Math.round(Date.now() / 1000)
       }))
       .on('glyphs', (glyphs) => {
-        let fontPath = destPath,
-          data = {
-            className: 'icon',
-            fontName: name,
-            glyphs
-          };
+        let fontPath = destPath;
+        let data = {
+          className: 'icon',
+          fontName: name,
+          glyphs
+        };
 
         if (!fontPath.startsWith('/')) {
           fontPath = `/${fontPath}`;
