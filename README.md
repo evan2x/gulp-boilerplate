@@ -21,6 +21,9 @@ npm run watch
 # browser-sync service
 npm run serve -- --port 3000
 
+# browser-sync service proxy URL to another
+npm run serve -- --port 3000 --proxy "http://127.0.0.1:8080"
+
 # 生成 svg symbols
 npm run symbols:gen
 
@@ -34,7 +37,7 @@ npm run build [task]
 `npm run serve` 有以下两个参数：
 
 * `--port 3000` 指定browser-sync服务监听端口，默认：`3000`
-* `--proxy 127.0.0.1:8080` 指定代理地址
+* `--proxy 127.0.0.1:8080` 指定代理地址，如果需要配置更复杂的配置项，请移步到 build/config.js 配置 `browserSync`
 
 访问 `http://127.0.0.1:3000`
 
