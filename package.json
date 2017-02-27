@@ -97,10 +97,12 @@
     "useref": "^1.2.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
+    "vueify": "^9.4.0",
     "watchify": "^3.9.0"
   },
   "dependencies": {
-    "babel-polyfill": "^6.23.0"
+    "babel-polyfill": "^6.23.0",
+    "vue": "^2.2.1"
   },
   "license": "MIT"
 }
