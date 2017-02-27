@@ -12,12 +12,16 @@ import gulp from 'gulp';
 import gutil from 'gulp-util';
 import glob, { Glob } from 'glob';
 import glob2base from 'glob2base';
+import vueify from 'vueify';
 
 import extractBabelHelpers from '../plugins/extract-babel-helpers';
+import createProcessor from '../postcss.config';
 import * as util from '../util';
 import config from '../config';
 
 export default function (plugins, debug) {
+  const assets = config.assets;
+
   const {
     base,
     output,
@@ -30,7 +34,7 @@ export default function (plugins, debug) {
       vendor,
       modulesDirectories
     }
-  } = config.assets;
+  } = assets;
 
   let entryGlobs = util.processGlobs(base, src);
 
@@ -78,7 +82,20 @@ export default function (plugins, debug) {
     entries,
     debug,
     paths: ['node_modules', ...modulesDirectories]
-  }).transform(babelify);
+  })
+
+  if (assets.js.vueify.enable) {
+    let spritePath = path.join(output, assets.img.dest);
+    let stylesheetPath = path.join(output, assets.css.dest);
+    let refPath = path.posix.join(base, assets.img.dest);
+    let processor = createProcessor({ spritePath, stylesheetPath, refPath });
+
+    packager.transform(vueify, {
+      postcss: processor
+    });
+  }
+
+  packager.transform(babelify);
 
   /**
    * 移除文件base
@@ -120,6 +137,13 @@ export default function (plugins, debug) {
   packager.plugin(extractBabelHelpers, {
     output: path.resolve(destPath, babelHelpers)
   });
+
+  if (assets.js.vueify.enable) {
+    let filename = assets.js.vueify.css.filename || 'bundle.css';
+    packager.plugin('vueify/plugins/extract-css', {
+      out: path.join(output, assets.css.dest, filename)
+    });
+  }
 
   // 排除第三方模块
   for (let i = 0; i < vendorModules.length; i++) {

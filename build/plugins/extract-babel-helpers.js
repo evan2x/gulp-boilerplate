@@ -10,7 +10,7 @@ import babelify from 'babelify';
 import through from 'through2';
 import { transform, buildExternalHelpers } from 'babel-core';
 
-export default function extractBabelHelpers(br, {
+export default function extractBabelHelpers(bundle, {
   outputType = 'global',
   output = '',
   es3 = true
@@ -18,7 +18,29 @@ export default function extractBabelHelpers(br, {
   if (!output) return;
   let usedHelpers = new Set();
 
-  br.on('transform', (tr) => {
+  const noop = (chunk, enc, done) => {
+    done(null, chunk);
+  }
+
+  const addHooks = () => {
+    bundle.pipeline.get('pack').push(through.obj(noop, (done) => {
+      let helpers = buildExternalHelpers(Array.from(usedHelpers), outputType);
+      let options = {};
+
+      if (es3) {
+        options.plugins = [
+          'transform-es3-member-expression-literals',
+          'transform-es3-property-literals'
+        ];
+      }
+
+      let ret = transform(helpers, options);
+
+      fs.writeFile(output, ret.code, done);
+    }));
+  }
+
+  bundle.on('transform', (tr) => {
     if (tr instanceof babelify) {
       tr.once('babelify', (result) => {
         result.metadata.usedHelpers.forEach((method) => {
@@ -28,23 +50,6 @@ export default function extractBabelHelpers(br, {
     }
   });
 
-  br.pipeline.get('pack').push(through.obj((obj, enc, done) => {
-    done(null, obj);
-  }, (done) => {
-    let helpers = buildExternalHelpers(Array.from(usedHelpers), outputType);
-    let options = {};
-
-    if (es3) {
-      options.plugins = [
-        'transform-es3-member-expression-literals',
-        'transform-es3-property-literals'
-      ];
-    }
-
-    let ret = transform(helpers, options);
-
-    fs.writeFile(output, ret.code, done);
-  }));
-
-  return br;
+  bundle.on('reset', addHooks);
+  addHooks();
 }

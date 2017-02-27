@@ -88,6 +88,23 @@ const config = {
        */
       babelHelpers: 'babelHelpers.js',
       /**
+       * 使用 vue 时相关的配置项
+       */
+      vueify: {
+        /**
+         * 是否使用 vue
+         * @type {Boolean}
+         */
+        enable: false,
+        css: {
+          /**
+           * vue组件中提取的css输出文件，该文件输出位置相对于css配置项中指定的dest目录
+           * @type {String}
+           */
+          filename: 'bundle.css'
+        }
+      },
+      /**
        * 打包第三方模块
        * @type {Object}
        */
@@ -104,7 +121,7 @@ const config = {
         chunkName: 'vendor.js'
       },
       /**
-       * 可省略文件拓展名
+       * 配置此项后，在导入模块时可省略文件扩展名
        * @type {Array}
        */
       extensions: [],
@@ -121,15 +138,7 @@ const config = {
      */
     css: {
       src: 'css/**/*.css',
-      dest: 'css/',
-      /**
-       * cssnext 配置项
-       * @type {Object}
-       * @see http://cssnext.io/usage
-       */
-      cssnext: {
-        browsers: ['last 2 versions', '> 1% in CN', 'Firefox ESR', 'Opera 12.1', 'Safari >= 5', 'ie >= 8']
-      }
+      dest: 'css/'
     },
     /**
      * 图片配置项

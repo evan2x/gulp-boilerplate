@@ -14,6 +14,8 @@ import collectRefuse from '../plugins/gulp-collect-refuse';
 import replaceReference from '../plugins/gulp-replace-reference';
 import config from '../config';
 import packager from './packager';
+import createProcessor, { matchGroup } from '../postcss.config';
+
 
 const bs = browserSync.create();
 const cwd = process.cwd();
@@ -27,12 +29,6 @@ export default function (plugins, argv, debug) {
       output
     }
   } = config;
-
-  /**
-   * 匹配CSS Sprites 图片的分组
-   * @type {RegExp}
-   */
-  const rgroup = /\.(.+)\.(?:[a-zA-Z0-9]+)$/;
 
   /**
    * JS模块打包器
@@ -62,7 +58,7 @@ export default function (plugins, argv, debug) {
 
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
-      .pipe(plugins.if(!debug, plugins.filter(file => !rgroup.test(path.basename(file.path)))))
+      .pipe(plugins.if(!debug, plugins.filter(file => !matchGroup.test(path.basename(file.path)))))
       .pipe(plugins.if(!debug, plugins.imagemin({
         progressive: true,
         use: [pngquant()]
@@ -89,60 +85,20 @@ export default function (plugins, argv, debug) {
    * @todo debug模式下保留sourcemap, 非debug模式下会启动CSS Sprites功能。
    */
   gulp.task('css', () => {
-    let processors = [];
     let globs = util.processGlobs(base, assets.css.src);
     let destPath = path.join(output, assets.css.dest);
-
-    if (!debug) {
-      let spritePath = path.posix.join(output, assets.img.dest);
-      let referencePath = path.posix.join(base, assets.img.dest);
-
-      if (!referencePath.startsWith('/')) {
-        referencePath = `/${referencePath}`;
-      }
-
-      // support css sprites
-      processors.push(sprites({
-        stylesheetPath: destPath,
-        spritePath,
-        basePath: './',
-        retina: true,
-        hooks: {
-          onUpdateRule: util.createRuleUpdater(referencePath)
-        },
-        filterBy(image) {
-          if (rgroup.test(image.url)) {
-            return Promise.resolve();
-          }
-
-          return Promise.reject();
-        },
-        groupBy(image) {
-          let match = image.url.match(rgroup);
-
-          image.groups = [];
-
-          if (match && match[1]) {
-            return Promise.resolve(match[1]);
-          }
-
-          return Promise.reject();
-        },
-        spritesmith: {
-          padding: 1
-        }
-      }));
-    }
-
-    processors.push(
-      willChange(),
-      cssnext(assets.css.cssnext)
-    );
+    let spritePath = path.join(output, assets.img.dest);
+    let refPath = path.posix.join(base, assets.img.dest);
+    const processor = createProcessor({
+      stylesheetPath: destPath,
+      spritePath,
+      refPath
+    });
 
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
       .pipe(plugins.if(debug, plugins.sourcemaps.init()))
-      .pipe(plugins.postcss(processors).on('error', plugins.notify.onError({
+      .pipe(plugins.postcss(processor).on('error', plugins.notify.onError({
         title: 'PostCSS error',
         message: '<%= error.message %>'
       })))
