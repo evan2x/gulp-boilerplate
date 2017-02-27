@@ -1,6 +1,6 @@
 /* eslint no-console: 0 */
 
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 
 class Provider extends EventEmitter {
 

@@ -19,6 +19,9 @@
 
 .icon-backtop:before {
   content: "\ea01";
+
+    transition: opacity .3s ease, transform .3s ease;
+    transform: translate(-50%, -50%) scale(1);
 }
 
 .icon-battery:before {
