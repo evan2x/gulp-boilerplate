@@ -1,13 +1,9 @@
 
 import path from 'path';
 import gulp from 'gulp';
-import minimist from 'minimist';
 import minimatch from 'minimatch';
 import pngquant from 'imagemin-pngquant';
 import browserSync from 'browser-sync';
-import cssnext from 'postcss-cssnext';
-import sprites from 'postcss-sprites';
-import willChange from 'postcss-will-change';
 
 import * as util from '../util';
 import collectRefuse from '../plugins/gulp-collect-refuse';

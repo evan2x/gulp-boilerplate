@@ -36,12 +36,6 @@ export default function collectRefuse({
     });
   };
 
-  const customizer = (objValue, srcValue) => {
-    if (_.isArray(objValue)) {
-      return objValue.concat(srcValue);
-    }
-  };
-
   return through.obj(function (file, enc, next) {
     if (file.isNull()) {
       return next();
@@ -58,7 +52,7 @@ export default function collectRefuse({
     next();
   }, (next) => {
     if (_.isFunction(output)) {
-      Object.entries(ret).forEach(([key, assets]) => {
+      Object.values(ret).forEach((assets) => {
         if (assets.css) collect(assets.css);
         if (assets.js) collect(assets.js);
       });

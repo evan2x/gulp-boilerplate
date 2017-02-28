@@ -20,7 +20,7 @@ export default function extractBabelHelpers(bundle, {
 
   const noop = (chunk, enc, done) => {
     done(null, chunk);
-  }
+  };
 
   const addHooks = () => {
     bundle.pipeline.get('pack').push(through.obj(noop, (done) => {
@@ -38,7 +38,7 @@ export default function extractBabelHelpers(bundle, {
 
       fs.writeFile(output, ret.code, done);
     }));
-  }
+  };
 
   bundle.on('transform', (tr) => {
     if (tr instanceof babelify) {

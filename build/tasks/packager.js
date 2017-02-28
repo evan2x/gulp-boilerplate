@@ -82,7 +82,7 @@ export default function (plugins, debug) {
     entries,
     debug,
     paths: ['node_modules', ...modulesDirectories]
-  })
+  });
 
   if (assets.js.vueify.enable) {
     let spritePath = path.join(output, assets.img.dest);
