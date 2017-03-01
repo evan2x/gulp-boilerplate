@@ -26,11 +26,18 @@ export default function (plugins, argv, debug) {
     }
   } = config;
 
+  const lint = (globs) => {
+    return gulp.src(globs)
+      .pipe(plugins.eslint())
+      .pipe(plugins.eslint.format())
+      // .pipe(plugins.eslint.failOnError());
+  }
+
   /**
    * JS模块打包器
    * @type {Object}
    */
-  const bundler = packager(plugins, debug);
+  const bundler = packager(plugins, debug, lint);
 
   /**
    * 使用eslint对JavaScript代码进行检查
@@ -38,10 +45,7 @@ export default function (plugins, argv, debug) {
   gulp.task('lint', () => {
     let globs = util.processGlobs(base, assets.js.src);
 
-    return gulp.src(globs)
-      .pipe(plugins.eslint())
-      .pipe(plugins.eslint.format());
-      // .pipe(plugins.eslint.failAfterError()); // 暂时不开启抛出异常，只进行检查，而不强制中断整个构建
+    return lint(globs);
   });
 
   /**
@@ -89,7 +93,7 @@ export default function (plugins, argv, debug) {
       stylesheetPath: destPath,
       spritePath,
       refPath
-    });
+    }, debug);
 
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
@@ -341,10 +345,7 @@ export default function (plugins, argv, debug) {
    */
   gulp.task('watch', () => {
     // watch css
-    util.watch(
-      util.processGlobs(base, assets.css.src),
-      ['css']
-    );
+    util.watch(util.processGlobs(base, assets.css.src), ['css']);
 
     // watch js
     bundler({ watch: true });

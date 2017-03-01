@@ -13,13 +13,14 @@ import gutil from 'gulp-util';
 import glob, { Glob } from 'glob';
 import glob2base from 'glob2base';
 import vueify from 'vueify';
+import * as _ from 'lodash';
 
 import extractBabelHelpers from '../plugins/extract-babel-helpers';
 import createProcessor from '../postcss.config';
 import * as util from '../util';
 import config from '../config';
 
-export default function (plugins, debug) {
+export default function (plugins, debug, lint = _.noop) {
   const assets = config.assets;
 
   const {
@@ -36,17 +37,17 @@ export default function (plugins, debug) {
     }
   } = assets;
 
-  let entryGlobs = util.processGlobs(base, src);
+  let allGlobs = util.processGlobs(base, src);
 
-  if (!Array.isArray(entryGlobs)) {
-    entryGlobs = [entryGlobs];
+  if (!Array.isArray(allGlobs)) {
+    allGlobs = [allGlobs];
   }
 
   /**
    * 提取到所有browserify入口文件
    * @type {Array}
    */
-  let entries = entryGlobs.reduce((arr, item) => {
+  let entries = allGlobs.reduce((arr, item) => {
     let files = glob.sync(path.join(glob2base(new Glob(item)), '**', entry));
 
     return [
@@ -88,7 +89,7 @@ export default function (plugins, debug) {
     let spritePath = path.join(output, assets.img.dest);
     let stylesheetPath = path.join(output, assets.css.dest);
     let refPath = path.posix.join(base, assets.img.dest);
-    let processor = createProcessor({ spritePath, stylesheetPath, refPath });
+    let processor = createProcessor({ spritePath, stylesheetPath, refPath }, debug);
 
     packager.transform(vueify, {
       postcss: processor
@@ -103,7 +104,7 @@ export default function (plugins, debug) {
    * @return {Array}
    */
   const removeBase = (filePaths) => {
-    let baseList = entryGlobs.map(item => glob2base(new Glob(item)));
+    let baseList = allGlobs.map(item => glob2base(new Glob(item)));
 
     return filePaths.map((filePath) => {
       baseList.forEach((baseItem) => {
@@ -217,8 +218,11 @@ export default function (plugins, debug) {
   return ({ watch = false } = {}) => vendorBundle()
     .then(() => {
       if (watch) {
+        let isError = false;
+
         packager = watchify(packager);
-        packager.on('update', () => {
+        packager.on('update', (ids) => {
+          // lint(ids);
           bundle().catch(notifyError);
         });
         packager.on('log', (msg) => {
@@ -226,6 +230,7 @@ export default function (plugins, debug) {
         });
       }
 
+      // lint(allGlobs);
       return bundle();
     })
     .catch((err) => {
