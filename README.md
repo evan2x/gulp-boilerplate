@@ -48,7 +48,7 @@ npm run build [task]
 如下命令会把 `--buildfile` 指定的配置文件与 `build/config.js` 配置进行合并作为最终配置项。
 
 ```shell
-$ gulp --cwd=./ --gulpfile=build/gulpfile.babel.js --buildfile=./build.config.js
+$ gulp --cwd=./ --gulpfile base/build/gulpfile.babel.js --buildfile build.config.js
 ```
 
 ## Environment
