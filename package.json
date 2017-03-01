@@ -6,7 +6,7 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "build": "gulp --gulpfile build/gulpfile.babel.js --cwd=./ --buildfile=build.config.js",
+    "build": "gulp --cwd=./ --gulpfile=build/gulpfile.babel.js --buildfile=./build.config.js",
     "watch": "npm run build watch",
     "symbols:gen": "npm run build symbols:gen",
     "iconfont:gen": "npm run build iconfont:gen",
