@@ -22,7 +22,9 @@ const argv = minimist(process.argv.slice(2));
 
 // 当指定buildfile的时候，合并指定的build.config.js配置文件到config中
 if (argv.buildfile != null) {
-  let buildfile = argv.buildfile;
+  let custom = {
+    file: argv.buildfile
+  };
 
   const customizer = (v1, v2) => {
     if (Array.isArray(v1)) {
@@ -30,20 +32,22 @@ if (argv.buildfile != null) {
     }
   };
 
-  if (!path.isAbsolute(buildfile)) {
-    buildfile = path.join(process.cwd(), buildfile);
+  if (!path.isAbsolute(custom.file)) {
+    custom.file = path.join(process.cwd(), custom.file);
   }
 
-  if (fs.existsSync(buildfile)) {
-    if (!path.isAbsolute(buildfile)) {
-      buildfile = path.join(process.cwd(), buildfile);
+  if (fs.existsSync(custom.file)) {
+    if (!path.isAbsolute(custom.file)) {
+      custom.file = path.join(process.cwd(), custom.file);
     }
 
-    _.mergeWith(config, require(buildfile), customizer);
+    custom.config = require(custom.file)
 
-    gutil.log('Using buildfile %s', chalk.magenta(tildify(buildfile)));
+    _.mergeWith(config, custom.config.default ? custom.config.default : custom.config, customizer);
+
+    gutil.log('Using buildfile %s', chalk.magenta(tildify(custom.file)));
   } else {
-    gutil.log(chalk.red('No build-config found'));
+    gutil.log(chalk.red('No buildfile found'));
     process.exit(1);
   }
 }
