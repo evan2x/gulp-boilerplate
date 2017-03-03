@@ -13,6 +13,7 @@ import gutil from 'gulp-util';
 import glob, { Glob } from 'glob';
 import glob2base from 'glob2base';
 import vueify from 'vueify';
+import envify from 'envify';
 import * as _ from 'lodash';
 
 import extractBabelHelpers from '../plugins/extract-babel-helpers';
@@ -84,6 +85,8 @@ export default function (plugins, debug, lint = _.noop) {
     debug,
     paths: ['node_modules', ...modulesDirectories]
   });
+
+  packager.transform(envify);
 
   if (assets.js.vueify.enable) {
     let spritePath = path.join(output, assets.img.dest);
@@ -166,6 +169,10 @@ export default function (plugins, debug, lint = _.noop) {
       });
     } else {
       let vendorPackager = browserify();
+
+      vendorPackager.transform(envify, {
+        global: true
+      });
 
       for (let i = 0; i < vendorModules.length; i++) {
         vendorPackager.require(vendorModules[i]);
