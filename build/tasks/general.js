@@ -195,11 +195,23 @@ export default function (plugins, argv, debug) {
 
     const counter = {
       useref(grabageList, result) {
-        let resources = Object.values(result).reduce((ret, resource) => ([
-          ...ret,
-          ...Object.keys(resource.js),
-          ...Object.keys(resource.css)
-        ]), []);
+        let resources = Object.values(result).reduce((ret, resource) => {
+          if (resource.js) {
+            ret = [
+              ...ret,
+              ...Object.keys(resource.js)
+            ];
+          }
+
+          if (resource.css) {
+            ret = [
+              ...ret,
+              ...Object.keys(resource.css)
+            ];
+          }
+
+          return ret;
+        }, []);
 
         // 记录useref输出资源的出现次数
         for (let i = 0, item; item = resources[i++];) {
