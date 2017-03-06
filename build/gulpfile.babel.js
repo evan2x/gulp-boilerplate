@@ -41,7 +41,7 @@ if (argv.buildfile != null) {
       custom.file = path.join(process.cwd(), custom.file);
     }
 
-    custom.config = require(custom.file)
+    custom.config = require(custom.file);
 
     _.mergeWith(config, custom.config.default ? custom.config.default : custom.config, customizer);
 

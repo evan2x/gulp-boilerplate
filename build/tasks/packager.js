@@ -225,8 +225,6 @@ export default function (plugins, debug, lint = _.noop) {
   return ({ watch = false } = {}) => vendorBundle()
     .then(() => {
       if (watch) {
-        let isError = false;
-
         packager = watchify(packager);
         packager.on('update', (ids) => {
           // lint(ids);

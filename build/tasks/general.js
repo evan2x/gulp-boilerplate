@@ -12,7 +12,6 @@ import config from '../config';
 import packager from './packager';
 import createProcessor, { matchGroup } from '../postcss.config';
 
-
 const bs = browserSync.create();
 const cwd = process.cwd();
 const grabage = util.grabage;
@@ -26,12 +25,10 @@ export default function (plugins, argv, debug) {
     }
   } = config;
 
-  const lint = (globs) => {
-    return gulp.src(globs)
-      .pipe(plugins.eslint())
-      .pipe(plugins.eslint.format())
-      // .pipe(plugins.eslint.failOnError());
-  }
+  const lint = (globs, throwError = false) => (gulp.src(globs)
+    .pipe(plugins.eslint())
+    .pipe(plugins.eslint.format())
+    .pipe(gulp.if(throwError, plugins.eslint.failOnError())));
 
   /**
    * JS模块打包器
