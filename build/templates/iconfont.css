@@ -7,7 +7,7 @@
     url('<%= fontPath %><%= fontName %>.svg#<%= fontName %>') format('svg');
 }
 
-.<%= fontName %>:before {
+[class^="<%= className %>-"], [class*=" <%= className %>-"] {
   font-family: "<%= fontName %>" !important;
   font-style: normal;
   font-weight: normal;
@@ -16,7 +16,6 @@
   -webkit-font-smoothing: antialiased; /* 修复锯齿问题 */
   -moz-osx-font-smoothing: grayscale; /* 修复锯齿问题 */
 }
-
 <% _.each(glyphs, function(glyph) { %>
 .<%= className %>-<%= glyph.name %>:before {
   content: "\<%= glyph.unicode[0].charCodeAt(0).toString(16).toLowerCase() %>";
