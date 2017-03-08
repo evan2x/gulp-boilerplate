@@ -97,6 +97,7 @@ npm run [script name]
   <script src="/dist/assets/js/vendor.js"></script>
   <!-- endbuild -->
   <!-- build:js /assets/js/common.js -->
+  <script src="/dist/assets/js/babelHelpers.js"></script>
   <script src="/dist/assets/js/common.js"></script>
   <!-- endbuild -->
   <!-- build:js /assets/js/main.js -->
