@@ -212,13 +212,7 @@ export default function (plugins, debug, lint = _.noop) {
   const notifyError = plugins.notify.onError({
     title: 'Packager error',
     message(err) {
-      let message = err.message;
-
-      if (err.codeFrame) {
-        message += `\n\n${err.codeFrame}\n`;
-      }
-
-      return message;
+      return err.toString();
     }
   });
 
