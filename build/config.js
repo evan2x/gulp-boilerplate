@@ -88,6 +88,12 @@ const config = {
        */
       babelHelpers: 'babelHelpers.js',
       /**
+       * 提取js模块中导入的样式，该文件输出位置相对于css配置项中指定的dest目录
+       * @todo 不使用extensions
+       * @type {String}
+       */
+      extractStyleFile: 'common.css',
+      /**
        * 使用 vue 时相关的配置项
        */
       vueify: {
@@ -96,13 +102,11 @@ const config = {
          * @type {Boolean}
          */
         enable: false,
-        css: {
-          /**
-           * vue组件中提取的css输出文件，该文件输出位置相对于css配置项中指定的dest目录
-           * @type {String}
-           */
-          filename: 'bundle.css'
-        }
+        /**
+         * vue组件中提取的css输出文件，该文件输出位置相对于css配置项中指定的dest目录
+         * @type {String}
+         */
+        extractStyleFile: 'bundle.css'
       },
       /**
        * 打包第三方模块

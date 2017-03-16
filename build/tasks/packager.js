@@ -6,6 +6,7 @@ import buffer from 'vinyl-buffer';
 import browserify from 'browserify';
 import babelify from 'babelify';
 import watchify from 'watchify';
+import styleify from '../transforms/styleify';
 import mkdirp from 'mkdirp';
 import chalk from 'chalk';
 import gulp from 'gulp';
@@ -16,6 +17,7 @@ import vueify from 'vueify';
 import envify from 'envify';
 import * as _ from 'lodash';
 
+import extractStyle from '../plugins/extract-style';
 import extractBabelHelpers from '../plugins/extract-babel-helpers';
 import createProcessor from '../postcss.config';
 import * as util from '../util';
@@ -100,6 +102,7 @@ export default function (plugins, debug, lint = _.noop) {
   }
 
   packager.transform(babelify);
+  packager.transform(styleify);
 
   /**
    * 移除文件base
@@ -142,10 +145,13 @@ export default function (plugins, debug, lint = _.noop) {
     output: path.resolve(destPath, babelHelpers)
   });
 
+  packager.plugin(extractStyle, {
+    output: path.join(output, assets.css.dest, assets.js.extractStyleFile)
+  });
+
   if (assets.js.vueify.enable) {
-    let filename = assets.js.vueify.css.filename || 'bundle.css';
     packager.plugin('vueify/plugins/extract-css', {
-      out: path.join(output, assets.css.dest, filename)
+      out: path.join(output, assets.css.dest, assets.js.vueify.extractStyleFile)
     });
   }
 
@@ -212,7 +218,13 @@ export default function (plugins, debug, lint = _.noop) {
   const notifyError = plugins.notify.onError({
     title: 'Packager error',
     message(err) {
-      return err.toString();
+      let message = err.message;
+
+      if (err.codeFrame) {
+        message += `\n\n${err.codeFrame}\n`;
+      }
+
+      return message;
     }
   });
 
