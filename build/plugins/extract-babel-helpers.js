@@ -9,6 +9,7 @@ import fs from 'fs';
 import babelify from 'babelify';
 import through from 'through2';
 import { transform, buildExternalHelpers } from 'babel-core';
+import * as vueCompiler from 'vue-template-compiler';
 
 export default function extractBabelHelpers(bundle, {
   outputType = 'global',
@@ -17,6 +18,8 @@ export default function extractBabelHelpers(bundle, {
 } = {}) {
   if (!output) return;
   let usedHelpers = new Set();
+
+
 
   const noop = (chunk, enc, done) => {
     done(null, chunk);
@@ -40,7 +43,26 @@ export default function extractBabelHelpers(bundle, {
     }));
   };
 
-  bundle.on('transform', (tr) => {
+  bundle.on('transform', (tr, file) => {
+    if (tr.vueify) {
+      let content = fs.readFileSync(file, 'utf8');
+      let parts = vueCompiler.parseComponent(content, { pad: true });
+
+      if (parts.script) {
+        let result = transform(parts.script.content, {
+          ast: false,
+          filename: file,
+          comments: false,
+          highlightCode: false,
+          code: false
+        });
+
+        result.metadata.usedHelpers.forEach((method) => {
+          usedHelpers.add(method);
+        });
+      }
+    }
+
     if (tr instanceof babelify) {
       tr.once('babelify', (result) => {
         result.metadata.usedHelpers.forEach((method) => {
