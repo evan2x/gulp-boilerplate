@@ -49,17 +49,19 @@ export default function extractBabelHelpers(bundle, {
       let parts = vueCompiler.parseComponent(content, { pad: true });
 
       if (parts.script) {
-        let result = transform(parts.script.content, {
-          ast: false,
-          filename: file,
-          comments: false,
-          highlightCode: false,
-          code: false
-        });
+        try {
+          let result = transform(parts.script.content, {
+            ast: false,
+            filename: file,
+            comments: false,
+            highlightCode: false,
+            code: false
+          });
 
-        result.metadata.usedHelpers.forEach((method) => {
-          usedHelpers.add(method);
-        });
+          result.metadata.usedHelpers.forEach((method) => {
+            usedHelpers.add(method);
+          });
+        } catch (e) {}
       }
     }
 
