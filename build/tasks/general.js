@@ -28,7 +28,7 @@ export default function (plugins, argv, debug) {
   const lint = (globs, throwError = false) => (gulp.src(globs)
     .pipe(plugins.eslint())
     .pipe(plugins.eslint.format())
-    .pipe(gulp.if(throwError, plugins.eslint.failOnError())));
+    .pipe(plugins.if(throwError, plugins.eslint.failOnError())));
 
   /**
    * JS模块打包器
