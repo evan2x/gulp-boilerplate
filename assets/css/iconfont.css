@@ -7,7 +7,7 @@
     url('/assets/font/iconfont.svg#iconfont') format('svg');
 }
 
-.iconfont:before {
+[class^="icon-"], [class*=" icon-"] {
   font-family: "iconfont" !important;
   font-style: normal;
   font-weight: normal;
@@ -19,9 +19,6 @@
 
 .icon-backtop:before {
   content: "\ea01";
-
-    transition: opacity .3s ease, transform .3s ease;
-    transform: translate(-50%, -50%) scale(1);
 }
 
 .icon-battery:before {
@@ -30,19 +27,4 @@
 
 .icon-calculator:before {
   content: "\ea03";
-}
-
-.cerf {
-  background-image: url(/assets/img/animal/cerf.game@2x.png);
-  background-size: 100% auto;
-}
-
-.bear {
-  background-image: url(/assets/img/animal/bear.game@2x.png);
-  background-size: 100% auto;
-}
-
-.yak {
-  background-image: url(/assets/img/yak.game@2x.png);
-  background-size: 100% auto;
 }

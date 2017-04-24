@@ -7,7 +7,7 @@
     url('iconfont.svg#iconfont') format('svg');
 }
 
-.iconfont:before {
+[class^="icon-"], [class*=" icon-"] {
   font-family: "iconfont" !important;
   font-style: normal;
   font-weight: normal;
@@ -16,7 +16,6 @@
   -webkit-font-smoothing: antialiased; /* 修复锯齿问题 */
   -moz-osx-font-smoothing: grayscale; /* 修复锯齿问题 */
 }
-
 
 .icon-backtop:before {
   content: "\ea01";
