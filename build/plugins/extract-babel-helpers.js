@@ -19,8 +19,6 @@ export default function extractBabelHelpers(bundle, {
   if (!output) return;
   let usedHelpers = new Set();
 
-
-
   const noop = (chunk, enc, done) => {
     done(null, chunk);
   };
