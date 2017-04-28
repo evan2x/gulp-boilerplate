@@ -254,7 +254,9 @@ export default function (plugins, argv, debug) {
         .pipe(plugins.if(file => globsMatch(file.path, htmlGlobs), gulp.dest(htmlDest)))
         .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
         .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify({
-          compress: { screw_ie8: false }
+          compress: { screw_ie8: false },
+          mangle: { screw_ie8: false },
+          output: { screw_ie8: false }
         })))
         .pipe(plugins.filter(file => /\.(?:css|js)$/.test(file.path)))
         .pipe(gulp.dest(searchPaths.dest))
