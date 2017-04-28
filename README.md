@@ -93,7 +93,7 @@ npm run [script name]
 <body>
   <h1>Hello World!</h1>
   <!-- build:js /assets/js/vendor.js -->
-  <script src="/node_modules/babel-polyfill/browser.js"></script>
+  <script src="/node_modules/babel-polyfill/dist/polyfill.js"></script>
   <script src="/dist/assets/js/vendor.js"></script>
   <!-- endbuild -->
   <!-- build:js /assets/js/common.js -->
