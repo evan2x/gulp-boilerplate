@@ -1,5 +1,7 @@
 
 import fs from 'fs';
+import path from 'path';
+import mkdirp from 'mkdirp';
 import through from 'through2';
 
 export default function extractStyle(bundle, {
@@ -20,6 +22,11 @@ export default function extractStyle(bundle, {
       styles.forEach((value) => {
         content += value;
       });
+
+      if (!fs.existsSync(output)) {
+        mkdirp.sync(path.dirname(output));
+      }
+
       fs.writeFile(output, content, done);
     }));
   };
