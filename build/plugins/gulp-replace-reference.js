@@ -30,7 +30,7 @@ export default function replaceByManifest(manifest) {
     Object.entries(manifest).forEach(([key, value]) => {
       key = _.trim(key, path.posix.sep);
       value = _.trim(value, path.posix.sep);
-      contents = contents.replace(new RegExp(key, 'g'), value);
+      contents = contents.split(key).join(value);
     });
 
     file.contents = new Buffer(contents);
