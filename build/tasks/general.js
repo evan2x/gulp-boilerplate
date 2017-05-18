@@ -10,7 +10,7 @@ import collectRefuse from '../plugins/gulp-collect-refuse';
 import replaceReference from '../plugins/gulp-replace-reference';
 import config from '../config';
 import packager from './packager';
-import createProcessor, { matchGroup } from '../postcss.config';
+import createProcessor from '../postcss.config';
 
 const bs = browserSync.create();
 const cwd = process.cwd();
@@ -55,7 +55,6 @@ export default function (plugins, argv, debug) {
 
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
-      .pipe(plugins.if(!debug, plugins.filter(file => !matchGroup.test(path.basename(file.path)))))
       .pipe(plugins.if(!debug, plugins.imagemin({
         progressive: true,
         use: [pngquant()]
@@ -81,15 +80,20 @@ export default function (plugins, argv, debug) {
    * 对CSS进行处理
    * @todo debug模式下保留sourcemap, 非debug模式下会启动CSS Sprites功能。
    */
+  let processor = null;
   gulp.task('css', () => {
     let globs = util.processGlobs(base, assets.css.src);
     let destPath = path.join(output, assets.css.dest);
-    let spritePath = path.join(output, assets.img.dest);
-    let refPath = path.posix.join(base, assets.img.dest);
     const processor = createProcessor({
       stylesheetPath: destPath,
-      spritePath,
-      refPath
+      spritePath: path.join(output, assets.img.dest),
+      referencePath: path.posix.join(base, assets.img.dest),
+      collectGarbage(imagePath) {
+        let trashyImagePath = path.resolve(path.join(output, imagePath.replace(path.resolve(base), '')));
+        if (trashyImagePath !== imagePath) {
+          grabage.add(trashyImagePath);
+        }
+      }
     }, debug);
 
     return gulp.src(globs)
@@ -208,7 +212,7 @@ export default function (plugins, argv, debug) {
           }
         }
 
-        grabageList.forEach(item => grabage.add(item));
+        grabageList.forEach(item => grabage.add(path.resolve(item)));
       },
       /**
        * 收集内嵌资源后的垃圾资源
