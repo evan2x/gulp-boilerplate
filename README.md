@@ -4,6 +4,8 @@
 [![Badge](https://img.shields.io/badge/node.js->=_4.0-brightgreen.svg?style=flat)]()
 [![David](https://img.shields.io/david/dev/evan2x/gulp-boilerplate.svg)]()
 
+**所有的资源(css, js, image...)引用请使用绝对路径**
+
 ## Build
 
 ```bash
@@ -125,28 +127,31 @@ npm run [script name]
 
 该功能只会在非debug模式下启用。
 
-使用此功能需要符合以下要求：
+使用此功能需要在css中的图片引用加上 `?__group=[group]` 此处的`group`表示当前图片将合并到哪个分组中，分组名相同的图片引用会合并到一张图中，如下示例：
 
-图片格式必须是 `image.[group].png`, 此处的`group`表示当前图片将合并到哪个分组下, 如下示例：
+```css
+/* input */
+.foo {
+  background: url(/assets/img/foo@2x.png?__group=baz) no-repeat;
+}
 
-```
-// input
-picture1.common.png
-picture2.common.png
-picture3.common.png
+.bar {
+  background: url(/assets/img/bar@2x.png?__group=baz) no-repeat;
+}
 
-picture1.home.png
-picture2.home.png
-picture3.home.png
+/* output */
+.foo, .bar {
+  background-image: (/assets/img/sprite.@2x.baz.png);
+  background-size: 200px 200px;
+}
 
-// 提供给Retina屏幕现实的图片中 `[group]` 必须以 `@2x` 结尾
-picture1.home@2x.png
-picture2.home@2x.png
-picture3.home@2x.png
+.foo {
+  background-position: 0 0;
+}
 
-// output
-sprite.common.png
-sprite.home.png
+.bar {
+  background-position: -100px -100px;
+}
 ```
 
 **注意：默认仅会处理.png文件，可以在`config.js`下的css#sprite中配置`extensions`**
