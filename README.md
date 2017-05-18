@@ -154,8 +154,6 @@ npm run [script name]
 }
 ```
 
-**注意：默认仅会处理.png文件，可以在`config.js`下的css#sprite中配置`extensions`**
-
 ### 关于 `../../../../` 引用模块的解决方式
 
 在 `build/config.js` 中可以配置 `modulesDirectories` 来避免 `../../../../` 的方式引用模块。
