@@ -6,7 +6,7 @@
 
 **所有的资源(css, js, image...)引用请使用绝对路径**
 
-## Build
+## Commands
 
 ```bash
 # 构建项目
