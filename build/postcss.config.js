@@ -7,7 +7,7 @@ import willChange from 'postcss-will-change';
  * 匹配CSS Sprites 图片的分组
  * @type {RegExp}
  */
-const spriteGroupMatcher = /\?__group=([^\\\/]+)$/;
+const spriteGroupMatcher = /\?__group=([^\\/]+)$/;
 
 let processors = null;
 
@@ -44,7 +44,7 @@ export default function ({
          * @reference https://github.com/2createStudio/postcss-sprites/blob/master/src/core.js#L450
          */
         onUpdateRule(rule, token, image) {
-          const { retina, ratio, coords, spriteWidth, spriteHeight } = image;
+          const { ratio, coords, spriteWidth, spriteHeight } = image;
           const posX = -1 * Math.abs(coords.x / ratio);
           const posY = -1 * Math.abs(coords.y / ratio);
           const sizeX = spriteWidth / ratio;

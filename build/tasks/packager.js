@@ -6,7 +6,6 @@ import buffer from 'vinyl-buffer';
 import browserify from 'browserify';
 import babelify from 'babelify';
 import watchify from 'watchify';
-import styleify from '../transforms/styleify';
 import mkdirp from 'mkdirp';
 import chalk from 'chalk';
 import gulp from 'gulp';
@@ -17,12 +16,14 @@ import vueify from 'vueify';
 import envify from 'envify';
 import * as _ from 'lodash';
 
+import styleify from '../transforms/styleify';
 import extractStyle from '../plugins/extract-style';
 import extractBabelHelpers from '../plugins/extract-babel-helpers';
 import createProcessor from '../postcss.config';
 import * as util from '../util';
 import config from '../config';
 
+// eslint-disable-next-line no-unused-vars
 export default function (plugins, debug, lint = _.noop) {
   const assets = config.assets;
 
@@ -226,6 +227,7 @@ export default function (plugins, debug, lint = _.noop) {
     .then(() => {
       if (watch) {
         packager = watchify(packager);
+        // eslint-disable-next-line no-unused-vars
         packager.on('update', (ids) => {
           // lint(ids);
           bundle().catch(notifyError);
