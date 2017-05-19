@@ -2,7 +2,6 @@ import path from 'path';
 import fs from 'fs';
 import glob2base from 'glob2base';
 import chokidar from 'chokidar';
-import postcss from 'postcss';
 import gulp from 'gulp';
 import glob, { Glob } from 'glob';
 import del from 'del';

@@ -80,7 +80,6 @@ export default function (plugins, argv, debug) {
    * 对CSS进行处理
    * @todo debug模式下保留sourcemap, 非debug模式下会启动CSS Sprites功能。
    */
-  let processor = null;
   gulp.task('css', () => {
     let globs = util.processGlobs(base, assets.css.src);
     let destPath = path.join(output, assets.css.dest);

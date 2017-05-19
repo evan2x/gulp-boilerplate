@@ -59,6 +59,8 @@ export default function extractBabelHelpers(bundle, {
           result.metadata.usedHelpers.forEach((method) => {
             usedHelpers.add(method);
           });
+
+        // eslint-disable-next-line no-empty
         } catch (e) {}
       }
     }

@@ -2,15 +2,15 @@
 import path from 'path';
 import through from 'through2';
 
-export default function (filename, opts) {
+export default function (filename) {
   if (path.extname(filename) !== '.css') return through();
 
   let chunks = [];
 
-  let stream = through(function (chunk, enc, next) {
+  let stream = through((chunk, enc, next) => {
     chunks.push(chunk);
     next();
-  }, function(next) {
+  }, function (next) {
     stream.emit('styleify-css', Buffer.concat(chunks).toString('utf8'));
 
     this.push(`// ${filename}`);
