@@ -7,8 +7,8 @@ import glob, { Glob } from 'glob';
 import del from 'del';
 import * as _ from 'lodash';
 
-const rquery = /\?v=([\da-zA-Z]+)$/;
-const rfilename = /-([\da-zA-Z]{10})(?:\.\S*)*$/;
+const hashForQueryRE = /\?v=([\da-zA-Z]+)$/;
+const hashForFilenameRE = /-([\da-zA-Z]{10})(?:\.[^-?=/]*)*$/;
 
 class GrabageSet extends Set {
   clean() {
@@ -101,9 +101,9 @@ export function globRebase(globs, base) {
  *   /path/to/name.png?v=1d746b2ce5 -> /path/to/name-1d746b2ce5.png
  */
 export function query2filename(filePath) {
-  if (rfilename.test(filePath)) return filePath;
+  if (hashForFilenameRE.test(filePath)) return filePath;
 
-  let match = filePath.match(rquery);
+  let match = filePath.match(hashForQueryRE);
   let hash = null;
 
   if (Array.isArray(match) && (hash = match[1])) {

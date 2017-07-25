@@ -10,15 +10,16 @@ import through from 'through2';
 import gutil from 'gulp-util';
 import * as _ from 'lodash';
 
+const hashForQueryRE = /\?v=([\da-zA-Z]+)$/;
+const hashForFilenameRE = /-([\da-zA-Z]{10})(?:\.[^-?=/]*)*$/;
+
 export default function covertQuery() {
   let manifest = {};
-  let rquery = /\?v=([\da-zA-Z]+)$/;
-  let rfilename = /-([\da-zA-Z]{10})(?:\.\S*)*$/;
 
   const filename2query = (filePath) => {
-    if (rquery.test(filePath)) return filePath;
+    if (hashForQueryRE.test(filePath)) return filePath;
 
-    let match = filePath.match(rfilename);
+    let match = filePath.match(hashForFilenameRE);
     let hash = '';
 
     if (Array.isArray(match) && (hash = match[1])) {
