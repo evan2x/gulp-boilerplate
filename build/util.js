@@ -223,7 +223,7 @@ export function createReplacementManifest(globsList, {
 } = {}) {
   const manifest = {};
   const filePaths = globsList.reduce((arr, v) => {
-    let files = glob.sync(v).map(filePath => path.posix.normalize(
+    let files = glob.sync(v, { nodir: true }).map(filePath => path.posix.normalize(
       filePath.replace(outputDirectory, inputDirectory)
     ));
 
