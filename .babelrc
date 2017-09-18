@@ -1,6 +1,13 @@
 {
   "presets": [
-    "latest",
+    [
+      "env",
+      {
+        "targets": {
+          "browsers": ["last 2 versions", "> 1% in CN", "Firefox ESR", "Opera 12.1", "Safari >= 5", "ie >= 8"]
+        }
+      }
+    ],
     "stage-2"
   ],
   "plugins": [
