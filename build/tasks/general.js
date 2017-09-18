@@ -256,11 +256,7 @@ export default function (plugins, argv, debug) {
         .pipe(plugins.if(file => globsMatch(file.path, tmplGlobs), gulp.dest(tmplDest)))
         .pipe(plugins.if(file => globsMatch(file.path, htmlGlobs), gulp.dest(htmlDest)))
         .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
-        .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify({
-          compress: { screw_ie8: false },
-          mangle: { screw_ie8: false },
-          output: { screw_ie8: false }
-        })))
+        .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify({ ie8: true })))
         .pipe(plugins.filter(file => /\.(?:css|js)$/.test(file.path)))
         .pipe(gulp.dest(searchPaths.dest))
         .once('end', () => {
