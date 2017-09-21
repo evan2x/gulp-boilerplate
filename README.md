@@ -9,34 +9,34 @@
 ## Commands
 
 ```bash
-# 构建项目
+# build
 npm run build
 
-# 带 hash 版本号构建
+# build with hash version
 npm run revision
 
 # watch css/js
-# babel转译ES2017/Stage-2
-# PostCSS处理CSS
+# Use ESNext/Stage-2 translate via babel
+# Use css future translate via PostCSS
 npm run watch
 
 # browser-sync service
 npm run serve -- --port 3000
 
-# browser-sync service proxy URL to another
+# browser-sync service proxy URL to another URL
 npm run serve -- --port 3000 --proxy "http://127.0.0.1:8080"
 
-# 生成 svg symbols
+# generate svg symbols
 npm run symbols:gen
 
-# 生成iconfont
+# generate iconfonts
 npm run iconfont:gen
 
-# 执行任意 gulp task
+# execute gulp task
 npm run build [task]
 ```
 
-`npm run serve` 有以下两个参数：
+`npm run serve` 有以下选项：
 
 * `--port 3000` 指定browser-sync服务监听端口，默认：`3000`
 * `--proxy 127.0.0.1:8080` 指定代理地址，如果需要配置更复杂的配置项，请移步到 build/config.js 配置 `browserSync`
@@ -95,11 +95,9 @@ npm run [script name]
 <body>
   <h1>Hello World!</h1>
   <!-- build:js /assets/js/vendor.js -->
-  <script src="/node_modules/babel-polyfill/dist/polyfill.js"></script>
   <script src="/dist/assets/js/vendor.js"></script>
   <!-- endbuild -->
   <!-- build:js /assets/js/common.js -->
-  <script src="/dist/assets/js/babelHelpers.js"></script>
   <script src="/dist/assets/js/common.js"></script>
   <!-- endbuild -->
   <!-- build:js /assets/js/main.js -->
