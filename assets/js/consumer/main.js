@@ -1,5 +1,5 @@
 /* eslint no-console: 0 */
-
+// import 'babel-polyfill';
 import { EventEmitter } from 'events';
 
 class Consumer extends EventEmitter {
