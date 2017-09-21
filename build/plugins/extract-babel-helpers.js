@@ -13,7 +13,7 @@ import * as vueCompiler from 'vue-template-compiler';
 
 export default function extractBabelHelpers(bundle, {
   outputType = 'global',
-  output = '',
+  output = function() {},
   es3 = true
 } = {}) {
   if (!output) return;
@@ -37,7 +37,8 @@ export default function extractBabelHelpers(bundle, {
 
       let ret = transform(helpers, options);
 
-      fs.writeFile(output, ret.code, done);
+      output(ret.code);
+      done();
     }));
   };
 

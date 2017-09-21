@@ -14,7 +14,9 @@ import glob, { Glob } from 'glob';
 import glob2base from 'glob2base';
 import vueify from 'vueify';
 import envify from 'envify';
+import es3ify from 'es3ify';
 import * as _ from 'lodash';
+import through from 'through2';
 
 import styleify from '../transforms/styleify';
 import extractStyle from '../plugins/extract-style';
@@ -35,7 +37,6 @@ export default function (plugins, debug, lint = _.noop) {
       dest,
       entry,
       commonChunk,
-      babelHelpers,
       vendor,
       modulesDirectories
     }
@@ -77,6 +78,9 @@ export default function (plugins, debug, lint = _.noop) {
      */
   let outputChunksDirectories = new Set();
 
+  //
+  let babelHelpersCode = '';
+
   /**
    * 创建browserify打包器
    * @type {Object}
@@ -104,6 +108,20 @@ export default function (plugins, debug, lint = _.noop) {
 
   packager.transform(babelify);
   packager.transform(styleify);
+
+  // 如果第三方模块中有依赖babel-polyfill，辣么就给每个main.js加一个引入babel-polyfill的语句
+  if (vendorModules.indexOf('babel-polyfill') > -1) {
+    packager.transform(function (file) {
+      if (file.endsWith(entry)) {
+        return through((chunk, enc, done) => {
+          chunk = 'require("babel-polyfill");' + chunk;
+          done(null, chunk);
+        });
+      } else {
+        return through();
+      }
+    });
+  }
 
   /**
    * 移除文件base
@@ -143,7 +161,9 @@ export default function (plugins, debug, lint = _.noop) {
   });
 
   packager.plugin(extractBabelHelpers, {
-    output: path.resolve(destPath, babelHelpers)
+    output(code) {
+      babelHelpersCode = code;
+    }
   });
 
   packager.plugin(extractStyle, {
@@ -181,6 +201,10 @@ export default function (plugins, debug, lint = _.noop) {
         global: true
       });
 
+      vendorPackager.transform(es3ify, {
+        global: true
+      });
+
       for (let i = 0; i < vendorModules.length; i++) {
         vendorPackager.require(vendorModules[i]);
       }
@@ -206,6 +230,17 @@ export default function (plugins, debug, lint = _.noop) {
         .once('error', reject)
         .pipe(source(commonChunk))
         .pipe(buffer())
+        .pipe(through.obj(function (file, enc, next) {
+          if (file.isNull()) {
+            return next();
+          }
+
+          let contents = file.contents.toString();
+
+          file.contents = new Buffer(babelHelpersCode + contents);
+          this.push(file);
+          next();
+        }))
         .pipe(gulp.dest(destPath))
         .once('end', resolve)
         .once('error', reject);

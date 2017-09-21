@@ -82,12 +82,6 @@ const config = {
        */
       commonChunk: 'common.js',
       /**
-       * 提取模块转译过程中babel用到的辅助方法到 babelHelpers.js 中
-       * @todo 不使用extensions
-       * @type {String}
-       */
-      babelHelpers: 'babelHelpers.js',
-      /**
        * 提取js模块中导入的样式，该文件输出位置相对于css配置项中指定的dest目录
        * @todo 不使用extensions
        * @type {String}
@@ -117,7 +111,7 @@ const config = {
          * 需要打包的模块
          * @type {Array}
          */
-        modules: [],
+        modules: ['babel-polyfill'],
         /**
          * vendor包的输出文件
          * @type {String}
