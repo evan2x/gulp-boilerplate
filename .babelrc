@@ -5,7 +5,8 @@
       {
         "targets": {
           "browsers": ["last 2 versions", "> 1% in CN", "Firefox ESR", "Opera 12.1", "Safari >= 5", "ie >= 8"]
-        }
+        },
+        "loose": true
       }
     ],
     "stage-2"
