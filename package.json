@@ -99,6 +99,7 @@
     "useref": "^1.2.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
+    "vue-template-compiler": "^2.4.4",
     "vueify": "^9.4.1",
     "watchify": "^3.9.0"
   },
