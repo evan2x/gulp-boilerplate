@@ -15,6 +15,7 @@ import glob2base from 'glob2base';
 import vueify from 'vueify';
 import envify from 'envify';
 import es3ify from 'es3ify';
+import aliasify from 'aliasify';
 import * as _ from 'lodash';
 import through from 'through2';
 
@@ -102,12 +103,18 @@ export default function (plugins, debug, lint = _.noop) {
     let processor = createProcessor({ spritePath, stylesheetPath, refPath }, debug);
 
     packager.transform(vueify, {
-      postcss: processor
+      postcss: processor,
+      global: true
     });
   }
 
   packager.transform(babelify);
   packager.transform(styleify);
+  packager.transform(aliasify, {
+    aliases: {
+      'vue': 'vue/dist/vue.js'
+    }
+  });
 
   // 如果第三方模块中有依赖babel-polyfill，辣么就给每个main.js加一个引入babel-polyfill的语句
   if (vendorModules.indexOf('babel-polyfill') > -1) {
