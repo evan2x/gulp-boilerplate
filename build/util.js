@@ -122,35 +122,6 @@ export function query2filename(filePath) {
 }
 
 /**
- * 使用chokidar实现watch，弃用vinyl-fs(gulp)的watch
- * @param  {Glob} glob
- * @param  {Object} options
- * @param  {Array|String} task
- * @return {Watcher}
- * @see https://www.npmjs.com/package/chokidar
- */
-export function watch(globs, options = {}, task) {
-  if (typeof options === 'string' || Array.isArray(options)) {
-    task = options;
-    options = {};
-  }
-
-  options.ignoreInitial = !!options.ignoreInitial;
-  let watcher = chokidar.watch(globs, options);
-
-  if (Array.isArray(task) || typeof task === 'string') {
-    let fn = () => gulp.start(task);
-
-    watcher
-      .on('add', fn)
-      .on('unlink', fn)
-      .on('change', fn);
-  }
-
-  return watcher;
-}
-
-/**
  * 删除空目录
  * @param {String} basedir 目标目录
  */
@@ -214,18 +185,14 @@ export function extractExtsByGlobs(globs) {
  * @return {Object}
  */
 export function createReplacementManifest(globsList, {
-  domain = '',
-  domainIgnore = null,
-  prefix = '',
-  prefixIgnore = null,
-  inputDirectory = '',
-  outputDirectory = ''
+  publicPath = '',
+  inputDir = '',
+  outputDir = ''
 } = {}) {
   const manifest = {};
   const filePaths = globsList.reduce((arr, v) => {
-    let files = glob.sync(v, { nodir: true }).map(filePath => path.posix.normalize(
-      filePath.replace(outputDirectory, inputDirectory)
-    ));
+    let files = glob.sync(v, { nodir: true })
+      .map(filePath => filePath.replace(path.posix.normalize(outputDir), ''));
 
     return [
       ...arr,
@@ -236,12 +203,8 @@ export function createReplacementManifest(globsList, {
   for (let i = 0, filePath; filePath = filePaths[i++];) {
     let newFilePath = filePath;
 
-    if (prefix && (!_.isRegExp(prefixIgnore) || !prefixIgnore.test(newFilePath))) {
-      newFilePath = path.posix.join(prefix, newFilePath);
-    }
-
-    if (domain && (!_.isRegExp(domainIgnore) || !domainIgnore.test(newFilePath))) {
-      newFilePath = path.posix.join(domain, newFilePath);
+    if (publicPath) {
+      newFilePath = path.posix.join(publicPath, newFilePath);
     }
 
     if (newFilePath !== filePath) {

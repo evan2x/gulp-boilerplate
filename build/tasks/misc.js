@@ -2,9 +2,8 @@
 import path from 'path';
 import gulp from 'gulp';
 
-import config from '../config';
 
-export default function (plugins) {
+export default function (plugins, config) {
   /**
    * svg图标生成svg symbols
    */
@@ -76,7 +75,7 @@ export default function (plugins) {
   gulp.task('iconfont:gen', () => {
     const {
       src,
-      font: {
+      iconfont: {
         name,
         formats,
         dest: destPath,

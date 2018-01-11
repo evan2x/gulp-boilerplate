@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import gulp from 'gulp';
 import del from 'del';
-import runSequence from 'run-sequence';
+// import runSequence from 'run-sequence';
 import loadPlugins from 'gulp-load-plugins';
 import minimist from 'minimist';
 import chalk from 'chalk';
@@ -54,19 +54,16 @@ if (argv.buildfile != null) {
 
 const plugins = loadPlugins();
 const grabage = util.grabage;
-const runTask = runSequence.use(gulp);
+// const runTask = runSequence.use(gulp);
 
-general(plugins, argv, process.env.NODE_ENV !== 'production');
-revision(plugins, argv);
-misc(plugins, argv);
+general(plugins, config, argv, process.env.NODE_ENV !== 'production');
+revision(plugins, config, argv);
+misc(plugins, config, argv);
 
 /**
  * 清理构建后的资源
  */
-gulp.task('clean', () => del([
-  config.assets.output,
-  config.tmpl.dest
-]));
+gulp.task('clean', () => del([config.output.path]));
 
 /**
  * 删除manifest文件
@@ -76,42 +73,37 @@ gulp.task('manifest:clean', () => del([config.assets.manifest]));
 /**
  * 删除收集的垃圾资源并清理静态资源目录下的空目录
  */
-gulp.task('grabage:clean', () => {
+gulp.task('grabage:clean', (done) => {
   grabage.clean();
-  util.delEmptyDir(config.assets.output);
+  util.delEmptyDir(config.output.path);
+  done();
 });
 
 /**
  * 构建项目
  */
-gulp.task('build', (done) => {
-  runTask(
-    'clean',
-    'manifest:clean',
-    ['css', 'js', 'image', 'svg', 'other'],
-    'tmpl',
-    'refs:replace',
-    'grabage:clean',
-    done
-  );
-});
+gulp.task('build', gulp.series(
+  'clean', 
+  'manifest:clean', 
+  gulp.parallel('style', 'script', 'image', 'svg', 'copies'),
+  'tmpl',
+  'refs:replace',
+  'grabage:clean'
+));
 
 /**
  * 构建带资源版本号的项目
  */
-gulp.task('revision', (done) => {
-  runTask(
-    'build',
-    'manifest:clean',
-    ['image:rev', 'svg:rev', 'other:rev'],
-    'css:rev',
-    'js:rev',
-    ['tmpl:rev', 'rev:garbage:clean'],
-    done
-  );
-});
+gulp.task('revision', gulp.series(
+  'build',
+  'manifest:clean',
+  gulp.parallel('image:rev', 'svg:rev', 'copies:rev'),
+  'style:rev',
+  'script:rev',
+  gulp.parallel('tmpl:rev', 'rev:garbage:clean')
+))
 
 /**
  * 默认task
  */
-gulp.task('default', ['build']);
+gulp.task('default', gulp.parallel('build'));

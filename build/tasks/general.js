@@ -8,7 +8,6 @@ import browserSync from 'browser-sync';
 import * as util from '../util';
 import collectRefuse from '../plugins/gulp-collect-refuse';
 import replaceReference from '../plugins/gulp-replace-reference';
-import config from '../config';
 import packager from './packager';
 import createProcessor from '../postcss.config';
 
@@ -16,14 +15,8 @@ const bs = browserSync.create();
 const cwd = process.cwd();
 const grabage = util.grabage;
 
-export default function (plugins, argv, debug) {
-  const {
-    assets,
-    assets: {
-      base,
-      output
-    }
-  } = config;
+export default function (plugins, config, argv, debug) {
+  const { baseDir, output, assets } = config;
 
   const lint = (globs, throwError = false) => (gulp.src(globs)
     .pipe(plugins.eslint())
@@ -34,13 +27,13 @@ export default function (plugins, argv, debug) {
    * JS模块打包器
    * @type {Object}
    */
-  const bundler = packager(plugins, debug, lint);
+  const bundler = packager(plugins, config, debug, lint);
 
   /**
    * 使用eslint对JavaScript代码进行检查
    */
   gulp.task('lint', () => {
-    let globs = util.processGlobs(base, assets.js.src);
+    let globs = util.processGlobs(baseDir, script.src);
 
     return lint(globs);
   });
@@ -50,8 +43,8 @@ export default function (plugins, argv, debug) {
    * @todo debug模式下不压缩图片
    */
   gulp.task('image', () => {
-    let globs = util.processGlobs(base, assets.img.src);
-    let destPath = path.join(output, assets.img.dest);
+    let globs = util.processGlobs(baseDir, assets.image.src);
+    let destPath = path.join(output.path, assets.image.dest);
 
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
@@ -67,8 +60,8 @@ export default function (plugins, argv, debug) {
    * @todo debug模式不压缩
    */
   gulp.task('svg', () => {
-    let globs = util.processGlobs(base, assets.svg.src);
-    let destPath = path.join(output, assets.svg.dest);
+    let globs = util.processGlobs(baseDir, assets.svg.src);
+    let destPath = path.join(output.path, assets.svg.dest);
 
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
@@ -77,18 +70,18 @@ export default function (plugins, argv, debug) {
   });
 
   /**
-   * 对CSS进行处理
+   * 对样式进行处理
    * @todo debug模式下保留sourcemap, 非debug模式下会启动CSS Sprites功能。
    */
-  gulp.task('css', () => {
-    let globs = util.processGlobs(base, assets.css.src);
-    let destPath = path.join(output, assets.css.dest);
+  gulp.task('style', () => {
+    let globs = util.processGlobs(baseDir, assets.style.src);
+    let destPath = path.join(output.path, assets.style.dest);
     const processor = createProcessor({
       stylesheetPath: destPath,
-      spritePath: path.join(output, assets.img.dest),
-      referencePath: path.posix.join(base, assets.img.dest),
+      spritePath: path.join(output.path, assets.image.dest),
+      referencePath: path.posix.join(baseDir, assets.image.dest),
       collectGarbage(imagePath) {
-        let trashyImagePath = path.resolve(path.join(output, imagePath.replace(path.resolve(base), '')));
+        let trashyImagePath = path.resolve(path.join(output.path, imagePath.replace(path.resolve(baseDir), '')));
         if (trashyImagePath !== imagePath) {
           grabage.add(trashyImagePath);
         }
@@ -111,14 +104,14 @@ export default function (plugins, argv, debug) {
   /**
    * 使用browserify打包JavaScript模块
    */
-  gulp.task('js', () => bundler());
+  gulp.task('script', () => bundler());
 
   /**
-   * copy other列表中的静态资源
+   * 复制静态资源
    */
-  gulp.task('other', () => Promise.all(assets.other.map((item) => {
-    let globs = util.processGlobs(base, item.src);
-    let destPath = path.join(output, item.dest);
+  gulp.task('copies', () => Promise.all(assets.copies.map((item) => {
+    let globs = util.processGlobs(baseDir, item.src);
+    let destPath = path.join(output.path, item.dest);
 
     return new Promise((resolve, reject) => {
       gulp.src(globs)
@@ -135,23 +128,14 @@ export default function (plugins, argv, debug) {
    * @todo debug模式下不对css及js进行压缩
    */
   gulp.task('tmpl', () => {
-    let tmplGlobs = config.tmpl.src;
-    let tmplDest = config.tmpl.dest;
+    let tmplGlobs = util.processGlobs(baseDir, assets.template.src);
+    let tmplDest = path.join(output.path, assets.template.dest);
     let tmplDestGlobs = util.globRebase(tmplGlobs, tmplDest);
-    let htmlGlobs = util.processGlobs(base, assets.html.src);
-    let htmlDest = path.join(output, assets.html.dest);
+    let htmlGlobs = util.processGlobs(baseDir, assets.html.src);
+    let htmlDest = path.join(output.path, assets.html.dest);
     let htmlDestGlobs = util.globRebase(htmlGlobs, htmlDest);
     let globs = util.concatGlobs(tmplGlobs, htmlGlobs);
     let destGlobs = util.concatGlobs(tmplDestGlobs, htmlDestGlobs);
-
-    /**
-     * inline-source及useref搜索路径
-     * @type {Object}
-     */
-    let searchPaths = {
-      src: base,
-      dest: output
-    };
 
     /**
      * 统计资源出现次数的记录表
@@ -182,7 +166,7 @@ export default function (plugins, argv, debug) {
      * @param {String}
      * @return
      */
-    const matchBaseRegExp = (basePath) => {
+    const matchBaseRE = (basePath) => {
       let basePaths = path.posix.normalize(basePath).split(path.posix.sep);
       let ret = [];
 
@@ -203,7 +187,7 @@ export default function (plugins, argv, debug) {
 
         // 记录useref输出资源的出现次数
         for (let i = 0, item; item = resources[i++];) {
-          item = path.join(cwd, item.replace(matchBaseRegExp(base), path.posix.normalize(output)));
+          item = path.join(cwd, item.replace(matchBaseRE(baseDir), path.posix.normalize(output.path)));
           if (markers.useref[item]) {
             markers.useref[item] += 1;
           } else {
@@ -222,7 +206,7 @@ export default function (plugins, argv, debug) {
        */
       inline(source, context, next) {
         let filePath = source.filepath;
-        let outputPrefix = path.join(cwd, output);
+        let outputPrefix = path.join(cwd, output.path);
 
         // 如果内嵌资源是以输出目录开头则将该资源出现的次数记录下来
         if (filePath.startsWith(outputPrefix)) {
@@ -237,28 +221,21 @@ export default function (plugins, argv, debug) {
       }
     };
 
-    // 提取searchPaths的第一层目录
-    Object.keys(searchPaths).forEach((key) => {
-      let dirs = path.normalize(searchPaths[key]).split(path.sep);
-
-      searchPaths[key] = dirs.length > 1 ? dirs[0] : './';
-    });
-
     return new Promise((resolve, reject) => {
       gulp.src(globs)
         .pipe(collectRefuse({
-          root: output,
+          root: output.path,
           output: counter.useref
         }))
         .pipe(plugins.useref({
-          searchPath: [searchPaths.dest, searchPaths.src, './']
+          searchPath: './'
         }))
         .pipe(plugins.if(file => globsMatch(file.path, tmplGlobs), gulp.dest(tmplDest)))
         .pipe(plugins.if(file => globsMatch(file.path, htmlGlobs), gulp.dest(htmlDest)))
         .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
         .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify({ ie8: true })))
         .pipe(plugins.filter(file => /\.(?:css|js)$/.test(file.path)))
-        .pipe(gulp.dest(searchPaths.dest))
+        .pipe(gulp.dest(output.path))
         .once('end', () => {
           /**
            * 资源内嵌的处理
@@ -266,7 +243,7 @@ export default function (plugins, argv, debug) {
            */
           gulp.src(destGlobs)
             .pipe(plugins.inlineSource({
-              rootpath: searchPaths.dest,
+              rootpath: './',
               compress: false,
               handlers: [counter.inline]
             }))
@@ -298,37 +275,38 @@ export default function (plugins, argv, debug) {
    * }
    */
   gulp.task('refs:replace', () => {
-    let others = assets.other;
+    let globs = util.processGlobs(baseDir, assets.template.src);
+    let destPath = path.join(output.path, assets.template.dest);
+    let copies = assets.copies;
     let globsMap = {};
     let temporary = {
-      css: assets.css,
-      js: assets.js,
-      img: assets.img,
+      style: assets.style,
+      script: assets.script,
+      image: assets.image,
       svg: assets.svg,
-      html: assets.html
+      html: assets.html,
+      template: assets.template
     };
 
-    for (let count = 0; count < others.length; count++) {
-      temporary[`other${count}`] = others[count];
+    for (let count = 0; count < copies.length; count++) {
+      temporary[`copy_${count}`] = copies[count];
     }
 
     Object.entries(temporary).forEach(([key, conf]) => {
-      globsMap[key] = util.processGlobs(output, util.globRebase(conf.src, conf.dest));
+      globsMap[key] = util.processGlobs(output.path, util.globRebase(conf.src, conf.dest));
     });
 
     const manifest = util.createReplacementManifest(Object.values(globsMap), {
-      domain: config.domain,
-      domainIgnore: assets.svg.useDomain ? null : /\.svg$/,
-      prefix: config.prefix,
-      inputDirectory: base,
-      outputDirectory: output
+      publicPath: output.publicPath,
+      inputDir: baseDir,
+      outputDir: output.path
     });
 
     return Promise.all([
-      globsMap.css,
-      globsMap.js,
+      globsMap.style,
+      globsMap.script,
       globsMap.html,
-      util.globRebase(config.tmpl.src, config.tmpl.dest)
+      globsMap.template
     ].map(globs => new Promise((resolve, reject) => {
       gulp.src(globs, { base: './' })
         .pipe(replaceReference(manifest))
@@ -338,16 +316,22 @@ export default function (plugins, argv, debug) {
     })));
   });
 
-  /**
-   * watch CSS/JS
-   */
-  gulp.task('watch', () => {
+  function watchTask() {
     // watch css
-    util.watch(util.processGlobs(base, assets.css.src), ['css']);
+    gulp.watch(
+      util.processGlobs(baseDir, assets.style.src),
+      { ignoreInitial: false },
+      gulp.parallel('style')
+    )
 
     // watch js
     bundler({ watch: true });
-  });
+  }
+
+  /**
+   * watch CSS/JS
+   */
+  gulp.task('watch', watchTask);
 
   /**
    * browser-sync service
@@ -364,8 +348,8 @@ export default function (plugins, argv, debug) {
       options.proxy = argv.proxy;
     }
 
-    gulp.start('watch');
-    util.watch(config.tmpl.src).on('change', bs.reload);
+    watchTask()
+    gulp.watch(assets.template.src).on('change', bs.reload);
 
     bs.init(options);
   });

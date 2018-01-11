@@ -3,34 +3,22 @@ import { Glob } from 'glob';
 import glob2base from 'glob2base';
 
 /**
- * 资源根目录
- * @type {String}
+ * querystring式的版本类型
+ * @type {Number}
+ * @example
+ *  /assets/xx.js?v=9fe32f9daf
  */
-const base = './assets';
+export const QUERY_VERSION = 1;
 
 /**
- * 资源输出目录
- * @type {String}
+ * filename式的版本类型
+ * @type {Number}
+ * @example
+ *  /assets/xx-9fe32f9daf.js
  */
-const output = './dist';
+export const FILENAME_VERSION = 2;
 
-/**
- * 文档输出目录
- * @type {String}
- */
-const docs = './docs';
-
-const config = {
-  /**
-   * 资源CDN域名
-   * @type {String}
-   */
-  domain: '',
-  /**
-   * 资源访问路径前缀
-   * @type {String}
-   */
-  prefix: '',
+const defaults = {
   /**
    * browser-sync 配置项
    * @type {Object}
@@ -46,32 +34,69 @@ const config = {
     port: 3000
   },
   /**
+   * 文档输出目录
+   * @type {String}
+   */
+  docDir: './docs',
+  /**
+   * 资源根目录
+   * @type {String}
+   */
+  baseDir: './assets',
+  /**
+   * 版本类型
+   * @type {String} filename 或者 query
+   * @example
+   *  filename:
+   *    /assets/xx-9fe32f9daf.js
+   *  query:
+   *    /assets/xx.js?v=9fe32f9daf
+   */
+  versionType: 'query',
+  /**
+   * 资源输出相关配置
+   * @type {Object}
+   */
+  output: {
+    /**
+     * 资源输出目录
+     * @type {String}
+     */
+    path: './dist',
+    /**
+     * 资源通过网络访问时的路径
+     * @type {String}
+     * @example
+     *  https://cdn.example.com/assets/
+     *  //cdn.example.com/assets
+     *  /yx
+     */
+    publicPath: ''
+  },
+  /**
    * 资源配置项
-   * @todo 所有资源的[src]都相对于[base]，所有资源的[dest]都相对于[output]
+   * @todo 所有资源的src都相对于baseDir，所有资源的dest都相对于output配置
    * @type {Object}
    */
   assets: {
-    base: path.posix.normalize(base),
-    output: path.posix.join(output, 'assets'),
-    /**
-     * gulp-rev静态资源清单文件输出路径
-     * @type {String}
-     */
     manifest: './rev-manifest.json',
     /**
-     * 版本号格式
-     * @type {String} filename 或者 query
+     * 模板配置项
+     * @type {Object}
      */
-    versionFormat: 'query',
+    template: {
+      src: '../views/**/*.{vm,ftl,html}',
+      dest: `views/`
+    },
     /**
      * JS参数配置
      * @type {Object}
      */
-    js: {
+    script: {
       src: 'js/**/*.js',
-      dest: 'js/',
+      dest: 'assets/js/',
       /**
-       * 从[src]中匹配的所有JS中指定的[entry]模块作为browserify入口模块
+       * 在src中匹配的所有的js文件中指定entry模块作为browserify的入口模块
        * @type {String}
        */
       entry: 'main.js',
@@ -134,17 +159,17 @@ const config = {
      * CSS参数配置
      * @type {Object}
      */
-    css: {
+    style: {
       src: 'css/**/*.css',
-      dest: 'css/'
+      dest: 'assets/css/'
     },
     /**
      * 图片配置项
      * @type {Object}
      */
-    img: {
+    image: {
       src: 'img/**/*.{png,jpg,jpeg}',
-      dest: 'img/'
+      dest: 'assets/img/'
     },
     /**
      * 静态HTML文件
@@ -152,7 +177,7 @@ const config = {
      */
     html: {
       src: 'html/**/*.html',
-      dest: 'html/'
+      dest: 'assets/html/'
     },
     /**
      * SVG文件配置项
@@ -160,7 +185,7 @@ const config = {
      */
     svg: {
       src: 'svg/**/*.svg',
-      dest: 'svg/',
+      dest: 'assets/svg/',
       /**
        * 压缩SVG文件配置项
        * @type {Object}
@@ -172,33 +197,19 @@ const config = {
           { removeUselessDefs: false },
           { cleanupIDs: false }
         ]
-      },
-      /**
-       * SVG跨域存在问题，所以通常来说不使用全局的domain
-       * @type {Boolean}
-       */
-      useDomain: false
+      }
     },
     /**
-     * 其他资源
-     * @todo 只用于拷贝文件及使用[useHash]来设置是否对文件添加版本号
+     * 其他只用于拷贝文件及使用[useHash]来设置是否对文件添加版本号的资源
      * @type {Array}
      */
-    other: [
+    copies: [
       {
         src: '/font/**/*.{eot,svg,ttf,woff}',
-        dest: '/font',
+        dest: 'assets/font',
         useHash: true
       }
     ]
-  },
-  /**
-   * 模板配置项
-   * @type {Object}
-   */
-  tmpl: {
-    src: './views/**/*.{vm,ftl,html}',
-    dest: `${output}/views/`
   }
 };
 
@@ -206,8 +217,8 @@ const config = {
  * 图标配置项
  * @type {Object}
  */
-config.icon = {
-  src: path.posix.join(base, 'icon'),
+defaults.icon = {
+  src: path.posix.join(defaults.baseDir, 'icon'),
   /**
    * SVG Symbols配置项
    * @type {Object}
@@ -217,7 +228,7 @@ config.icon = {
      * 指定生成的SVG Symbols输出位置
      * @type {String}
      */
-    dest: path.posix.join(base, 'svg'),
+    dest: path.posix.join(defaults.baseDir, 'svg'),
     /**
      * 输出文件名
      * @type {String}
@@ -227,18 +238,18 @@ config.icon = {
      * 使用文档输出位置
      * @type {String}
      */
-    doc: path.posix.join(docs, 'svg-symbols/demo.html')
+    doc: path.posix.join(defaults.docDir, 'svg-symbols/demo.html')
   },
   /**
    * iconfont配置项
    * @type {Object}
    */
-  font: {
+  iconfont: {
     /**
      * 指定iconfont输出位置
      * @type {String}
      */
-    dest: path.posix.join(base, 'font'),
+    dest: path.posix.join(defaults.baseDir, 'font'),
     /**
      * iconfont输出文件名
      * @type {String}
@@ -249,13 +260,13 @@ config.icon = {
      * 样式文件输出位置
      * @type {String}
      */
-    style: path.posix.join(base, glob2base(new Glob(config.assets.css.src)), 'iconfont.css'),
+    style: path.posix.join(defaults.baseDir, glob2base(new Glob(defaults.assets.style.src)), 'iconfont.css'),
     /**
      * 使用文档输出位置
      * @type {String}
      */
-    doc: path.posix.join(docs, 'iconfont/demo.html')
+    doc: path.posix.join(defaults.docDir, 'iconfont/demo.html')
   }
 };
 
-export default config;
+export default defaults;
