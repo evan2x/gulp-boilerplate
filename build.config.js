@@ -1,4 +1,6 @@
 
 export default {
-  prefix: 'yx'
+  output: {
+    publicPath: '/yx'
+  }
 }
