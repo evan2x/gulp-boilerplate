@@ -21,7 +21,7 @@ export default function (plugins, config, argv, debug) {
   const lint = (globs, throwError = false) => (gulp.src(globs)
     .pipe(plugins.eslint())
     .pipe(plugins.eslint.format())
-    .pipe(plugins.if(throwError, plugins.eslint.failOnError())));
+    .pipe(plugins.if(throwError, plugins.eslint.failAfterError())));
 
   /**
    * JS模块打包器
@@ -33,9 +33,9 @@ export default function (plugins, config, argv, debug) {
    * 使用eslint对JavaScript代码进行检查
    */
   gulp.task('lint', () => {
-    let globs = util.processGlobs(baseDir, script.src);
+    let globs = util.processGlobs(baseDir, assets.script.src);
 
-    return lint(globs);
+    return lint(globs, true);
   });
 
   /**
