@@ -3,7 +3,6 @@
 import { EventEmitter } from 'events';
 
 class Consumer extends EventEmitter {
-
   constructor(prop = {}) {
     super();
 

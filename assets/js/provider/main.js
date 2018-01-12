@@ -3,7 +3,6 @@
 import { EventEmitter } from 'events';
 
 class Provider extends EventEmitter {
-
   constructor(prop = {}) {
     super();
 
