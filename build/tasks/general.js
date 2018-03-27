@@ -76,10 +76,12 @@ export default function (plugins, config, argv, debug) {
   gulp.task('style', () => {
     let globs = util.processGlobs(baseDir, assets.style.src);
     let destPath = path.join(output.path, assets.style.dest);
+    let hasBaseDir = path.posix.normalize(assets.image.dest).startsWith(path.posix.join(baseDir))
+
     const processor = createProcessor({
       stylesheetPath: destPath,
       spritePath: path.join(output.path, assets.image.dest),
-      referencePath: path.posix.join(baseDir, assets.image.dest),
+      referencePath: hasBaseDir ? assets.image.dest : path.posix.join(baseDir, assets.image.dest),
       collectGarbage(imagePath) {
         let trashyImagePath = path.resolve(path.join(output.path, imagePath.replace(path.resolve(baseDir), '')));
         if (trashyImagePath !== imagePath) {
@@ -243,7 +245,7 @@ export default function (plugins, config, argv, debug) {
            */
           gulp.src(destGlobs)
             .pipe(plugins.inlineSource({
-              rootpath: './',
+              rootpath: output.path,
               compress: false,
               handlers: [counter.inline]
             }))
