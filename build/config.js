@@ -29,7 +29,7 @@ const defaults = {
       baseDir: './',
       index: 'views/index.html'
     },
-    logPrefix: 'CreditEase',
+    logPrefix: 'Boilerplate',
     open: false,
     port: 3000
   },
