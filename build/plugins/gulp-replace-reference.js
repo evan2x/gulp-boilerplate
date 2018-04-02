@@ -1,7 +1,7 @@
 /**
  * 根据指定的资源清单替换文件中的路径
  * gulp plugin
- * @author evan2x(aiweizhang@creditease.cn)
+ * @author evan2x(evan2zaw@gmail.com)
  * @date 2015/12/12
  * @example
  * {

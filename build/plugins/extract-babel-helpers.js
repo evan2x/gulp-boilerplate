@@ -1,7 +1,7 @@
 /**
  * 提取babelify在转码的过程中所使用的helpers
  * browserify plugin
- * @author evan2x(aiweizhang@creditease.cn)
+ * @author evan2x(evan2zaw@gmail.com)
  * @date 2015/12/12
  */
 

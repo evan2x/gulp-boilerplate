@@ -1,7 +1,7 @@
 /**
  * 收集因useref产生的垃圾资源
  * gulp plugin
- * @author evan2x(aiweizhang@creditease.cn)
+ * @author evan2x(evan2zaw@gmail.com)
  * @date 2015/12/12
  */
 
