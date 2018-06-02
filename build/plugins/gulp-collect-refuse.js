@@ -18,14 +18,14 @@ export default function collectRefuse({
   let grabage = new Set();
   let ret = {};
 
-  root = _.trimStart(root, path.posix.sep);
+  root = _.trimStart(path.posix.normalize(root), path.posix.sep);
 
   const collect = (obj) => {
     Object.keys(obj).forEach((key) => {
       let replacedFiles = obj[key].assets;
       if (replacedFiles && Array.isArray(replacedFiles)) {
         replacedFiles.forEach((filePath) => {
-          filePath = _.trimStart(filePath, path.posix.sep);
+          filePath = _.trimStart(path.posix.normalize(filePath), path.posix.sep);
 
           // 文件路径以指定的根路径开头及文件不是同意路径的情况下加入到垃圾资源列表中
           if (filePath.startsWith(root) && !filePath.endsWith(key)) {
