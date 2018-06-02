@@ -189,7 +189,7 @@ export default function (plugins, config, argv, debug) {
 
         // 记录useref输出资源的出现次数
         for (let i = 0, item; item = resources[i++];) {
-          item = path.join(cwd, item.replace(matchBaseRE(baseDir), path.posix.normalize(output.path)));
+          item = path.join(cwd, item.replace(matchBaseRE(baseDir), path.posix.join(output.path, baseDir)));
           if (markers.useref[item]) {
             markers.useref[item] += 1;
           } else {
