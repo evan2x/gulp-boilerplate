@@ -18,7 +18,7 @@ export default function collectRefuse({
   let grabage = new Set();
   let ret = {};
 
-  root = _.trimStart(path.posix.normalize(root), path.posix.sep);
+  root = _.trimStart(path.posix.normalize(root), path.posix.sep);;
 
   const collect = (obj) => {
     Object.keys(obj).forEach((key) => {

@@ -2,6 +2,7 @@ import path from 'path';
 import sprites from 'postcss-sprites';
 import cssnext from 'postcss-cssnext';
 import willChange from 'postcss-will-change';
+import atImport from 'postcss-import';
 
 /**
  * 匹配CSS Sprites 图片的分组
@@ -20,6 +21,7 @@ export default function ({
   if (processors) return processors;
 
   processors = [
+    atImport(),
     willChange(),
     cssnext({
       browsers: ['last 2 versions', '> 1% in CN', 'Firefox ESR', 'Opera 12.1', 'Safari >= 5', 'ie >= 8'],

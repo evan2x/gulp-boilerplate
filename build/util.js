@@ -30,10 +30,10 @@ export function processGlobs(base, globs) {
   }
 
   if (Array.isArray(globs)) {
-    return globs.map(item => path.join(base, item));
+    return globs.map(item => path.posix.join(base, item));
   }
 
-  return path.join(base, globs);
+  return path.posix.join(base, globs);
 }
 
 /**

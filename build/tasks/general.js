@@ -17,6 +17,7 @@ const grabage = util.grabage;
 
 export default function (plugins, config, argv, debug) {
   const { baseDir, output, assets } = config;
+  const outputPath = output.path;
 
   const lint = (globs, throwError = false) => (gulp.src(globs)
     .pipe(plugins.eslint())
@@ -44,7 +45,7 @@ export default function (plugins, config, argv, debug) {
    */
   gulp.task('image', () => {
     let globs = util.processGlobs(baseDir, assets.image.src);
-    let destPath = path.join(output.path, assets.image.dest);
+    let destPath = path.join(outputPath, assets.image.dest);
 
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
@@ -61,7 +62,7 @@ export default function (plugins, config, argv, debug) {
    */
   gulp.task('svg', () => {
     let globs = util.processGlobs(baseDir, assets.svg.src);
-    let destPath = path.join(output.path, assets.svg.dest);
+    let destPath = path.join(outputPath, assets.svg.dest);
 
     return gulp.src(globs)
       .pipe(plugins.changed(destPath))
@@ -75,15 +76,15 @@ export default function (plugins, config, argv, debug) {
    */
   gulp.task('style', () => {
     let globs = util.processGlobs(baseDir, assets.style.src);
-    let destPath = path.join(output.path, assets.style.dest);
+    let destPath = path.join(outputPath, assets.style.dest);
     let hasBaseDir = path.posix.normalize(assets.image.dest).startsWith(path.posix.join(baseDir))
 
     const processor = createProcessor({
       stylesheetPath: destPath,
-      spritePath: path.join(output.path, assets.image.dest),
+      spritePath: path.join(outputPath, assets.image.dest),
       referencePath: hasBaseDir ? assets.image.dest : path.posix.join(baseDir, assets.image.dest),
       collectGarbage(imagePath) {
-        let trashyImagePath = path.resolve(path.join(output.path, imagePath.replace(path.resolve(baseDir), '')));
+        let trashyImagePath = path.resolve(path.join(outputPath, imagePath.replace(path.resolve(baseDir), '')));
         if (trashyImagePath !== imagePath) {
           grabage.add(trashyImagePath);
         }
@@ -113,7 +114,7 @@ export default function (plugins, config, argv, debug) {
    */
   gulp.task('copies', () => Promise.all(assets.copies.map((item) => {
     let globs = util.processGlobs(baseDir, item.src);
-    let destPath = path.join(output.path, item.dest);
+    let destPath = path.join(outputPath, item.dest);
 
     return new Promise((resolve, reject) => {
       gulp.src(globs)
@@ -131,10 +132,10 @@ export default function (plugins, config, argv, debug) {
    */
   gulp.task('tmpl', () => {
     let tmplGlobs = util.processGlobs(baseDir, assets.template.src);
-    let tmplDest = path.join(output.path, assets.template.dest);
+    let tmplDest = path.join(outputPath, assets.template.dest);
     let tmplDestGlobs = util.globRebase(tmplGlobs, tmplDest);
     let htmlGlobs = util.processGlobs(baseDir, assets.html.src);
-    let htmlDest = path.join(output.path, assets.html.dest);
+    let htmlDest = path.join(outputPath, assets.html.dest);
     let htmlDestGlobs = util.globRebase(htmlGlobs, htmlDest);
     let globs = util.concatGlobs(tmplGlobs, htmlGlobs);
     let destGlobs = util.concatGlobs(tmplDestGlobs, htmlDestGlobs);
@@ -189,13 +190,14 @@ export default function (plugins, config, argv, debug) {
 
         // 记录useref输出资源的出现次数
         for (let i = 0, item; item = resources[i++];) {
-          item = path.join(cwd, item.replace(matchBaseRE(baseDir), path.posix.join(output.path, baseDir)));
+          item = path.join(cwd, item.replace(matchBaseRE(baseDir), path.posix.join(outputPath, baseDir)));
           if (markers.useref[item]) {
             markers.useref[item] += 1;
           } else {
             markers.useref[item] = 1;
           }
         }
+
 
         grabageList.forEach(item => grabage.add(path.resolve(item)));
       },
@@ -208,7 +210,7 @@ export default function (plugins, config, argv, debug) {
        */
       inline(source, context, next) {
         let filePath = source.filepath;
-        let outputPrefix = path.join(cwd, output.path);
+        let outputPrefix = path.join(cwd, outputPath);
 
         // 如果内嵌资源是以输出目录开头则将该资源出现的次数记录下来
         if (filePath.startsWith(outputPrefix)) {
@@ -224,9 +226,11 @@ export default function (plugins, config, argv, debug) {
     };
 
     return new Promise((resolve, reject) => {
+      const processed = {};
+
       gulp.src(globs)
         .pipe(collectRefuse({
-          root: output.path,
+          root: outputPath,
           output: counter.useref
         }))
         .pipe(plugins.useref({
@@ -234,10 +238,20 @@ export default function (plugins, config, argv, debug) {
         }))
         .pipe(plugins.if(file => globsMatch(file.path, tmplGlobs), gulp.dest(tmplDest)))
         .pipe(plugins.if(file => globsMatch(file.path, htmlGlobs), gulp.dest(htmlDest)))
+        .pipe(plugins.filter(file => {
+          // 同样的文件只处理一次
+          if (processed[file.path]) {
+            return false;
+          } else {
+            processed[file.path] = true;
+          }
+
+          return processed[file.path];
+        }))
         .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
         .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify({ ie8: true })))
         .pipe(plugins.filter(file => /\.(?:css|js)$/.test(file.path)))
-        .pipe(gulp.dest(output.path))
+        .pipe(gulp.dest(outputPath))
         .once('end', () => {
           /**
            * 资源内嵌的处理
@@ -245,7 +259,7 @@ export default function (plugins, config, argv, debug) {
            */
           gulp.src(destGlobs)
             .pipe(plugins.inlineSource({
-              rootpath: output.path,
+              rootpath: outputPath,
               compress: false,
               handlers: [counter.inline]
             }))
@@ -278,7 +292,7 @@ export default function (plugins, config, argv, debug) {
    */
   gulp.task('refs:replace', () => {
     let globs = util.processGlobs(baseDir, assets.template.src);
-    let destPath = path.join(output.path, assets.template.dest);
+    let destPath = path.join(outputPath, assets.template.dest);
     let copies = assets.copies;
     let globsMap = {};
     let temporary = {
@@ -295,13 +309,13 @@ export default function (plugins, config, argv, debug) {
     }
 
     Object.entries(temporary).forEach(([key, conf]) => {
-      globsMap[key] = util.processGlobs(output.path, util.globRebase(conf.src, conf.dest));
+      globsMap[key] = util.processGlobs(outputPath, util.globRebase(conf.src, conf.dest));
     });
 
     const manifest = util.createReplacementManifest(Object.values(globsMap), {
       publicPath: output.publicPath,
       inputDir: baseDir,
-      outputDir: output.path
+      outputDir: outputPath
     });
 
     return Promise.all([

@@ -86,7 +86,7 @@ const defaults = {
      */
     template: {
       src: '../views/**/*.{vm,ftl,html}',
-      dest: `views/`
+      dest: 'views/'
     },
     /**
      * JS参数配置
@@ -111,7 +111,7 @@ const defaults = {
        * @todo 不使用extensions
        * @type {String}
        */
-      extractStyleFile: 'common.css',
+      extractStyleFile: 'module-style.css',
       /**
        * 使用 vue 时相关的配置项
        */
@@ -125,7 +125,7 @@ const defaults = {
          * vue组件中提取的css输出文件，该文件输出位置相对于css配置项中指定的dest目录
          * @type {String}
          */
-        extractStyleFile: 'bundle.css'
+        extractStyleFile: 'vue-style.css'
       },
       /**
        * 打包第三方模块
