@@ -84,8 +84,8 @@ export default function (plugins, config, debug, lint = _.noop) {
   if (script.vueify.enable) {
     let spritePath = path.join(output.path, assets.image.dest);
     let stylesheetPath = path.join(output.path, assets.style.dest);
-    let refPath = path.posix.join(baseDir, assets.image.dest);
-    let processor = createProcessor({ spritePath, stylesheetPath, refPath }, debug);
+    let referencePath = path.posix.join(baseDir, assets.image.dest);
+    let processor = createProcessor({ spritePath, stylesheetPath, referencePath }, debug);
 
     packager.transform(vueify, {
       postcss: processor,

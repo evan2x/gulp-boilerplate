@@ -234,7 +234,7 @@ export default function (plugins, config, argv, debug) {
           output: counter.useref
         }))
         .pipe(plugins.useref({
-          searchPath: './'
+          searchPath: [outputPath, './']
         }))
         .pipe(plugins.if(file => globsMatch(file.path, tmplGlobs), gulp.dest(tmplDest)))
         .pipe(plugins.if(file => globsMatch(file.path, htmlGlobs), gulp.dest(htmlDest)))
