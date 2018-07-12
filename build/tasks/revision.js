@@ -6,7 +6,6 @@ import del from 'del';
 
 import covertQuery from '../plugins/gulp-rev-covert-query';
 import * as util from '../util';
-import { QUERY_VERSION } from '../config'
 
 export default function (plugins, config) {
   const { versionType, output, assets } = config;
@@ -50,7 +49,7 @@ export default function (plugins, config) {
     let manifest = gulp.src(assets.manifest);
 
     return gulp.src(globs, { base: outputBase })
-      .pipe(plugins.revReplace({
+      .pipe(plugins.revRewrite({
         manifest
       }))
       .pipe(channel())
@@ -123,7 +122,7 @@ export default function (plugins, config) {
     let exts = util.extractExtsByGlobs(globs).map(item => `.${item}`);
 
     return gulp.src(globs, { base: './' })
-      .pipe(plugins.revReplace({
+      .pipe(plugins.revRewrite({
         manifest,
         replaceInExtensions: exts
       }))

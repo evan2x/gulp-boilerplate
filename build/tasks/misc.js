@@ -1,7 +1,5 @@
-
 import path from 'path';
 import gulp from 'gulp';
-
 
 export default function (plugins, config) {
   /**

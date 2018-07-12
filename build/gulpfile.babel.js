@@ -4,7 +4,6 @@ import path from 'path';
 import fs from 'fs';
 import gulp from 'gulp';
 import del from 'del';
-// import runSequence from 'run-sequence';
 import loadPlugins from 'gulp-load-plugins';
 import minimist from 'minimist';
 import chalk from 'chalk';
@@ -54,7 +53,6 @@ if (argv.buildfile != null) {
 
 const plugins = loadPlugins();
 const grabage = util.grabage;
-// const runTask = runSequence.use(gulp);
 
 general(plugins, config, argv, process.env.NODE_ENV !== 'production');
 revision(plugins, config, argv);
@@ -97,7 +95,9 @@ gulp.task('build', gulp.series(
 gulp.task('revision', gulp.series(
   'build',
   'manifest:clean',
-  gulp.parallel('image:rev', 'svg:rev', 'copies:rev'),
+  'image:rev', 
+  'svg:rev', 
+  'copies:rev',
   'style:rev',
   'script:rev',
   gulp.parallel('tmpl:rev', 'rev:garbage:clean')

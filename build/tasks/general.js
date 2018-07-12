@@ -1,4 +1,3 @@
-
 import path from 'path';
 import gulp from 'gulp';
 import minimatch from 'minimatch';
