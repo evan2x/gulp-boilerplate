@@ -75,7 +75,8 @@ export default function (plugins, config, debug, lint = _.noop) {
     packageCache: {},
     entries,
     debug,
-    paths: ['node_modules', ...script.modulesDirectories]
+    paths: ['node_modules', ...script.modulesDirectories],
+    extensions: script.extensions
   });
 
   packager.transform(envify);
@@ -90,6 +91,8 @@ export default function (plugins, config, debug, lint = _.noop) {
       postcss: processor,
       global: true
     });
+
+    vendorModules.push('vue');
   }
 
   packager.transform(babelify);
