@@ -1,3 +1,4 @@
+
 const OFF = 0;
 const WARN = 1;
 const ERROR = 2;
@@ -10,21 +11,7 @@ module.exports = {
   },
   extends: ['airbnb-base', 'plugin:vue/essential'],
   rules: {
-    "no-unused-vars": [2, {
-      "vars": "local",
-      "args": "none"
-    }],
-    "react-in-jsx-scope":OFF,
-    "jsx-filename-extension":OFF,
-    "style-prop-object":OFF,
-    "prefer-destructuring":OFF,
-    "no-unused-vars":OFF,
-    "no-tabs":"off",
-    "no-dupe-keys":OFF,
-    "eqeqeq":OFF,
-    'no-console': OFF,
     'no-continue': OFF,
-    'no-shadow': OFF,
     'consistent-return': OFF,
     'no-cond-assign': OFF,
     'no-plusplus': OFF,
