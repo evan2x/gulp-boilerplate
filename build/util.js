@@ -73,17 +73,17 @@ export function globRebase(globs, base) {
   }
 
   const rebase = (globPath) => {
-    let originalBase = glob2base(new Glob(globPath));
+    let originalBase = glob2base(new Glob(globPath)).split(path.sep).join(path.posix.sep);
 
     if (originalBase === './') {
       return path.join(base, globPath);
     }
 
-    if (!base.endsWith(path.sep)) {
-      base = `${base}${path.sep}`;
+    if (!base.endsWith(path.posix.sep)) {
+      base = `${base}${path.posix.sep}`;
     }
 
-    return path.normalize(globPath.replace(originalBase, base));
+    return path.posix.normalize(globPath.replace(originalBase, base));
   };
 
   if (Array.isArray(globs)) {
