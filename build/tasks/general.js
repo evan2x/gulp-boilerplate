@@ -3,6 +3,7 @@ import gulp from 'gulp';
 import minimatch from 'minimatch';
 import pngquant from 'imagemin-pngquant';
 import browserSync from 'browser-sync';
+import del from 'del';
 
 import * as util from '../util';
 import collectRefuse from '../plugins/gulp-collect-refuse';
@@ -118,9 +119,9 @@ export default function (plugins, config, argv, debug) {
     return new Promise((resolve, reject) => {
       gulp.src(globs)
         .pipe(plugins.changed(destPath))
+        .once('end', resolve)
         .pipe(gulp.dest(destPath))
-        .on('end', resolve)
-        .on('error', reject);
+        .once('error', reject);
     });
   })));
 
@@ -131,10 +132,10 @@ export default function (plugins, config, argv, debug) {
    */
   gulp.task('tmpl', () => {
     let tmplGlobs = util.processGlobs(baseDir, assets.template.src);
-    let tmplDest = path.join(outputPath, assets.template.dest);
+    let tmplDest = path.posix.join(outputPath, assets.template.dest);
     let tmplDestGlobs = util.globRebase(tmplGlobs, tmplDest);
     let htmlGlobs = util.processGlobs(baseDir, assets.html.src);
-    let htmlDest = path.join(outputPath, assets.html.dest);
+    let htmlDest = path.posix.join(outputPath, assets.html.dest);
     let htmlDestGlobs = util.globRebase(htmlGlobs, htmlDest);
     let globs = util.concatGlobs(tmplGlobs, htmlGlobs);
     let destGlobs = util.concatGlobs(tmplDestGlobs, htmlDestGlobs);
@@ -250,8 +251,8 @@ export default function (plugins, config, argv, debug) {
         .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
         .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify({ ie8: true })))
         .pipe(plugins.filter(file => /\.(?:css|js)$/.test(file.path)))
-        .pipe(gulp.dest(outputPath))
         .once('end', () => {
+
           /**
            * 资源内嵌的处理
            * @todo 必须在useref之后处理，否则引用dist目录时，静态资源可能没有生成导致引用错误。
@@ -264,7 +265,6 @@ export default function (plugins, config, argv, debug) {
             }))
             .pipe(plugins.if(file => globsMatch(file.path, htmlDestGlobs), gulp.dest(htmlDest)))
             .pipe(plugins.filter(file => globsMatch(file.path, tmplDestGlobs)))
-            .pipe(gulp.dest(tmplDest))
             .once('end', () => {
               // 记录可以回收的资源
               Object.keys(markers.inline).forEach((key) => {
@@ -275,8 +275,10 @@ export default function (plugins, config, argv, debug) {
 
               resolve();
             })
+            .pipe(gulp.dest(tmplDest))
             .once('error', reject);
         })
+        .pipe(gulp.dest(outputPath))
         .once('error', reject);
     });
   });
@@ -325,13 +327,15 @@ export default function (plugins, config, argv, debug) {
     ].map(globs => new Promise((resolve, reject) => {
       gulp.src(globs, { base: './' })
         .pipe(replaceReference(manifest))
-        .pipe(gulp.dest('./'))
         .once('end', resolve)
+        .pipe(gulp.dest('./'))
         .once('error', reject);
     })));
   });
 
   function watchTask() {
+    del.sync(outputPath);
+
     // watch css
     gulp.watch(
       util.processGlobs(baseDir, assets.style.src),

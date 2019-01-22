@@ -123,7 +123,7 @@ export default function (plugins, config, debug, lint = _.noop) {
    * @return {Array}
    */
   const removeBase = (filePaths) => {
-    let baseList = allGlobs.map(item => glob2base(new Glob(item)));
+    let baseList = allGlobs.map(item => glob2base(new Glob(item)).split(path.sep).join(path.posix.sep));
 
     return filePaths.map((filePath) => {
       baseList.forEach((baseItem) => {
@@ -206,8 +206,8 @@ export default function (plugins, config, debug, lint = _.noop) {
       vendorPackager
         .bundle()
         .pipe(source(script.vendor.chunkName))
-        .pipe(gulp.dest(destPath))
         .on('end', resolve)
+        .pipe(gulp.dest(destPath))
         .on('error', reject);
     }
   });
@@ -235,8 +235,8 @@ export default function (plugins, config, debug, lint = _.noop) {
           this.push(file);
           next();
         }))
-        .pipe(gulp.dest(destPath))
         .once('end', resolve)
+        .pipe(gulp.dest(destPath))
         .once('error', reject);
     });
   };

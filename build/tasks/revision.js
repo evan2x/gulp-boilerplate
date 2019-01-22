@@ -26,8 +26,7 @@ export default function (plugins, config) {
       base: path.dirname(assets.manifest),
       merge: true
     })
-    .pipe(() => plugins.if(versionType === 'query', covertQuery()))
-    .pipe(gulp.dest, path.dirname(assets.manifest));
+    .pipe(() => plugins.if(versionType === 'query', covertQuery()));
 
   /**
    * 获取需要revision的globs
@@ -43,9 +42,8 @@ export default function (plugins, config) {
   /**
    * CSS/JS资源中的引用路径替换
    * @param {Array|String} globs
-   * @param {Function} done
    */
-  const assetsRevTask = (globs, done) => {
+  const assetsRevTask = (globs) => {
     let manifest = gulp.src(assets.manifest);
 
     return gulp.src(globs, { base: outputBase })
@@ -53,29 +51,29 @@ export default function (plugins, config) {
         manifest
       }))
       .pipe(channel())
-      .on('end', done);
+      .pipe(gulp.dest(path.dirname(assets.manifest)));
   };
 
   /**
    * image resource revision
    */
-  gulp.task('image:rev', (done) => {
+  gulp.task('image:rev', () => {
     let globs = getRevGlobs(assets.image.src, assets.image.dest);
 
     return gulp.src(globs, { base: outputBase })
       .pipe(channel())
-      .on('end', done);
+      .pipe(gulp.dest(path.dirname(assets.manifest)));
   });
 
   /**
    * svg resource revision
    */
-  gulp.task('svg:rev', (done) => {
+  gulp.task('svg:rev', () => {
     let globs = getRevGlobs(assets.svg.src, assets.svg.dest);
 
     return gulp.src(globs, { base: outputBase })
       .pipe(channel())
-      .on('end', done);
+      .pipe(gulp.dest(path.dirname(assets.manifest)));
   });
 
   /**
@@ -91,8 +89,9 @@ export default function (plugins, config) {
         taskList.push(new Promise((resolve, reject) => {
           gulp.src(globs, { base: outputBase })
             .pipe(channel())
-            .on('end', resolve)
-            .on('error', reject);
+            .once('end', resolve)
+            .pipe(gulp.dest(path.dirname(assets.manifest)))
+            .once('error', reject);
         }));
       }
     });
@@ -103,12 +102,12 @@ export default function (plugins, config) {
   /**
    * style resource revision
    */
-  gulp.task('style:rev', (done) => assetsRevTask(getRevGlobs(assets.style.src, assets.style.dest), done));
+  gulp.task('style:rev', () => assetsRevTask(getRevGlobs(assets.style.src, assets.style.dest)));
 
   /**
    * script resource revision
    */
-  gulp.task('script:rev', (done) => assetsRevTask(getRevGlobs(assets.script.src, assets.script.dest), done));
+  gulp.task('script:rev', () => assetsRevTask(getRevGlobs(assets.script.src, assets.script.dest)));
 
   /**
    * template/html revision
