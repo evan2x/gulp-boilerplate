@@ -1,8 +1,6 @@
 import path from 'path';
 import fs from 'fs';
 import glob2base from 'glob2base';
-import chokidar from 'chokidar';
-import gulp from 'gulp';
 import glob, { Glob } from 'glob';
 import del from 'del';
 import * as _ from 'lodash';
@@ -76,7 +74,7 @@ export function globRebase(globs, base) {
     let originalBase = glob2base(new Glob(globPath)).split(path.sep).join(path.posix.sep);
 
     if (originalBase === './') {
-      return path.join(base, globPath);
+      return path.posix.join(base, globPath);
     }
 
     if (!base.endsWith(path.posix.sep)) {
@@ -134,7 +132,7 @@ export function delEmptyDir(basedir) {
     let file = null;
 
     while ((file = files[count++]) != null) {
-      file = path.join(dir, file);
+      file = path.posix.join(dir, file);
       if (fs.statSync(file).isDirectory()) {
         dirs.push(file);
         dirs.concat(collect(file, dirs));

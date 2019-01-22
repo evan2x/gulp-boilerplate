@@ -43,14 +43,15 @@ export default function (plugins, config) {
    * CSS/JS资源中的引用路径替换
    * @param {Array|String} globs
    */
-  const assetsRevTask = (globs) => {
+  const assetsRevTask = (globs, done) => {
     let manifest = gulp.src(assets.manifest);
 
-    return gulp.src(globs, { base: outputBase })
+    gulp.src(globs, { base: outputBase })
       .pipe(plugins.revRewrite({
         manifest
       }))
       .pipe(channel())
+      .once('end', done)
       .pipe(gulp.dest(path.dirname(assets.manifest)));
   };
 
@@ -102,12 +103,12 @@ export default function (plugins, config) {
   /**
    * style resource revision
    */
-  gulp.task('style:rev', () => assetsRevTask(getRevGlobs(assets.style.src, assets.style.dest)));
+  gulp.task('style:rev', (done) => assetsRevTask(getRevGlobs(assets.style.src, assets.style.dest), done));
 
   /**
    * script resource revision
    */
-  gulp.task('script:rev', () => assetsRevTask(getRevGlobs(assets.script.src, assets.script.dest)));
+  gulp.task('script:rev', (done) => assetsRevTask(getRevGlobs(assets.script.src, assets.script.dest), done));
 
   /**
    * template/html revision
@@ -142,13 +143,13 @@ export default function (plugins, config) {
       }
 
       Object.entries(manifest).forEach(([key, value]) => {
-        let oldFile = path.join(outputBase, key);
-        let newFile = path.join(outputBase, util.query2filename(value));
+        let originFilePath = path.posix.join(outputBase, key);
+        let newFilePath = path.posix.join(outputBase, util.query2filename(value));
 
-        del.sync(oldFile);
+        del.sync(originFilePath);
 
         if (versionType === 'query') {
-          fs.renameSync(newFile, oldFile);
+          fs.renameSync(newFilePath, originFilePath);
         }
       });
     }
