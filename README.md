@@ -1,3 +1,4 @@
+## This repository has been deprecated in favor of [mpa-boilerplate](https://github.com/evan2x/mpa-boilerplate)
 
 # gulp-boilerplate
 
