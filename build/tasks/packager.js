@@ -99,7 +99,7 @@ export default function (plugins, config, debug, lint = _.noop) {
   packager.transform(styleify);
   packager.transform(aliasify, {
     aliases: {
-      'vue': 'vue/dist/vue.js'
+      'vue': 'vue/dist/vue.common.js'
     }
   });
 
