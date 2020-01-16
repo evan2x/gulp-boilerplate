@@ -119,8 +119,8 @@ export default function (plugins, config, argv, debug) {
     return new Promise((resolve, reject) => {
       gulp.src(globs)
         .pipe(plugins.changed(destPath))
-        .once('end', resolve)
         .pipe(gulp.dest(destPath))
+        .once('end', resolve)
         .once('error', reject);
     });
   })));
@@ -240,17 +240,18 @@ export default function (plugins, config, argv, debug) {
         .pipe(plugins.if(file => globsMatch(file.path, htmlGlobs), gulp.dest(htmlDest)))
         .pipe(plugins.filter(file => {
           // 同样的文件只处理一次
-          if (processed[file.path]) {
+          if (processed[file.relative]) {
             return false;
           } else {
-            processed[file.path] = true;
+            processed[file.relative] = true;
           }
 
-          return processed[file.path];
+          return processed[file.relative];
         }))
         .pipe(plugins.if(file => !debug && /\.css$/.test(file.path), plugins.csso()))
         .pipe(plugins.if(file => !debug && /\.js$/.test(file.path), plugins.uglify({ ie8: true })))
         .pipe(plugins.filter(file => /\.(?:css|js)$/.test(file.path)))
+        .pipe(gulp.dest(outputPath))
         .once('end', () => {
 
           /**
@@ -265,6 +266,7 @@ export default function (plugins, config, argv, debug) {
             }))
             .pipe(plugins.if(file => globsMatch(file.path, htmlDestGlobs), gulp.dest(htmlDest)))
             .pipe(plugins.filter(file => globsMatch(file.path, tmplDestGlobs)))
+            .pipe(gulp.dest(tmplDest))
             .once('end', () => {
               // 记录可以回收的资源
               Object.keys(markers.inline).forEach((key) => {
@@ -275,10 +277,8 @@ export default function (plugins, config, argv, debug) {
 
               resolve();
             })
-            .pipe(gulp.dest(tmplDest))
             .once('error', reject);
         })
-        .pipe(gulp.dest(outputPath))
         .once('error', reject);
     });
   });
@@ -327,8 +327,8 @@ export default function (plugins, config, argv, debug) {
     ].map(globs => new Promise((resolve, reject) => {
       gulp.src(globs, { base: './' })
         .pipe(replaceReference(manifest))
-        .once('end', resolve)
         .pipe(gulp.dest('./'))
+        .once('end', resolve)
         .once('error', reject);
     })));
   });

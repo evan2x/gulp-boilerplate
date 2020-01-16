@@ -1,4 +1,3 @@
-
 import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
@@ -9,7 +8,7 @@ export default function extractStyle(bundle, {
 } = {}) {
   if (!output) return;
 
-  let styles = new Map();
+  const styles = new Map();
 
   const noop = (chunk, enc, done) => {
     done(null, chunk);

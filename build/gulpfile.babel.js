@@ -100,8 +100,9 @@ gulp.task('revision', gulp.series(
   'copies:rev',
   'style:rev',
   'script:rev',
-  gulp.parallel('tmpl:rev', 'rev:garbage:clean')
-))
+  'tmpl:rev', 
+  'rev:garbage:clean'
+));
 
 /**
  * 默认task

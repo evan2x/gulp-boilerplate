@@ -3,3 +3,6 @@ npm-debug.log
 rev-manifest.json
 node_modules/
 dist/
+logs/
+WEB-INF/
+.history

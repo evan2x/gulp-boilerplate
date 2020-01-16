@@ -51,8 +51,8 @@ export default function (plugins, config) {
         manifest
       }))
       .pipe(channel())
-      .once('end', done)
-      .pipe(gulp.dest(path.dirname(assets.manifest)));
+      .pipe(gulp.dest(path.dirname(assets.manifest)))
+      .once('end', done);
   };
 
   /**
@@ -90,8 +90,8 @@ export default function (plugins, config) {
         taskList.push(new Promise((resolve, reject) => {
           gulp.src(globs, { base: outputBase })
             .pipe(channel())
-            .once('end', resolve)
             .pipe(gulp.dest(path.dirname(assets.manifest)))
+            .once('end', resolve)
             .once('error', reject);
         }));
       }

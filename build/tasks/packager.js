@@ -81,9 +81,10 @@ export default function (plugins, config, debug, lint = _.noop) {
 
   packager.transform(envify);
 
+  let stylesheetPath = path.join(output.path, assets.style.dest);
+
   if (script.vueify.enable) {
     let spritePath = path.join(output.path, assets.image.dest);
-    let stylesheetPath = path.join(output.path, assets.style.dest);
     let referencePath = path.posix.join(baseDir, assets.image.dest);
     let processor = createProcessor({ spritePath, stylesheetPath, referencePath }, debug);
 
@@ -91,16 +92,26 @@ export default function (plugins, config, debug, lint = _.noop) {
       postcss: processor,
       global: true
     });
+    
+    packager.transform(aliasify, {
+      global: true,
+      appliesTo: {
+        includeExtensions: ['.js', '.vue']
+      },
+      aliases: {
+        'vue': 'vue/dist/vue.js'
+      }
+    });
 
-    vendorModules.push('vue');
+    if (vendorModules.indexOf('vue') === -1) {
+      vendorModules.push('vue');
+    }
   }
 
   packager.transform(babelify);
-  packager.transform(styleify);
-  packager.transform(aliasify, {
-    aliases: {
-      'vue': 'vue/dist/vue.common.js'
-    }
+  packager.transform(styleify, {
+    global: true,
+    stylePath: stylesheetPath
   });
 
   // 如果第三方模块中有依赖babel-polyfill，辣么就给每个main.js加一个引入babel-polyfill的语句
@@ -235,8 +246,8 @@ export default function (plugins, config, debug, lint = _.noop) {
           this.push(file);
           next();
         }))
-        .once('end', resolve)
         .pipe(gulp.dest(destPath))
+        .once('end', resolve)
         .once('error', reject);
     });
   };
